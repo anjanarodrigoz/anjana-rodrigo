@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { ParticleSystem } from "@/components/features/particle-system"
 import { TypewriterText } from "@/components/atoms/typewriter-text"
 import { GlitchText } from "@/components/atoms/glitch-text"
@@ -37,11 +38,33 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-center"
         >
+          {/* Profile Photo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, type: "spring" }}
+            className="mb-8 flex justify-center"
+          >
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald via-amber to-coral rounded-full blur-lg opacity-75 group-hover:opacity-100 transition-opacity animate-pulse" />
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-background glass">
+                <Image
+                  src="/profile.jpg"
+                  alt="Anjana Rodrigo"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 640px) 160px, 192px"
+                />
+              </div>
+            </div>
+          </motion.div>
+
           {/* Animated Greeting */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="mb-8"
           >
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
