@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
+
+    /* Light mode custom colors */
+    --pearl: 44 14% 98%;
+    --sage: 142 76% 73%;
+    --sunset: 27 96% 61%;
+    --gradient-shadow: rgba(251, 146, 60, 0.1);
+  }
+
+  .dark {
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+
+    /* Dark mode custom colors */
+    --charcoal: 0 0% 9%;
+    --emerald: 160 84% 39%;
+    --amber: 38 92% 50%;
+    --coral: 347 89% 73%;
+    --glass-bg: rgba(23, 23, 23, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Glassmorphism utility */
+  .glass {
+    @apply backdrop-blur-xl bg-opacity-70 border border-white/10;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-xl bg-opacity-70 border border-white/10;
+    background: rgba(23, 23, 23, 0.7);
+  }
+
+  .glass-light {
+    @apply backdrop-blur-xl bg-opacity-70 border border-gray-200/30;
+    background: rgba(250, 249, 246, 0.7);
+  }
+
+  /* Aurora gradient animation */
+  .aurora-bg {
+    background: linear-gradient(45deg, #10B981, #F59E0B, #FB7185, #10B981);
+    background-size: 400% 400%;
+    animation: aurora 15s ease infinite;
+  }
+
+  /* Watercolor effect for light mode */
+  .watercolor-overlay {
+    position: relative;
+  }
+
+  .watercolor-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(134, 239, 172, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(251, 146, 60, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(250, 249, 246, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #10B981 0%, #F59E0B 50%, #FB7185 100%);
+  }
+
+  /* Focus visible styles for accessibility */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Skip to content link */
+  .skip-to-content {
+    @apply fixed top-0 left-0 z-50 p-4 bg-background text-foreground transform -translate-y-full;
+    @apply focus:translate-y-0 transition-transform;
+  }
+}
+
+/* Custom scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Particle canvas styles */
+canvas {
+  display: block;
+}
+
+/* Selection colors */
+::selection {
+  @apply bg-emerald/30 text-foreground;
+}
+
+::-moz-selection {
+  @apply bg-emerald/30 text-foreground;
+}
