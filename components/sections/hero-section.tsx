@@ -16,8 +16,8 @@ export function HeroSection() {
     setMounted(true)
   }, [])
 
-  const scrollToAbout = () => {
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })
+  const scrollToJourney = () => {
+    document.getElementById("journey")?.scrollIntoView({ behavior: "smooth" })
   }
 
   return (
@@ -111,7 +111,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="emerald"
-              onClick={scrollToAbout}
+              onClick={scrollToJourney}
               className="group"
             >
               Explore My Journey
@@ -172,7 +172,7 @@ export function HeroSection() {
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="cursor-pointer"
-            onClick={scrollToAbout}
+            onClick={scrollToJourney}
           >
             <div className="flex flex-col items-center gap-2 text-muted-foreground hover:text-emerald transition-colors">
               <span className="text-sm">Scroll to explore</span>

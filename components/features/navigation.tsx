@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation"
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/#about" },
+  { name: "Journey", href: "/#journey" },
   { name: "Projects", href: "/projects" },
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/#contact" },

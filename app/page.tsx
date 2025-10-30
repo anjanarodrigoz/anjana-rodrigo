@@ -1,13 +1,21 @@
+"use client"
+
+import dynamic from "next/dynamic"
 import { HeroSection } from "@/components/sections/hero-section"
-import { AboutSection } from "@/components/sections/about-section"
 import { ProjectsSection } from "@/components/sections/projects-section"
 import { ContactSection } from "@/components/sections/contact-section"
+
+// Dynamically import JourneySection to avoid SSR issues with React Three Fiber
+const JourneySection = dynamic(
+  () => import("@/components/sections/journey-section").then((mod) => mod.JourneySection),
+  { ssr: false }
+)
 
 export default function HomePage() {
   return (
     <div className="relative min-h-screen">
       <HeroSection />
-      <AboutSection />
+      <JourneySection />
       <ProjectsSection />
 
       {/* Blog and YouTube sections - Coming soon */}
