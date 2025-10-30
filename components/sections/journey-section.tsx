@@ -4,9 +4,26 @@ import { Canvas } from "@react-three/fiber"
 import { Suspense, useState, useEffect } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { useInView } from "react-intersection-observer"
-import { TransformationScene } from "@/components/features/transformation-scene"
 import { Button } from "@/components/ui/button"
-import { Volume2, VolumeX } from "lucide-react"
+import { Volume2, VolumeX, Loader2 } from "lucide-react"
+
+// Lazy load the 3D scene to avoid hydration issues
+import dynamic from "next/dynamic"
+
+const TransformationScene = dynamic(
+  () => import("@/components/features/transformation-scene").then((mod) => mod.TransformationScene),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-emerald" />
+          <p className="text-muted-foreground">Loading 3D Experience...</p>
+        </div>
+      </div>
+    ),
+  }
+)
 
 export function JourneySection() {
   const [ref, inView] = useInView({
@@ -21,6 +38,7 @@ export function JourneySection() {
 
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [transformationProgress, setTransformationProgress] = useState(0)
+  const [is3DReady, setIs3DReady] = useState(false)
 
   // Map scroll to transformation progress (0 to 1)
   const progress = useTransform(scrollYProgress, [0.2, 0.8], [0, 1])
@@ -32,6 +50,11 @@ export function JourneySection() {
     return () => unsubscribe()
   }, [progress])
 
+  // Check if we're on the client side
+  useEffect(() => {
+    setIs3DReady(true)
+  }, [])
+
   return (
     <section
       id="journey"
@@ -39,20 +62,35 @@ export function JourneySection() {
       className="relative min-h-screen w-full overflow-hidden bg-background"
     >
       {/* 3D Canvas */}
-      <div className="absolute inset-0">
-        <Canvas
-          camera={{ position: [0, 2, 8], fov: 50 }}
-          gl={{ antialias: true, alpha: true }}
-        >
-          <Suspense fallback={null}>
-            <TransformationScene
-              progress={transformationProgress}
-              inView={inView}
-              soundEnabled={soundEnabled}
-            />
+      {is3DReady && (
+        <div className="absolute inset-0">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-emerald" />
+                  <p className="text-muted-foreground">Loading 3D Experience...</p>
+                </div>
+              </div>
+            }
+          >
+            <Canvas
+              camera={{ position: [0, 2, 8], fov: 50 }}
+              gl={{ antialias: true, alpha: true }}
+              dpr={[1, 2]}
+              onCreated={(state) => {
+                state.gl.setClearColor('#000000', 0)
+              }}
+            >
+              <TransformationScene
+                progress={transformationProgress}
+                inView={inView}
+                soundEnabled={soundEnabled}
+              />
+            </Canvas>
           </Suspense>
-        </Canvas>
-      </div>
+        </div>
+      )}
 
       {/* Overlay Content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
