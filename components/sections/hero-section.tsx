@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { ParticleSystem } from "@/components/features/particle-system"
-import { TypewriterText } from "@/components/atoms/typewriter-text"
-import { GlitchText } from "@/components/atoms/glitch-text"
-import { Button } from "@/components/ui/button"
-import { ArrowDown, Github, Linkedin, Mail } from "lucide-react"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { ParticleSystem } from "@/components/features/particle-system";
+import { TypewriterText } from "@/components/atoms/typewriter-text";
+import { GlitchText } from "@/components/atoms/glitch-text";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
 
 export function HeroSection() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const scrollToJourney = () => {
-    document.getElementById("journey")?.scrollIntoView({ behavior: "smooth" })
-  }
+    document.getElementById("journey")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -54,7 +54,7 @@ export function HeroSection() {
                   fill
                   className="object-cover"
                   priority
-                  sizes="(max-width: 640px) 160px, 192px"
+                  sizes="(max-width: 840px) 160px, 192px"
                 />
               </div>
             </div>
@@ -120,7 +120,11 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() =>
+                document
+                  .getElementById("contact")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               Get In Touch
             </Button>
@@ -182,5 +186,5 @@ export function HeroSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
