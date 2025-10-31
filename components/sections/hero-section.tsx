@@ -52,7 +52,7 @@ export function HeroSection() {
                   src="/profile.jpg"
                   alt="Anjana Rodrigo"
                   fill
-                  className="object-cover"
+                  className="object-cover object-top"
                   priority
                   sizes="(max-width: 640px) 192px, (max-width: 768px) 224px, 256px"
                 />

@@ -1,25 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { motion } from "framer-motion"
+import * as React from "react";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return (
-      <div className="w-10 h-10 rounded-full glass" />
-    )
+    return <div className="w-10 h-10 rounded-full glass" />;
   }
 
-  const isDark = theme === "dark"
+  const isDark = theme === "dark";
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -32,7 +30,7 @@ export function ThemeToggle() {
       >
         {/* Toggle slider */}
         <motion.div
-          className="absolute top-1 w-6 h-6 rounded-full bg-gradient-to-br from-emerald to-amber flex items-center justify-center shadow-lg"
+          className="absolute top-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-emerald to-amber flex items-center justify-center shadow-lg"
           animate={{
             left: isDark ? "calc(100% - 28px)" : "4px",
           }}
@@ -56,5 +54,5 @@ export function ThemeToggle() {
         {isDark ? "Dark" : "Light"}
       </motion.span>
     </div>
-  )
+  );
 }
