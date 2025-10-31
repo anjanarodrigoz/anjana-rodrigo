@@ -47,14 +47,14 @@ export function HeroSection() {
           >
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-emerald via-amber to-coral rounded-full blur-lg opacity-75 group-hover:opacity-100 transition-opacity animate-pulse" />
-              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-background glass">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-background glass">
                 <Image
                   src="/profile.jpg"
                   alt="Anjana Rodrigo"
                   fill
                   className="object-cover"
                   priority
-                  sizes="(max-width: 840px) 160px, 192px"
+                  sizes="(max-width: 640px) 192px, (max-width: 768px) 224px, 256px"
                 />
               </div>
             </div>

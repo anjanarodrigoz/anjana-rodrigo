@@ -134,8 +134,8 @@ export function JourneySection() {
           className="max-w-4xl text-center mb-12"
         >
           <p className="text-xl sm:text-2xl md:text-3xl font-light italic text-muted-foreground">
-            "From beneath the surface of the earth to the depths of digital innovation —
-            I transformed mining logic into software intelligence."
+            "From extracting resources beneath the earth to mining insights from data —
+            I evolved into a Digital Mining Innovator, transforming traditional mining logic into intelligent automation."
           </p>
         </motion.div>
 
@@ -248,7 +248,7 @@ export function JourneySection() {
                 />
               </motion.div>
               <div className="text-center">
-                <div className="font-bold text-emerald-500">Software Engineer</div>
+                <div className="font-bold text-emerald-500">Digital Mining Innovator</div>
                 <div className="text-sm text-muted-foreground">2018-Present</div>
               </div>
             </div>
@@ -276,7 +276,7 @@ export function JourneySection() {
             <div>
               <div className="flex justify-between mb-2 text-sm">
                 <span className="text-amber">Mining Engineer</span>
-                <span className="text-emerald">Software Engineer</span>
+                <span className="text-emerald">Digital Mining Innovator</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <motion.div
