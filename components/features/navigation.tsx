@@ -8,17 +8,17 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navItems = [
-  { name: "Home", href: "/" },
-  { name: "Journey", href: "/#journey" },
-  { name: "Projects", href: "/projects" },
-  { name: "Blog", href: "/blog" },
-  { name: "YouTube", href: "/youtube" },
-  { name: "Contact", href: "/#contact" },
+  { name: "Home", href: "/", sectionId: "hero" },
+  { name: "Journey", href: "/#journey", sectionId: "journey" },
+  { name: "Projects", href: "/projects", sectionId: null },
+  { name: "Blog", href: "/blog", sectionId: null },
+  { name: "Contact", href: "/#contact", sectionId: "contact" },
 ]
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState<string | null>("hero")
   const pathname = usePathname()
 
   useEffect(() => {
@@ -29,6 +29,40 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // Track active section based on scroll position
+  useEffect(() => {
+    if (pathname !== "/") {
+      setActiveSection(null)
+      return
+    }
+
+    const observerOptions = {
+      threshold: 0.3,
+      rootMargin: "-80px 0px -60% 0px",
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+
+    // Observe all sections
+    const sections = ["hero", "journey", "tech-stack", "projects", "youtube", "contact"]
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => observer.disconnect()
+  }, [pathname])
+
   const handleNavClick = (href: string) => {
     setIsMobileMenuOpen(false)
 
@@ -37,7 +71,11 @@ export function Navigation() {
       const [path, hash] = href.split("#")
       if (path === "/" && pathname === "/") {
         // Same page, just scroll
-        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" })
+        const element = document.getElementById(hash)
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" })
+          setActiveSection(hash)
+        }
       }
     }
   }
@@ -68,10 +106,16 @@ export function Navigation() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               {navItems.map((item) => {
-                const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href) || (item.href.includes("#") && pathname === "/")
+                // Check if this nav item is active based on section visibility or pathname
+                let isActive = false
+
+                if (item.sectionId) {
+                  // For home page sections, check if section is visible
+                  isActive = pathname === "/" && activeSection === item.sectionId
+                } else {
+                  // For other pages, check pathname
+                  isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                }
 
                 return (
                   <Link

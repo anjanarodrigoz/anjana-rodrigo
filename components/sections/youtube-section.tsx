@@ -29,9 +29,30 @@ export function YouTubeSection() {
   useEffect(() => {
     async function fetchVideos() {
       try {
-        const response = await fetch("/api/youtube?maxResults=6");
+        const response = await fetch("/api/youtube?maxResults=50");
         const data = await response.json();
-        setVideos(data.items || []);
+        const allVideos = data.items || [];
+
+        // Separate long videos (> 60 seconds) from shorts (<= 60 seconds)
+        const longVideos = allVideos.filter((video: Video) => {
+          const [minutes, seconds] = video.duration.split(":").map(Number);
+          const totalSeconds = (minutes || 0) * 60 + (seconds || 0);
+          return totalSeconds > 60;
+        });
+
+        // Sort by views (convert "25K" to 25000 for comparison)
+        const sortedVideos = longVideos.sort((a: Video, b: Video) => {
+          const parseViews = (views: string) => {
+            const num = parseFloat(views);
+            if (views.includes("M")) return num * 1000000;
+            if (views.includes("K")) return num * 1000;
+            return num;
+          };
+          return parseViews(b.views) - parseViews(a.views);
+        });
+
+        // Take top 3 videos
+        setVideos(sortedVideos.slice(0, 3));
       } catch (error) {
         console.error("Failed to fetch YouTube videos:", error);
       } finally {
@@ -82,17 +103,16 @@ export function YouTubeSection() {
             </h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-            Sharing knowledge through tutorials, project walkthroughs, and
-            insights from my journey
+            Watch my top videos: tutorials, project walkthroughs, and insights from my journey
           </p>
           <a
-            href="https://youtube.com/@anjanarodrigoz"
+            href="https://youtube.com/channel/UCtq3s2MFsZAn4cDF7v_6w_g"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full transition-all shadow-lg hover:shadow-xl hover:shadow-red-600/50"
           >
             <Youtube className="w-5 h-5" />
-            Subscribe to Channel
+            Visit Channel
           </a>
         </motion.div>
 
@@ -106,13 +126,13 @@ export function YouTubeSection() {
           </div>
         )}
 
-        {/* Videos Grid */}
+        {/* Videos Grid - Top 3 by Views */}
         {!loading && videos.length > 0 && (
           <motion.div
             variants={container}
             initial="hidden"
             animate={inView ? "show" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {videos.map((video) => (
               <motion.div
@@ -199,24 +219,6 @@ export function YouTubeSection() {
                 </a>
               </motion.div>
             ))}
-          </motion.div>
-        )}
-
-        {/* View All Button */}
-        {!loading && videos.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="text-center mt-12"
-          >
-            <a
-              href="/youtube"
-              className="inline-flex items-center gap-2 px-6 py-3 glass border-2 border-border hover:border-red-600 dark:hover:border-red-500 rounded-full font-semibold transition-all hover:shadow-lg hover:shadow-red-600/20"
-            >
-              View All Videos
-              <Youtube className="w-5 h-5" />
-            </a>
           </motion.div>
         )}
       </div>

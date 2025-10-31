@@ -21,7 +21,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-background">
+    <section id="hero" className="relative min-h-screen w-full overflow-hidden bg-background">
       {/* Aurora Background */}
       <div className="absolute inset-0 aurora-bg opacity-20 dark:opacity-30" />
 

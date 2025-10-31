@@ -20,7 +20,7 @@ const journeySteps: JourneyStep[] = [
     title: "University of Moratuwa",
     description: "Graduated as a Mining Engineer, gaining deep understanding of systems, processes, and optimization",
     icon: <GraduationCap className="w-8 h-8" />,
-    color: "amber",
+    color: "#f59e0b", // amber-500
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const journeySteps: JourneyStep[] = [
     title: "Software Development Journey",
     description: "Self-studied programming, algorithms, and modern software development practices",
     icon: <BookOpen className="w-8 h-8" />,
-    color: "emerald",
+    color: "#10b981", // emerald-500
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const journeySteps: JourneyStep[] = [
     title: "Demonstrator at BIT Moratuwa",
     description: "Teaching and mentoring students while enhancing my practical software development skills",
     icon: <Presentation className="w-8 h-8" />,
-    color: "coral",
+    color: "#f97316", // orange-500 (coral)
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ const journeySteps: JourneyStep[] = [
     title: "System Architecture Mastery",
     description: "Learned enterprise-level system design, microservices, cloud architecture, and scalable solutions",
     icon: <Building2 className="w-8 h-8" />,
-    color: "purple",
+    color: "#a855f7", // purple-500
   },
   {
     id: 5,
@@ -52,7 +52,7 @@ const journeySteps: JourneyStep[] = [
     title: "Digital Innovations Creator",
     description: "Building cutting-edge applications, AI-powered solutions, and transforming ideas into reality",
     icon: <Lightbulb className="w-8 h-8" />,
-    color: "emerald",
+    color: "#10b981", // emerald-500
   },
 ]
 
@@ -133,7 +133,12 @@ export function JourneySection() {
                         transition={{ duration: 0.5, delay: index * 0.2 + 0.3 }}
                         className="relative flex-shrink-0"
                       >
-                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-${step.color} to-${step.color} flex items-center justify-center shadow-2xl border-4 border-background relative z-10`}>
+                        <div
+                          className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl border-4 border-background relative z-10"
+                          style={{
+                            background: `linear-gradient(to bottom right, ${step.color}, ${step.color})`,
+                          }}
+                        >
                           <div className="text-white">
                             {step.icon}
                           </div>
@@ -147,7 +152,10 @@ export function JourneySection() {
                             transition={{ duration: 0.5, delay: index * 0.2 + 0.5 }}
                             className={`absolute top-20 ${
                               isEven ? "left-10" : "right-10"
-                            } w-0.5 h-16 bg-gradient-to-b from-${step.color} to-${journeySteps[index + 1].color} origin-top`}
+                            } w-0.5 h-16 origin-top`}
+                            style={{
+                              background: `linear-gradient(to bottom, ${step.color}, ${journeySteps[index + 1].color})`,
+                            }}
                           />
                         )}
                       </motion.div>
@@ -175,7 +183,12 @@ export function JourneySection() {
                     transition={{ duration: 0.5, delay: index * 0.2 }}
                     className="absolute left-0 top-0"
                   >
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-${step.color} to-${step.color} flex items-center justify-center shadow-xl border-4 border-background`}>
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-background"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${step.color}, ${step.color})`,
+                      }}
+                    >
                       <div className="text-white">
                         {step.icon}
                       </div>
@@ -187,7 +200,10 @@ export function JourneySection() {
                         initial={{ scaleY: 0 }}
                         animate={inView ? { scaleY: 1 } : {}}
                         transition={{ duration: 0.5, delay: index * 0.2 + 0.3 }}
-                        className={`absolute top-16 left-8 w-0.5 h-20 bg-gradient-to-b from-${step.color} to-${journeySteps[index + 1].color} origin-top`}
+                        className="absolute top-16 left-8 w-0.5 h-20 origin-top"
+                        style={{
+                          background: `linear-gradient(to bottom, ${step.color}, ${journeySteps[index + 1].color})`,
+                        }}
                       />
                     )}
                   </motion.div>
@@ -198,7 +214,7 @@ export function JourneySection() {
                     animate={inView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.6, delay: index * 0.2 }}
                     whileHover={{ scale: 1.02 }}
-                    className={`glass rounded-xl p-5 border-2 border-border/50 hover:border-${step.color}/50 dark:hover:border-${step.color} transition-all shadow-lg`}
+                    className="glass rounded-xl p-5 border-2 border-border/50 transition-all shadow-lg"
                   >
                     <div className="text-sm font-semibold text-emerald mb-2">
                       {step.year}
