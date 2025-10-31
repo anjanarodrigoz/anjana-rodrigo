@@ -2,89 +2,19 @@
 
 import { motion } from "framer-motion"
 import { useInView } from "react-intersection-observer"
-import { Youtube, Play, Eye, ThumbsUp, Calendar } from "lucide-react"
-import { useState } from "react"
+import { Youtube, Play, Eye, ThumbsUp, Calendar, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 
 interface Video {
   id: string
   title: string
   description: string
   thumbnail: string
-  videoId: string
   views: string
   likes: string
   publishedAt: string
   duration: string
 }
-
-const videos: Video[] = [
-  {
-    id: "1",
-    title: "Building a Full-Stack App with Next.js 15 & TypeScript",
-    description: "Learn how to build a modern full-stack application using Next.js 15, TypeScript, and Tailwind CSS. We'll cover server components, API routes, and more!",
-    thumbnail: "/youtube/thumb1.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "25K",
-    likes: "1.2K",
-    publishedAt: "2024-01-15",
-    duration: "24:15",
-  },
-  {
-    id: "2",
-    title: "React Performance Optimization Tips",
-    description: "Discover advanced techniques to optimize your React applications for better performance and user experience.",
-    thumbnail: "/youtube/thumb2.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "18K",
-    likes: "890",
-    publishedAt: "2024-01-10",
-    duration: "18:30",
-  },
-  {
-    id: "3",
-    title: "From Mining Engineer to Software Developer - My Journey",
-    description: "My personal story of transitioning from mining engineering to software development, including challenges, lessons learned, and advice for career changers.",
-    thumbnail: "/youtube/thumb3.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "42K",
-    likes: "2.8K",
-    publishedAt: "2024-01-05",
-    duration: "32:45",
-  },
-  {
-    id: "4",
-    title: "AI-Powered Apps with LangChain & OpenAI",
-    description: "Build intelligent applications using LangChain and OpenAI APIs. We'll create a chatbot with memory and context awareness.",
-    thumbnail: "/youtube/thumb4.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "35K",
-    likes: "1.9K",
-    publishedAt: "2023-12-28",
-    duration: "28:20",
-  },
-  {
-    id: "5",
-    title: "Framer Motion Tutorial - Animations Made Easy",
-    description: "Master Framer Motion to create stunning animations in your React applications. From basics to advanced techniques.",
-    thumbnail: "/youtube/thumb5.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "22K",
-    likes: "1.1K",
-    publishedAt: "2023-12-20",
-    duration: "20:15",
-  },
-  {
-    id: "6",
-    title: "Flutter Best Practices for Production Apps",
-    description: "Essential best practices for building production-ready Flutter applications, including state management, architecture, and testing.",
-    thumbnail: "/youtube/thumb6.jpg",
-    videoId: "dQw4w9WgXcQ",
-    views: "30K",
-    likes: "1.6K",
-    publishedAt: "2023-12-15",
-    duration: "26:40",
-  },
-]
 
 export function YouTubeSection() {
   const [ref, inView] = useInView({
@@ -92,7 +22,25 @@ export function YouTubeSection() {
     triggerOnce: true,
   })
 
+  const [videos, setVideos] = useState<Video[]>([])
+  const [loading, setLoading] = useState(true)
   const [hoveredVideo, setHoveredVideo] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchVideos() {
+      try {
+        const response = await fetch("/api/youtube?maxResults=6")
+        const data = await response.json()
+        setVideos(data.items || [])
+      } catch (error) {
+        console.error("Failed to fetch YouTube videos:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVideos()
+  }, [])
 
   const container = {
     hidden: { opacity: 0 },
@@ -147,14 +95,23 @@ export function YouTubeSection() {
           </a>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+            <span className="ml-3 text-muted-foreground">Loading videos...</span>
+          </div>
+        )}
+
         {/* Videos Grid */}
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate={inView ? "show" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {videos.map((video) => (
+        {!loading && videos.length > 0 && (
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate={inView ? "show" : "hidden"}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {videos.map((video) => (
             <motion.div
               key={video.id}
               variants={item}
@@ -163,7 +120,7 @@ export function YouTubeSection() {
               onMouseLeave={() => setHoveredVideo(null)}
             >
               <a
-                href={`https://youtube.com/watch?v=${video.videoId}`}
+                href={`https://youtube.com/watch?v=${video.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"
@@ -172,18 +129,12 @@ export function YouTubeSection() {
                 <div className="glass rounded-xl overflow-hidden border border-border/50 hover:border-red-600/50 dark:hover:border-red-600 transition-all duration-300 hover:shadow-lg hover:shadow-red-600/20">
                   {/* Thumbnail */}
                   <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-red-500/20 via-amber-500/20 to-emerald-500/20">
-                    {/* Placeholder gradient animation */}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-red-500 via-amber-500 to-emerald-500 opacity-30"
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 5, 0],
-                      }}
-                      transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
+                    {/* Thumbnail Image */}
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
                     />
 
                     {/* Play Button Overlay */}
@@ -241,8 +192,10 @@ export function YouTubeSection() {
             </motion.div>
           ))}
         </motion.div>
+        )}
 
         {/* View All Button */}
+        {!loading && videos.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -257,6 +210,7 @@ export function YouTubeSection() {
             <Youtube className="w-5 h-5" />
           </a>
         </motion.div>
+        )}
       </div>
     </section>
   )
