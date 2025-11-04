@@ -21,7 +21,10 @@ export function HeroSection() {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen w-full overflow-hidden bg-background">
+    <section
+      id="hero"
+      className="relative min-h-screen w-full overflow-hidden bg-background"
+    >
       {/* Aurora Background */}
       <div className="absolute inset-0 aurora-bg opacity-20 dark:opacity-30" />
 
@@ -156,7 +159,7 @@ export function HeroSection() {
               <Linkedin className="h-6 w-6" />
             </a>
             <a
-              href="mailto:anjana@example.com"
+              href="mailto:anjanarodrigoz@gmail.com"
               className="text-muted-foreground transition-colors hover:text-coral"
               aria-label="Email Contact"
             >
