@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useInView } from "react-intersection-observer"
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import {
   Code2,
   Database,
@@ -11,13 +11,13 @@ import {
   Globe,
   Layers,
   Terminal,
-} from "lucide-react"
+} from "lucide-react";
 
 interface Technology {
-  name: string
-  icon: React.ReactNode
-  items: string[]
-  color: string
+  name: string;
+  icon: React.ReactNode;
+  items: string[];
+  color: string;
 }
 
 const technologies: Technology[] = [
@@ -30,13 +30,13 @@ const technologies: Technology[] = [
   {
     name: "Backend",
     icon: <Terminal className="h-6 w-6" />,
-    items: ["Node.js", "Express", "Python", "Django", "FastAPI"],
+    items: ["Node.js", "Express", "Python", "Spring Boot"],
     color: "amber",
   },
   {
     name: "Database",
     icon: <Database className="h-6 w-6" />,
-    items: ["PostgreSQL", "MongoDB", "Redis", "MySQL", "Firebase"],
+    items: ["PostgreSQL", "MongoDB", "MySQL", "Firebase"],
     color: "coral",
   },
   {
@@ -48,34 +48,50 @@ const technologies: Technology[] = [
   {
     name: "Mobile",
     icon: <Smartphone className="h-6 w-6" />,
-    items: ["React Native", "Flutter", "iOS", "Android"],
+    items: ["Flutter", "iOS", "Android"],
     color: "emerald",
   },
   {
     name: "AI & ML",
     icon: <Cpu className="h-6 w-6" />,
-    items: ["TensorFlow", "PyTorch", "OpenAI", "LangChain", "Scikit-learn"],
+    items: ["TensorFlow", "PyTorch", "OpenAI", "Scikit-learn"],
     color: "amber",
   },
   {
     name: "Architecture",
     icon: <Layers className="h-6 w-6" />,
-    items: ["Microservices", "REST API", "GraphQL", "WebSockets", "gRPC"],
+    items: [
+      "Microservices",
+      "REST API",
+      "GraphQL",
+      "WebSockets",
+      "gRPC",
+      "BloC",
+      "Clean Architecture",
+    ],
     color: "coral",
   },
   {
     name: "Tools & Others",
     icon: <Code2 className="h-6 w-6" />,
-    items: ["Git", "VS Code", "Postman", "Figma", "Jira"],
+    items: [
+      "Git",
+      "VS Code",
+      "Postman",
+      "Figma",
+      "Jira",
+      "Claude Code",
+      "Cursor",
+    ],
     color: "purple",
   },
-]
+];
 
 export function TechStackSection() {
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
-  })
+  });
 
   const container = {
     hidden: { opacity: 0 },
@@ -85,12 +101,12 @@ export function TechStackSection() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
-  }
+  };
 
   return (
     <section
@@ -113,7 +129,8 @@ export function TechStackSection() {
             Technology Stack
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A comprehensive toolkit for building innovative solutions across the full stack
+            A comprehensive toolkit for building innovative solutions across the
+            full stack
           </p>
         </motion.div>
 
@@ -135,7 +152,9 @@ export function TechStackSection() {
               <div className="relative glass rounded-xl p-6 border border-border/50 hover:border-emerald/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald/20 h-full">
                 {/* Icon Header */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg bg-${tech.color}/10 text-${tech.color}`}>
+                  <div
+                    className={`p-2 rounded-lg bg-${tech.color}/10 text-${tech.color}`}
+                  >
                     {tech.icon}
                   </div>
                   <h3 className="text-lg font-semibold">{tech.name}</h3>
@@ -151,7 +170,9 @@ export function TechStackSection() {
                       transition={{ delay: index * 0.1 + itemIndex * 0.05 }}
                       className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors"
                     >
-                      <div className={`w-1.5 h-1.5 rounded-full bg-${tech.color}`} />
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full bg-${tech.color}`}
+                      />
                       {item}
                     </motion.li>
                   ))}
@@ -187,5 +208,5 @@ export function TechStackSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

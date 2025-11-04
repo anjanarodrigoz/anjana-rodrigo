@@ -43,16 +43,6 @@ export function ThemeToggle() {
           )}
         </motion.div>
       </motion.button>
-
-      {/* Theme label below button */}
-      <motion.span
-        className="text-xs font-medium text-muted-foreground"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        {isDark ? "Dark" : "Light"}
-      </motion.span>
     </div>
   );
 }

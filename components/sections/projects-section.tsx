@@ -1,70 +1,78 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useState } from "react"
-import { ProjectCard } from "@/components/features/project-card"
-import { ProjectModal } from "@/components/features/project-modal"
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { ProjectCard } from "@/components/features/project-card";
+import { ProjectModal } from "@/components/features/project-modal";
 
 export interface Project {
-  id: string
-  title: string
-  description: string
-  problem: string
-  solution: string
-  image: string
-  tags: string[]
-  techStack: Array<{ name: string; icon: string; color: string }>
-  liveUrl?: string
-  githubUrl?: string
+  id: string;
+  title: string;
+  description: string;
+  problem: string;
+  solution: string;
+  image: string;
+  tags: string[];
+  techStack: Array<{ name: string; icon: string; color: string }>;
+  liveUrl?: string;
+  githubUrl?: string;
   stats: {
-    users?: string
-    performance?: string
-    efficiency?: string
-  }
-  features: string[]
-  screenshots: string[]
+    users?: string;
+    performance?: string;
+    efficiency?: string;
+  };
+  features: string[];
+  screenshots: string[];
 }
 
 const projects: Project[] = [
   {
-    id: "lms",
-    title: "Learning Management System",
-    description: "Comprehensive platform for online education with real-time collaboration, progress tracking, and AI-powered recommendations.",
-    problem: "Educational institutions struggled with fragmented tools for course management, student engagement, and performance analytics.",
-    solution: "Built a unified LMS with Flutter mobile app, React admin dashboard, Node.js backend, and real-time WebSocket communication for live classes.",
+    id: "mis",
+    title: "Management Information System - UOM",
+    description:
+      "Comprehensive platform for online education with real-time collaboration, progress tracking, and AI-powered recommendations.",
+    problem:
+      "Educational institutions struggled with fragmented tools for course management, student engagement, and performance analytics.",
+    solution:
+      "Built a unified LMS with React admin,student dashboard, Node.js backend, and real-time WebSocket communication for live classes.",
     image: "/projects/lms.jpg",
     tags: ["Education", "Real-time", "AI"],
     techStack: [
-      { name: "Flutter", icon: "flutter", color: "#02569B" },
       { name: "React", icon: "react", color: "#61DAFB" },
+      { name: "JavaScript", icon: "javascript", color: "" },
+      { name: "TypeScript", icon: "typescript", color: "" },
+      { name: "Material UI", icon: "material", color: "" },
       { name: "Node.js", icon: "nodejs", color: "#339933" },
-      { name: "PostgreSQL", icon: "postgresql", color: "#336791" },
-      { name: "Firebase", icon: "firebase", color: "#FFCA28" },
-      { name: "Redis", icon: "redis", color: "#DC382D" },
+      { name: "MongoDB", icon: "mongodb", color: "#336791" },
     ],
-    liveUrl: "https://lms-demo.example.com",
-    githubUrl: "https://github.com/anjanarodrigo/lms",
+    // liveUrl: "https://lms-demo.example.com",
     stats: {
       users: "5,000+",
       performance: "99.9% uptime",
       efficiency: "40% faster course completion",
     },
     features: [
-      "Interactive video lessons with annotations",
-      "Real-time quizzes and assessments",
-      "AI-powered study recommendations",
+      "Manage informations of University",
+      "Course enrollment",
+      "View  ",
       "Progress tracking and analytics dashboard",
       "Gamification with badges and leaderboards",
-      "Offline mode for mobile app",
     ],
-    screenshots: ["/projects/lms-1.jpg", "/projects/lms-2.jpg", "/projects/lms-3.jpg"],
+    screenshots: [
+      "/projects/lms-1.jpg",
+      "/projects/lms-2.jpg",
+      "/projects/lms-3.jpg",
+    ],
   },
   {
     id: "restaurant",
     title: "Restaurant Management System",
-    description: "End-to-end restaurant operations platform with POS, inventory management, kitchen display, and customer ordering.",
-    problem: "Restaurants used multiple disconnected systems for orders, inventory, and billing, leading to errors and inefficiency.",
-    solution: "Created an integrated system with Flutter POS app, web dashboard, kitchen display system, and customer-facing ordering app with real-time synchronization.",
+    description:
+      "End-to-end restaurant operations platform with POS, inventory management, kitchen display, and customer ordering.",
+    problem:
+      "Restaurants used multiple disconnected systems for orders, inventory, and billing, leading to errors and inefficiency.",
+    solution:
+      "Created an integrated system with Flutter POS app, web dashboard, kitchen display system, and customer-facing ordering app with real-time synchronization.",
     image: "/projects/restaurant.jpg",
     tags: ["Business", "Real-time", "IoT"],
     techStack: [
@@ -93,9 +101,12 @@ const projects: Project[] = [
   {
     id: "travel",
     title: "Travel Planning App",
-    description: "Smart travel companion with AI itinerary generation, booking integration, and collaborative trip planning.",
-    problem: "Planning trips involved juggling multiple apps and websites, making it overwhelming and time-consuming.",
-    solution: "Developed a Flutter app with AI-powered itinerary suggestions, integrated bookings, offline maps, and collaborative planning features.",
+    description:
+      "Smart travel companion with AI itinerary generation, booking integration, and collaborative trip planning.",
+    problem:
+      "Planning trips involved juggling multiple apps and websites, making it overwhelming and time-consuming.",
+    solution:
+      "Developed a Flutter app with AI-powered itinerary suggestions, integrated bookings, offline maps, and collaborative planning features.",
     image: "/projects/travel.jpg",
     tags: ["Travel", "AI", "Mobile"],
     techStack: [
@@ -118,14 +129,21 @@ const projects: Project[] = [
       "Budget tracking and expense splitting",
       "Real-time travel alerts",
     ],
-    screenshots: ["/projects/travel-1.jpg", "/projects/travel-2.jpg", "/projects/travel-3.jpg"],
+    screenshots: [
+      "/projects/travel-1.jpg",
+      "/projects/travel-2.jpg",
+      "/projects/travel-3.jpg",
+    ],
   },
   {
     id: "expense",
     title: "Expense Tracker Pro",
-    description: "Intelligent personal finance app with automatic categorization, budget insights, and investment tracking.",
-    problem: "Users struggled to maintain consistent expense tracking and lacked insights into spending patterns.",
-    solution: "Built a Flutter app with ML-powered categorization, beautiful visualizations, receipt scanning, and multi-currency support.",
+    description:
+      "Intelligent personal finance app with automatic categorization, budget insights, and investment tracking.",
+    problem:
+      "Users struggled to maintain consistent expense tracking and lacked insights into spending patterns.",
+    solution:
+      "Built a Flutter app with ML-powered categorization, beautiful visualizations, receipt scanning, and multi-currency support.",
     image: "/projects/expense.jpg",
     tags: ["Finance", "ML", "Analytics"],
     techStack: [
@@ -151,21 +169,27 @@ const projects: Project[] = [
     ],
     screenshots: ["/projects/expense-1.jpg", "/projects/expense-2.jpg"],
   },
-]
+];
 
 export function ProjectsSection() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [filter, setFilter] = useState<string>("all")
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [filter, setFilter] = useState<string>("all");
 
-  const allTags = ["all", ...Array.from(new Set(projects.flatMap((p) => p.tags)))]
+  const allTags = [
+    "all",
+    ...Array.from(new Set(projects.flatMap((p) => p.tags))),
+  ];
 
   const filteredProjects =
     filter === "all"
       ? projects
-      : projects.filter((p) => p.tags.includes(filter))
+      : projects.filter((p) => p.tags.includes(filter));
 
   return (
-    <section id="projects" className="relative min-h-screen py-20 overflow-hidden">
+    <section
+      id="projects"
+      className="relative min-h-screen py-20 overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background to-background/50" />
 
@@ -182,7 +206,8 @@ export function ProjectsSection() {
             <span className="gradient-text">Featured Projects</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Transforming ideas into production-ready applications that solve real problems
+            Transforming ideas into production-ready applications that solve
+            real problems
           </p>
 
           {/* Filter Tags */}
@@ -224,5 +249,5 @@ export function ProjectsSection() {
         )}
       </div>
     </section>
-  )
+  );
 }
