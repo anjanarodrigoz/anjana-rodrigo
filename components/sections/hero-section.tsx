@@ -1,27 +1,27 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { ParticleSystem } from "@/components/features/particle-system"
-import { TypewriterText } from "@/components/atoms/typewriter-text"
-import { GlitchText } from "@/components/atoms/glitch-text"
-import { Button } from "@/components/ui/button"
-import { ArrowDown, Github, Linkedin, Mail } from "lucide-react"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { ParticleSystem } from "@/components/features/particle-system";
+import { TypewriterText } from "@/components/atoms/typewriter-text";
+import { GlitchText } from "@/components/atoms/glitch-text";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
 
 export function HeroSection() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  const scrollToAbout = () => {
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })
-  }
+  const scrollToJourney = () => {
+    document.getElementById("journey")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-background">
+    <section id="hero" className="relative min-h-screen w-full overflow-hidden bg-background">
       {/* Aurora Background */}
       <div className="absolute inset-0 aurora-bg opacity-20 dark:opacity-30" />
 
@@ -47,14 +47,14 @@ export function HeroSection() {
           >
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-emerald via-amber to-coral rounded-full blur-lg opacity-75 group-hover:opacity-100 transition-opacity animate-pulse" />
-              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-background glass">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-background glass">
                 <Image
                   src="/profile.jpg"
                   alt="Anjana Rodrigo"
                   fill
-                  className="object-cover"
+                  className="object-cover object-top"
                   priority
-                  sizes="(max-width: 640px) 160px, 192px"
+                  sizes="(max-width: 640px) 192px, (max-width: 768px) 224px, 256px"
                 />
               </div>
             </div>
@@ -111,7 +111,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="emerald"
-              onClick={scrollToAbout}
+              onClick={scrollToJourney}
               className="group"
             >
               Explore My Journey
@@ -120,7 +120,11 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() =>
+                document
+                  .getElementById("contact")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               Get In Touch
             </Button>
@@ -172,7 +176,7 @@ export function HeroSection() {
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="cursor-pointer"
-            onClick={scrollToAbout}
+            onClick={scrollToJourney}
           >
             <div className="flex flex-col items-center gap-2 text-muted-foreground hover:text-emerald transition-colors">
               <span className="text-sm">Scroll to explore</span>
@@ -182,5 +186,5 @@ export function HeroSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

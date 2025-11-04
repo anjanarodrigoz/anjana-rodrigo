@@ -21,9 +21,9 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
       className="group cursor-pointer"
       onClick={onClick}
     >
-      <div className="glass rounded-2xl overflow-hidden border border-border hover:border-emerald transition-all duration-300 h-full flex flex-col">
+      <div className="glass rounded-2xl overflow-hidden border-2 border-border/50 hover:border-emerald/70 dark:hover:border-emerald transition-all duration-300 h-full flex flex-col shadow-lg hover:shadow-xl hover:shadow-emerald/20">
         {/* Project Image/Preview */}
-        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald/20 via-amber/20 to-coral/20">
+        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald/30 via-amber/30 to-coral/30 dark:from-emerald/20 dark:via-amber/20 dark:to-coral/20">
           <motion.div
             className="absolute inset-0 bg-gradient-to-br from-emerald via-amber to-coral opacity-50"
             animate={{
@@ -84,7 +84,7 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
             {project.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-3 py-1 text-xs font-medium bg-emerald/20 text-emerald rounded-full"
+                className="px-3 py-1 text-xs font-medium bg-emerald/30 dark:bg-emerald/20 text-emerald-700 dark:text-emerald rounded-full border border-emerald/30"
               >
                 {tag}
               </span>
@@ -93,19 +93,19 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
 
           {/* Tech Stack */}
           <div className="mt-auto">
-            <div className="text-sm font-semibold mb-2">Tech Stack:</div>
+            <div className="text-sm font-semibold mb-2 text-foreground">Tech Stack:</div>
             <div className="flex flex-wrap gap-2">
               {project.techStack.slice(0, 4).map((tech) => (
                 <div
                   key={tech.name}
-                  className="px-3 py-1 text-xs glass rounded-full border"
-                  style={{ borderColor: tech.color }}
+                  className="px-3 py-1 text-xs glass rounded-full border-2 font-medium"
+                  style={{ borderColor: tech.color, color: tech.color }}
                 >
                   {tech.name}
                 </div>
               ))}
               {project.techStack.length > 4 && (
-                <div className="px-3 py-1 text-xs glass rounded-full border">
+                <div className="px-3 py-1 text-xs glass rounded-full border-2 border-muted-foreground text-muted-foreground">
                   +{project.techStack.length - 4} more
                 </div>
               )}
@@ -113,7 +113,7 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
           </div>
 
           {/* Click to expand hint */}
-          <div className="mt-4 text-sm text-emerald font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-4 text-sm text-emerald-700 dark:text-emerald font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
             Click to view full case study →
           </div>
         </div>

@@ -60,11 +60,11 @@ export function CommandPalette() {
           </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => {
-              document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })
+              document.getElementById("journey")?.scrollIntoView({ behavior: "smooth" })
             })}
           >
             <User className="mr-2 h-4 w-4" />
-            <span>About</span>
+            <span>Journey</span>
           </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => {
