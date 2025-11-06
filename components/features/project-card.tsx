@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { ExternalLink, Github } from "lucide-react"
 import { Project } from "@/components/sections/projects-section"
+import { getTechIcon } from "@/lib/tech-icons"
 
 interface ProjectCardProps {
   project: Project
@@ -94,19 +95,34 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
           {/* Tech Stack */}
           <div className="mt-auto">
             <div className="text-sm font-semibold mb-2 text-foreground">Tech Stack:</div>
-            <div className="flex flex-wrap gap-2">
-              {project.techStack.slice(0, 4).map((tech) => (
-                <div
-                  key={tech.name}
-                  className="px-3 py-1 text-xs glass rounded-full border-2 font-medium"
-                  style={{ borderColor: tech.color, color: tech.color }}
-                >
-                  {tech.name}
-                </div>
-              ))}
-              {project.techStack.length > 4 && (
-                <div className="px-3 py-1 text-xs glass rounded-full border-2 border-muted-foreground text-muted-foreground">
-                  +{project.techStack.length - 4} more
+            <div className="flex flex-wrap gap-3">
+              {project.techStack.slice(0, 5).map((tech) => {
+                const Icon = getTechIcon(tech.icon);
+                return (
+                  <div
+                    key={tech.name}
+                    className="relative group/tech"
+                    title={tech.name}
+                  >
+                    <div
+                      className="p-2 glass rounded-lg border-2 hover:scale-110 transition-transform"
+                      style={{ borderColor: tech.color }}
+                    >
+                      <Icon
+                        className="w-5 h-5"
+                        style={{ color: tech.color }}
+                      />
+                    </div>
+                    {/* Tooltip */}
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover/tech:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      {tech.name}
+                    </div>
+                  </div>
+                );
+              })}
+              {project.techStack.length > 5 && (
+                <div className="px-3 py-2 text-xs glass rounded-lg border-2 border-muted-foreground text-muted-foreground flex items-center">
+                  +{project.techStack.length - 5}
                 </div>
               )}
             </div>

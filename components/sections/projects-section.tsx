@@ -39,9 +39,9 @@ const projects: Project[] = [
     tags: ["Education", "Real-time", "AI"],
     techStack: [
       { name: "React", icon: "react", color: "#61DAFB" },
-      { name: "JavaScript", icon: "javascript", color: "" },
-      { name: "TypeScript", icon: "typescript", color: "" },
-      { name: "Material UI", icon: "material", color: "" },
+      { name: "JavaScript", icon: "javascript", color: "#f6df1d" },
+      { name: "TypeScript", icon: "typescript", color: "#3178c5" },
+      { name: "Material UI", icon: "material", color: "#017fff" },
       { name: "Node.js", icon: "nodejs", color: "#339933" },
       { name: "MongoDB", icon: "mongodb", color: "#336791" },
     ],
@@ -82,7 +82,7 @@ const projects: Project[] = [
       { name: "Socket.io", icon: "socketio", color: "#010101" },
       { name: "Redux", icon: "redux", color: "#764ABC" },
     ],
-    githubUrl: "https://github.com/anjanarodrigoz/restaurant-system",
+    // githubUrl: "https://github.com/anjanarodrigoz/restaurant-system",
     stats: {
       users: "200+ restaurants",
       performance: "30% faster order processing",
@@ -115,7 +115,7 @@ const projects: Project[] = [
       { name: "Google Maps", icon: "google", color: "#4285F4" },
       { name: "OpenAI", icon: "openai", color: "#412991" },
     ],
-    liveUrl: "https://play.google.com/store/apps/details?id=com.travel",
+    // liveUrl: "https://play.google.com/store/apps/details?id=com.travel",
     stats: {
       users: "10,000+ downloads",
       performance: "4.8★ rating",
@@ -152,8 +152,8 @@ const projects: Project[] = [
       { name: "TensorFlow", icon: "tensorflow", color: "#FF6F00" },
       { name: "Clean Architecture", icon: "architecture", color: "#10B981" },
     ],
-    liveUrl: "https://expense-tracker-pro.example.com",
-    githubUrl: "https://github.com/anjanarodrigoz/expense-tracker",
+    // liveUrl: "https://expense-tracker-pro.example.com",
+    // githubUrl: "https://github.com/anjanarodrigoz/expense-tracker",
     stats: {
       users: "25,000+ users",
       performance: "Average 30% savings increase",
