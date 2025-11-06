@@ -141,7 +141,7 @@ export function HeroSection() {
             className="mt-12 flex items-center justify-center gap-6"
           >
             <a
-              href="https://github.com/anjanarodrigo"
+              href="https://github.com/anjanarodrigoz"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground transition-colors hover:text-emerald"
@@ -150,7 +150,7 @@ export function HeroSection() {
               <Github className="h-6 w-6" />
             </a>
             <a
-              href="https://linkedin.com/in/anjanarodrigo"
+              href="https://linkedin.com/in/anjana-rodrigo-a41539191"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground transition-colors hover:text-amber"

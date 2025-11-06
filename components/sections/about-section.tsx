@@ -1,41 +1,45 @@
-"use client"
+"use client";
 
-import { motion, useScroll, useTransform } from "framer-motion"
-import { useRef } from "react"
-import { SkillOrbs } from "@/components/features/skill-orbs"
-import { Timeline3D } from "@/components/features/timeline-3d"
-import { Briefcase, GraduationCap, Code, Lightbulb } from "lucide-react"
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import { SkillOrbs } from "@/components/features/skill-orbs";
+import { Timeline3D } from "@/components/features/timeline-3d";
+import { Briefcase, GraduationCap, Code, Lightbulb } from "lucide-react";
 
 const milestones = [
   {
-    year: "2010-2015",
+    year: "2019-2023",
     title: "Mining & Mineral Processing Engineer",
     icon: Briefcase,
-    description: "Started career in mining industry, optimizing processes and implementing systematic improvements.",
+    description:
+      "Started career in mining industry, optimizing processes and implementing systematic improvements.",
     color: "emerald" as const,
   },
   {
-    year: "2016-2018",
+    year: "2021-2023",
     title: "Transition to Technology",
     icon: Lightbulb,
-    description: "Discovered passion for software development. Self-taught programming and built first applications.",
+    description:
+      "Discovered passion for software development. Self-taught programming and built first applications.",
     color: "amber" as const,
   },
   {
-    year: "2018-2020",
+    year: "2023-2024",
     title: "Full-Stack Development",
     icon: Code,
-    description: "Mastered modern web technologies: React, Node.js, Flutter. Built production-grade applications.",
+    description:
+      "Mastered modern web & mobile technologies: React, Node.js, Flutter. Built production-grade applications.",
     color: "coral" as const,
   },
   {
-    year: "2021-Present",
+    year: "2025-Present",
     title: "Software Innovator & Educator",
     icon: GraduationCap,
-    description: "Leading projects, mentoring developers, and creating systems that transform manual workflows.",
+    description:
+      "Leading projects, mentoring developers, and creating systems that transform manual workflows.",
     color: "emerald" as const,
   },
-]
+];
 
 const skills = [
   { name: "Flutter", level: 95, color: "#02569B" },
@@ -48,17 +52,21 @@ const skills = [
   { name: "PostgreSQL", level: 85, color: "#336791" },
   { name: "MongoDB", level: 83, color: "#47A248" },
   { name: "AWS", level: 82, color: "#FF9900" },
-]
+];
 
 export function AboutSection() {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
-  })
+  });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.8, 1, 1, 0.8])
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [0.8, 1, 1, 0.8]
+  );
 
   return (
     <section
@@ -86,8 +94,9 @@ export function AboutSection() {
             <span className="gradient-text">My Journey</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            From mining engineering to software innovation — a transformation driven by passion,
-            curiosity, and the desire to create meaningful technology
+            From mining engineering to software innovation — a transformation
+            driven by passion, curiosity, and the desire to create meaningful
+            technology
           </p>
         </motion.div>
 
@@ -101,22 +110,33 @@ export function AboutSection() {
         >
           <div className="glass p-8 rounded-2xl border border-border">
             <p className="text-lg leading-relaxed mb-4">
-              My journey into technology began in an unexpected place — the mining industry.
-              As a <strong className="text-emerald">Mining & Mineral Processing Engineer</strong>,
-              I spent years optimizing complex industrial processes, solving problems, and
-              implementing systematic improvements.
+              My journey into technology began in an unexpected place — the
+              mining industry. As a{" "}
+              <strong className="text-emerald">
+                Mining & Mineral Processing Engineer
+              </strong>
+              , I spent years optimizing complex industrial processes, solving
+              problems, and implementing systematic improvements.
             </p>
             <p className="text-lg leading-relaxed mb-4">
-              But I discovered something profound: <em className="text-amber">the principles of
-              engineering excellence translate beautifully to software development</em>. The same
-              analytical thinking, systematic approach, and passion for optimization that drove
-              my work in mining became the foundation for building elegant, efficient software solutions.
+              But I discovered something profound:{" "}
+              <em className="text-amber">
+                the principles of engineering excellence translate beautifully
+                to software development
+              </em>
+              . The same analytical thinking, systematic approach, and passion
+              for optimization that drove my work in mining became the
+              foundation for building elegant, efficient software solutions.
             </p>
             <p className="text-lg leading-relaxed">
-              Today, I'm a <strong className="text-coral">Software Innovator, Engineer, and Educator</strong>,
-              specializing in creating systems that transform manual workflows into automated, intelligent
-              solutions. I mentor developers, lead projects, and continue learning — because in technology,
-              the journey never ends.
+              Today, I'm a{" "}
+              <strong className="text-coral">
+                Software Innovator, Engineer, and Educator
+              </strong>
+              , specializing in creating systems that transform manual workflows
+              into automated, intelligent solutions. I mentor developers, lead
+              projects, and continue learning — because in technology, the
+              journey never ends.
             </p>
           </div>
         </motion.div>
@@ -171,5 +191,5 @@ export function AboutSection() {
         </motion.div>
       </motion.div>
     </section>
-  )
+  );
 }

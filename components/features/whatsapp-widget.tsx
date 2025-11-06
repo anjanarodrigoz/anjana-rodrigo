@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { MessageCircle, X } from "lucide-react"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, X } from "lucide-react";
 
 const quickResponses = [
   "👋 Hi! I'd like to discuss a project",
   "💼 Interested in hiring you",
   "🤝 Let's collaborate",
   "❓ I have a question",
-]
+];
 
 export function WhatsAppWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isOnline] = useState(true)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOnline] = useState(true);
 
   const handleQuickResponse = (message: string) => {
-    const phoneNumber = "15551234567" // Replace with actual number
-    const encodedMessage = encodeURIComponent(message)
+    const phoneNumber = "94769809256";
+    const encodedMessage = encodeURIComponent(message);
     window.open(
       `https://wa.me/${phoneNumber}?text=${encodedMessage}`,
       "_blank"
-    )
-    setIsOpen(false)
-  }
+    );
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -151,7 +151,9 @@ export function WhatsAppWidget() {
 
             {/* Quick Responses */}
             <div className="p-4 border-t border-border space-y-2">
-              <p className="text-xs text-muted-foreground mb-2">Quick responses:</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                Quick responses:
+              </p>
               {quickResponses.map((response, index) => (
                 <motion.button
                   key={index}
@@ -171,7 +173,7 @@ export function WhatsAppWidget() {
             {/* Footer */}
             <div className="p-3 bg-muted/50 text-center">
               <a
-                href="https://wa.me/15551234567?text=Hi%20Anjana,%20I%20visited%20your%20portfolio"
+                href="https://wa.me/94769809256?text=Hi%20Anjana,%20I%20visited%20your%20portfolio"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-[#25D366] hover:underline font-medium"
@@ -183,5 +185,5 @@ export function WhatsAppWidget() {
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }
