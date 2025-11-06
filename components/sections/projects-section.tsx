@@ -82,7 +82,7 @@ const projects: Project[] = [
       { name: "Socket.io", icon: "socketio", color: "#010101" },
       { name: "Redux", icon: "redux", color: "#764ABC" },
     ],
-    githubUrl: "https://github.com/anjanarodrigo/restaurant-system",
+    githubUrl: "https://github.com/anjanarodrigoz/restaurant-system",
     stats: {
       users: "200+ restaurants",
       performance: "30% faster order processing",
@@ -153,7 +153,7 @@ const projects: Project[] = [
       { name: "Clean Architecture", icon: "architecture", color: "#10B981" },
     ],
     liveUrl: "https://expense-tracker-pro.example.com",
-    githubUrl: "https://github.com/anjanarodrigo/expense-tracker",
+    githubUrl: "https://github.com/anjanarodrigoz/expense-tracker",
     stats: {
       users: "25,000+ users",
       performance: "Average 30% savings increase",

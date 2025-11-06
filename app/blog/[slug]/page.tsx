@@ -1,15 +1,24 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useParams } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft, Calendar, Clock, Share2, Twitter, Linkedin, Facebook } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Share2,
+  Twitter,
+  Linkedin,
+  Facebook,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // This would normally come from your MDX files or CMS
 const blogPosts = {
   "from-mining-to-code": {
-    title: "From Mining Engineer to Software Developer: My Transformation Journey",
+    title:
+      "From Mining Engineer to Software Developer: My Transformation Journey",
     date: "2024-01-15",
     readTime: "8 min read",
     tags: ["Career", "Personal Story", "Learning"],
@@ -158,7 +167,7 @@ The tech industry needs diverse perspectives. Your unique background can be your
 
 **What's your story?** Are you considering a career change? Have you already made the leap? I'd love to hear about your journey in the comments below.
 
-Connect with me on [Twitter](https://twitter.com/anjanarodrigo) or [LinkedIn](https://linkedin.com/in/anjanarodrigo) — let's support each other on this amazing journey!
+Connect with me on [Twitter](https://twitter.com/anjanarodrigo) or [LinkedIn](https://linkedin.com/in/anjana-rodrigo-a41539191) — let's support each other on this amazing journey!
     `,
   },
   "clean-architecture-flutter": {
@@ -186,12 +195,12 @@ Key topics that will be covered:
 Subscribe to get notified when this article is published!
     `,
   },
-}
+};
 
 export default function BlogPostPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const post = blogPosts[slug as keyof typeof blogPosts]
+  const params = useParams();
+  const slug = params.slug as string;
+  const post = blogPosts[slug as keyof typeof blogPosts];
 
   if (!post) {
     return (
@@ -206,11 +215,11 @@ export default function BlogPostPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const shareText = encodeURIComponent(post.title)
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = encodeURIComponent(post.title);
 
   return (
     <div className="min-h-screen py-20">
@@ -254,7 +263,13 @@ export default function BlogPostPage() {
           <div className="flex flex-wrap items-center gap-6 text-muted-foreground mb-6">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+              <span>
+                {new Date(post.date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -295,10 +310,10 @@ export default function BlogPostPage() {
                   navigator.share({
                     title: post.title,
                     url: shareUrl,
-                  })
+                  });
                 } else {
-                  navigator.clipboard.writeText(shareUrl)
-                  alert('Link copied to clipboard!')
+                  navigator.clipboard.writeText(shareUrl);
+                  alert("Link copied to clipboard!");
                 }
               }}
               className="p-2 glass rounded-lg hover:bg-emerald/10 hover:border-emerald border border-transparent transition-all"
@@ -322,7 +337,11 @@ export default function BlogPostPage() {
             prose-strong:text-foreground
             prose-em:text-muted-foreground"
         >
-          <div dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br />') }} />
+          <div
+            dangerouslySetInnerHTML={{
+              __html: post.content.replace(/\n/g, "<br />"),
+            }}
+          />
         </motion.div>
 
         {/* Comments Section Placeholder */}
@@ -336,11 +355,17 @@ export default function BlogPostPage() {
           <div className="glass p-8 rounded-xl text-center">
             <p className="text-muted-foreground">
               Comments section coming soon! For now, feel free to reach out on{" "}
-              <a href="https://twitter.com/anjanarodrigo" className="text-emerald hover:underline">
+              <a
+                href="https://twitter.com/anjanarodrigo"
+                className="text-emerald hover:underline"
+              >
                 Twitter
               </a>{" "}
               or{" "}
-              <a href="https://linkedin.com/in/anjanarodrigo" className="text-emerald hover:underline">
+              <a
+                href="https://linkedin.com/in/anjana-rodrigo-a41539191"
+                className="text-emerald hover:underline"
+              >
                 LinkedIn
               </a>
               .
@@ -349,5 +374,5 @@ export default function BlogPostPage() {
         </motion.div>
       </article>
     </div>
-  )
+  );
 }

@@ -31,7 +31,7 @@ A cutting-edge, fully responsive portfolio website built with Next.js 15, TypeSc
 
 ```bash
 # Clone the repository
-git clone https://github.com/anjanarodrigo/portfolio.git
+git clone https://github.com/anjanarodrigoz/portfolio.git
 
 # Navigate to the project directory
 cd portfolio
@@ -92,12 +92,14 @@ npm run test:coverage    # Generate coverage report
 ### Color Palette
 
 **Dark Mode**
+
 - Primary: Emerald Green (#10B981)
 - Secondary: Golden Amber (#F59E0B)
 - Accent: Coral Pink (#FB7185)
 - Background: Deep Charcoal (#171717)
 
 **Light Mode**
+
 - Primary: Sage Green (#86EFAC)
 - Secondary: Sunset Orange (#FB923C)
 - Background: Warm Pearl (#FAF9F6)
@@ -126,8 +128,8 @@ This project is open source and available under the [MIT License](LICENSE).
 **Anjana Rodrigo**
 
 - Website: [anjanarodrigo.com](https://anjanarodrigo.com)
-- GitHub: [@anjanarodrigo](https://github.com/anjanarodrigo)
-- LinkedIn: [Anjana Rodrigo](https://linkedin.com/in/anjanarodrigo)
+- GitHub: [@anjanarodrigo](https://github.com/anjanarodrigoz)
+- LinkedIn: [Anjana Rodrigo](https://linkedin.com/in/anjana-rodrigo-a41539191)
 
 ## 🙏 Acknowledgments
 
