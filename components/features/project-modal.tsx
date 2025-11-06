@@ -5,6 +5,7 @@ import { X, ExternalLink, Github, CheckCircle } from "lucide-react"
 import { Project } from "@/components/sections/projects-section"
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
+import { getTechIcon } from "@/lib/tech-icons"
 
 interface ProjectModalProps {
   project: Project
@@ -127,25 +128,30 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
             <div className="mb-8">
               <h3 className="text-2xl font-bold mb-4 text-foreground">Technology Stack</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {project.techStack.map((tech) => (
-                  <motion.div
-                    key={tech.name}
-                    whileHover={{ scale: 1.05 }}
-                    className="glass p-4 rounded-xl text-center border-2 bg-background"
-                    style={{ borderColor: tech.color }}
-                  >
-                    <div
-                      className="w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center text-2xl font-bold"
-                      style={{
-                        background: `${tech.color}20`,
-                        color: tech.color,
-                      }}
+                {project.techStack.map((tech) => {
+                  const Icon = getTechIcon(tech.icon);
+                  return (
+                    <motion.div
+                      key={tech.name}
+                      whileHover={{ scale: 1.05 }}
+                      className="glass p-4 rounded-xl text-center border-2 bg-background"
+                      style={{ borderColor: tech.color }}
                     >
-                      {tech.name.charAt(0)}
-                    </div>
-                    <div className="text-sm font-medium text-foreground">{tech.name}</div>
-                  </motion.div>
-                ))}
+                      <div
+                        className="w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                        style={{
+                          background: `${tech.color}20`,
+                        }}
+                      >
+                        <Icon
+                          className="w-8 h-8"
+                          style={{ color: tech.color }}
+                        />
+                      </div>
+                      <div className="text-sm font-medium text-foreground">{tech.name}</div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
 
