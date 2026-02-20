@@ -1,6 +1,6 @@
 {
   "name": "anjana-rodrigo-portfolio",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -30,7 +30,6 @@
     "howler": "^2.2.4",
     "lucide-react": "^0.303.0",
     "next": "15.0.7",
-    "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
     "prism-react-renderer": "^2.3.1",
     "react": "^18.3.1",
