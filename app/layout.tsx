@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { CommandPalette } from '@/components/features/command-palette'
 import { Navigation } from '@/components/features/navigation'
 import { Analytics } from '@vercel/analytics/react'
+import Script from 'next/script'
 import { version } from '@/package.json'
 
 export const metadata: Metadata = {
@@ -88,6 +89,20 @@ export default function RootLayout({
           <CommandPalette />
           <Toaster />
         </ThemeProvider>
+        {/* Google Analytics (gtag.js) - replace the ID with your own in .env */}
+        <Script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+        />
+        <Script id="gtag-init">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `}
+        </Script>
         <Analytics />
       </body>
     </html>
