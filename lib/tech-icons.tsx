@@ -7,6 +7,7 @@ import {
   SiNodedotjs,
   SiMongodb,
   SiFlutter,
+  SiDart,
   SiSocketdotio,
   SiRedux,
   SiFirebase,
@@ -24,6 +25,7 @@ export const techIconMap: Record<string, IconType> = {
   nodejs: SiNodedotjs,
   mongodb: SiMongodb,
   flutter: SiFlutter,
+  dart: SiDart,
   socketio: SiSocketdotio,
   redux: SiRedux,
   firebase: SiFirebase,
@@ -31,6 +33,12 @@ export const techIconMap: Record<string, IconType> = {
   openai: SiOpenai,
   tensorflow: SiTensorflow,
   architecture: FaCode,
+  riverpod: FaCode,
+  dio: FaCode,
+  getit: FaCode,
+  getx: FaCode,
+  geolocator: SiGooglemaps,
+  googlemaps: SiGooglemaps,
 };
 
 export function getTechIcon(iconName: string): IconType {

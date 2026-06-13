@@ -6,6 +6,7 @@ import { CommandPalette } from '@/components/features/command-palette'
 import { Navigation } from '@/components/features/navigation'
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
+import { version } from '@/package.json'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://anjanarodrigo.com'),
@@ -78,7 +79,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange={false}
         >
@@ -87,10 +88,27 @@ export default function RootLayout({
             <main id="main-content" className="flex-1">
               {children}
             </main>
+            <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border/50">
+              v{version}{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ? `-${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` : ''}
+            </footer>
           </div>
           <CommandPalette />
           <Toaster />
         </ThemeProvider>
+        {/* Google Analytics (gtag.js) - replace the ID with your own in .env */}
+        <Script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+        />
+        <Script id="gtag-init">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `}
+        </Script>
         <Analytics />
       </body>
     </html>
