@@ -67,6 +67,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9161542023108932"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <body className="min-h-screen antialiased font-sans">
         <a href="#main-content" className="skip-to-content">
           Skip to main content

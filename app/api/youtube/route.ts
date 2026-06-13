@@ -9,8 +9,17 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const maxResults = searchParams.get("maxResults") || "12"
 
-  if (!YOUTUBE_API_KEY) {
-    // Return mock data if no API key is provided
+  let useRssFallback = false
+
+  if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyATyRMAw2OADIJQTh0iGNYZ2iQt90kiA98") {
+    useRssFallback = true
+  }
+
+  if (useRssFallback) {
+    const rssVideos = await fetchFromRss(CHANNEL_ID)
+    if (rssVideos && rssVideos.length > 0) {
+      return NextResponse.json({ items: rssVideos })
+    }
     return NextResponse.json({
       error: "YouTube API key not configured. Using mock data.",
       items: getMockVideos(),
@@ -78,14 +87,85 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ items: videos })
   } catch (error) {
-    console.error("YouTube API Error:", error)
+    console.error("YouTube API Error, falling back to RSS:", error)
+    const rssVideos = await fetchFromRss(CHANNEL_ID)
+    if (rssVideos && rssVideos.length > 0) {
+      return NextResponse.json({ items: rssVideos })
+    }
     return NextResponse.json(
       {
         error: "Failed to fetch YouTube videos. Using mock data.",
         items: getMockVideos(),
       },
-      { status: 500 }
+      { status: 200 }
     )
+  }
+}
+
+function cleanXmlString(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+}
+
+async function fetchFromRss(channelId: string) {
+  try {
+    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
+    const response = await fetch(rssUrl)
+    if (!response.ok) {
+      throw new Error(`RSS fetch failed with status ${response.status}`)
+    }
+    const xmlText = await response.text()
+    
+    // Split into entry blocks
+    const entryBlocks = xmlText.split("<entry>")
+    entryBlocks.shift() // Remove feed headers
+
+    const videos = entryBlocks.map((entry) => {
+      const videoIdMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)
+      const titleMatch = entry.match(/<title>([^<]+)<\/title>/)
+      const descriptionMatch = entry.match(/<media:description>([\s\S]*?)<\/media:description>/)
+      const thumbnailMatch = entry.match(/<media:thumbnail[^>]+url="([^"]+)"/)
+      const publishedMatch = entry.match(/<published>([^<]+)<\/published>/)
+      const viewsMatch = entry.match(/<media:statistics[^>]+views="(\d+)"/)
+      const starRatingMatch = entry.match(/<media:starRating[^>]+count="(\d+)"/)
+      const linkMatch = entry.match(/<link[^>]+href="([^"]+)"/)
+
+      const videoId = videoIdMatch ? videoIdMatch[1] : ""
+      const title = titleMatch ? cleanXmlString(titleMatch[1]) : ""
+      const description = descriptionMatch ? cleanXmlString(descriptionMatch[1]) : ""
+      const thumbnail = thumbnailMatch ? thumbnailMatch[1] : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+      const publishedAt = publishedMatch ? publishedMatch[1] : new Date().toISOString()
+      const rawViews = viewsMatch ? parseInt(viewsMatch[1], 10) : 0
+      const likes = starRatingMatch ? starRatingMatch[1] : "0"
+      
+      const link = linkMatch ? linkMatch[1] : ""
+      const isShort = link.includes("/shorts/")
+      
+      // RSS feed has no duration. Assign 0:30 for shorts, 5:00 for long videos
+      // to pass the client-side filters.
+      const duration = isShort ? "0:30" : "5:00"
+
+      return {
+        id: videoId,
+        title,
+        description,
+        thumbnail,
+        publishedAt,
+        channelTitle: "Anjana Rodrigo",
+        views: formatNumber(rawViews),
+        likes: formatNumber(parseInt(likes, 10)),
+        duration,
+      }
+    })
+
+    return videos.filter(v => v.id)
+  } catch (error) {
+    console.error("RSS fetch error:", error)
+    return null
   }
 }
 
@@ -127,10 +207,10 @@ function getMockVideos() {
       duration: "24:15",
     },
     {
-      id: "dQw4w9WgXcQ",
+      id: "9bZkp7q19f0",
       title: "React Performance Optimization Tips",
       description: "Discover advanced techniques to optimize your React applications.",
-      thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
       publishedAt: "2024-01-10T00:00:00Z",
       channelTitle: "Anjana Rodrigo",
       views: "18K",
@@ -138,10 +218,10 @@ function getMockVideos() {
       duration: "18:30",
     },
     {
-      id: "dQw4w9WgXcQ",
+      id: "kJQP7kiw5Fk",
       title: "From Mining Engineer to Software Developer",
       description: "My personal story of transitioning careers into tech.",
-      thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
       publishedAt: "2024-01-05T00:00:00Z",
       channelTitle: "Anjana Rodrigo",
       views: "42K",
