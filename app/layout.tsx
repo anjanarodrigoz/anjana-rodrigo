@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { CommandPalette } from '@/components/features/command-palette'
 import { Navigation } from '@/components/features/navigation'
 import { Analytics } from '@vercel/analytics/react'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://anjanarodrigo.com'),
@@ -65,6 +66,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9161542023108932"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <body className="min-h-screen antialiased font-sans">
         <a href="#main-content" className="skip-to-content">
           Skip to main content
