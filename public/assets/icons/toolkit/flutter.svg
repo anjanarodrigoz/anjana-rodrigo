@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Flutter">
+  <circle cx="32" cy="32" r="29" fill="#F4FBFF" stroke="#D9F1FF"/>
+  <path d="M13 35 35 13h14L27 35H13Z" fill="#42C5F5"/>
+  <path d="m27 36 9-9 13 13-7 7-15-11Z" fill="#0868F7"/>
+  <path d="m27 36 8 8-8 8-8-8 8-8Z" fill="#1A8CEB"/>
+</svg>

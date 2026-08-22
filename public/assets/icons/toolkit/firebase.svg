@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Firebase">
+  <circle cx="32" cy="32" r="29" fill="#FFF9E8" stroke="#FFEDB3"/>
+  <path d="m15 48 7-39 10 19 7-13 10 33-17 9-17-9Z" fill="#F7A80D"/>
+  <path d="m22 9 10 19-17 20 7-39Z" fill="#FFC928"/>
+  <path d="m32 28 7-13 10 33-17-20Z" fill="#F57C00"/>
+</svg>

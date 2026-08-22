@@ -5,61 +5,36 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 220 74% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 220 74% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --popover-foreground: 220 74% 16%;
+    --primary: 213 96% 49%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 100% 97%;
+    --secondary-foreground: 220 74% 16%;
+    --muted: 216 33% 97%;
+    --muted-foreground: 216 20% 38%;
+    --accent: 216 100% 97%;
+    --accent-foreground: 213 96% 49%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --border: 218 33% 91%;
+    --input: 218 33% 91%;
+    --ring: 213 96% 49%;
+    --radius: 0.75rem;
 
-    /* Light mode custom colors */
-    --pearl: 44 14% 98%;
-    --sage: 142 76% 73%;
-    --sunset: 27 96% 61%;
-    --gradient-shadow: rgba(251, 146, 60, 0.1);
-  }
-
-  .dark {
-    --background: 0 0% 9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-
-    /* Dark mode custom colors */
-    --charcoal: 0 0% 9%;
-    --emerald: 160 84% 39%;
-    --amber: 38 92% 50%;
-    --coral: 347 89% 73%;
-    --glass-bg: rgba(23, 23, 23, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Portfolio design system tokens */
+    --navy: 220 74% 16%;
+    --navy-muted: 216 24% 32%;
+    --primary-hover: 214 97% 43%;
+    --primary-soft: 216 100% 97%;
+    --cyan: 195 88% 57%;
+    --violet-soft: 249 100% 97%;
+    --surface: 0 0% 100%;
+    --surface-muted: 216 33% 97%;
+    --success: 154 76% 34%;
   }
 }
 
@@ -93,10 +68,25 @@
 }
 
 @layer components {
-  /* Glassmorphism utility */
+  /* Focus visible styles for accessibility */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Skip to content link */
+  .skip-to-content {
+    @apply fixed top-0 left-0 z-50 p-4 bg-background text-foreground transform -translate-y-full;
+    @apply focus:translate-y-0 transition-transform;
+  }
+
+  /*
+   * Legacy effects below are kept only for /blog and /projects, which still
+   * use the pre-redesign glitch/aurora aesthetic and have not been migrated
+   * to the navy/blue portfolio design.
+   */
   .glass {
     @apply backdrop-blur-xl bg-opacity-70 border border-white/10;
-    background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .glass-dark {
@@ -109,14 +99,12 @@
     background: rgba(250, 249, 246, 0.7);
   }
 
-  /* Aurora gradient animation */
   .aurora-bg {
     background: linear-gradient(45deg, #10B981, #F59E0B, #FB7185, #10B981);
     background-size: 400% 400%;
     animation: aurora 15s ease infinite;
   }
 
-  /* Watercolor effect for light mode */
   .watercolor-overlay {
     position: relative;
   }
@@ -134,21 +122,9 @@
     pointer-events: none;
   }
 
-  /* Gradient text */
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #10B981 0%, #F59E0B 50%, #FB7185 100%);
-  }
-
-  /* Focus visible styles for accessibility */
-  .focus-visible-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
-  }
-
-  /* Skip to content link */
-  .skip-to-content {
-    @apply fixed top-0 left-0 z-50 p-4 bg-background text-foreground transform -translate-y-full;
-    @apply focus:translate-y-0 transition-transform;
   }
 }
 
@@ -182,16 +158,46 @@
   }
 }
 
-/* Particle canvas styles */
-canvas {
-  display: block;
+@keyframes float-device {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.animate-float-device {
+  animation: float-device 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-device,
+  .animate-pulse-glow {
+    animation: none;
+  }
 }
 
 /* Selection colors */
 ::selection {
-  @apply bg-emerald/30 text-foreground;
+  @apply bg-primary/20 text-foreground;
 }
 
 ::-moz-selection {
-  @apply bg-emerald/30 text-foreground;
+  @apply bg-primary/20 text-foreground;
 }

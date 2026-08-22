@@ -2,28 +2,38 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
-import { CommandPalette } from '@/components/features/command-palette'
-import { Navigation } from '@/components/features/navigation'
+import { Header } from '@/components/layout/header'
+import { Footer } from '@/components/layout/footer'
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
-import { version } from '@/package.json'
+import { siteConfig } from '@/lib/data/portfolio'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://anjanarodrigo.com'),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: 'Anjana Rodrigo - Innovator | Engineer | Educator | Developer',
-    template: '%s | Anjana Rodrigo'
+    default: siteConfig.title,
+    template: '%s | Anjana Rodrigo',
   },
-  description: 'Transforming ideas into technology that replaces manual systems. Portfolio of Anjana Rodrigo, a Software Innovator specializing in Flutter, React, Node.js, and Cloud Technologies.',
-  keywords: ['Anjana Rodrigo', 'Software Developer', 'Flutter', 'React', 'Node.js', 'Full Stack Developer', 'Portfolio', 'Engineer', 'Educator'],
+  description: siteConfig.description,
+  keywords: [
+    'Anjana Rodrigo',
+    'Mining Digitalization',
+    'Software Engineer',
+    'Flutter',
+    'React',
+    'Node.js',
+    'Mining Technology',
+    'Operational Data Platforms',
+    'Field and Mobile Systems',
+  ],
   authors: [{ name: 'Anjana Rodrigo' }],
   creator: 'Anjana Rodrigo',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://anjanarodrigo.com',
-    title: 'Anjana Rodrigo - Innovator | Engineer | Educator | Developer',
-    description: 'Transforming ideas into technology that replaces manual systems',
+    url: siteConfig.url,
+    title: siteConfig.title,
+    description: siteConfig.description,
     siteName: 'Anjana Rodrigo Portfolio',
     images: [
       {
@@ -36,10 +46,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Anjana Rodrigo - Innovator | Engineer | Educator | Developer',
-    description: 'Transforming ideas into technology that replaces manual systems',
+    title: siteConfig.title,
+    description: siteConfig.description,
     images: ['/og-image.png'],
-    creator: '@anjanarodrigo',
   },
   robots: {
     index: true,
@@ -60,6 +69,17 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 }
 
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: siteConfig.name,
+  url: siteConfig.url,
+  email: siteConfig.email,
+  jobTitle: 'Software Engineer',
+  description: siteConfig.description,
+  sameAs: [siteConfig.linkedin, siteConfig.github],
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -74,6 +94,11 @@ export default function RootLayout({
         strategy="afterInteractive"
       />
       <body className="min-h-screen antialiased font-sans">
+        <Script
+          id="person-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
@@ -83,16 +108,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <Navigation />
           <div className="relative flex min-h-screen flex-col">
+            <Header />
             <main id="main-content" className="flex-1">
               {children}
             </main>
-            <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border/50">
-              v{version}{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ? `-${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` : ''}
-            </footer>
+            <Footer />
           </div>
-          <CommandPalette />
           <Toaster />
         </ThemeProvider>
         {/* Google Analytics (gtag.js) - replace the ID with your own in .env */}

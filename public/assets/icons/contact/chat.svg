@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chat">
+  <rect x="5" y="5" width="54" height="54" rx="16" fill="#EAF2FF" stroke="#CFE1FF"/>
+  <path d="M12 17h40v29H29l-10 8v-8h-7V17Z" fill="#0868F7"/>
+  <circle cx="23" cy="32" r="3" fill="#fff"/><circle cx="32" cy="32" r="3" fill="#fff"/><circle cx="41" cy="32" r="3" fill="#fff"/>
+</svg>

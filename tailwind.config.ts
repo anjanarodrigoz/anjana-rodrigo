@@ -26,6 +26,8 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          hover: 'hsl(var(--primary-hover))',
+          soft: 'hsl(var(--primary-soft))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -51,6 +53,20 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        navy: {
+          DEFAULT: 'hsl(var(--navy))',
+          muted: 'hsl(var(--navy-muted))',
+        },
+        cyan: 'hsl(var(--cyan))',
+        'violet-soft': 'hsl(var(--violet-soft))',
+        surface: {
+          DEFAULT: 'hsl(var(--surface))',
+          muted: 'hsl(var(--surface-muted))',
+        },
+        success: 'hsl(var(--success))',
+
+        // Legacy palette kept for /blog and /projects, which have not been
+        // migrated to the navy/blue portfolio redesign.
         emerald: {
           DEFAULT: '#10B981',
           50: '#ECFDF5',
