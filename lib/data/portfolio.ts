@@ -20,6 +20,8 @@ export type Project = {
   description: string
   technologies: string[]
   visual: ProjectVisualKey
+  longDescription: string
+  features: string[]
 }
 
 export type Experience = {
@@ -95,6 +97,14 @@ export const projects: Project[] = [
       "Comprehensive mining operations platform covering production, equipment, alerts and reporting.",
     technologies: ["Flutter", "Dart", "Node.js", "Firebase"],
     visual: "minebook",
+    longDescription: "MineBook is a robust, production-ready mining operations platform designed to digitize field workflows, track heavy equipment, and report live progress from open-pit mining environments. Built for rugged field tablets, it ensures mining teams can report production shifts, logs, and safety checks in offline-first scenarios.",
+    features: [
+      "Real-time production KPIs and daily tonnage reporting.",
+      "Equipment utilization tracking with visual utilization widgets.",
+      "Live safety/equipment alerts with notifications for critical delays.",
+      "Offline-first sync supporting remote mining sites without cellular signals.",
+      "Detailed shifting and haulage reports downloadable in CSV format."
+    ],
   },
   {
     slug: "fleet-dispatch",
@@ -104,6 +114,14 @@ export const projects: Project[] = [
       "Real-time fleet allocation and tracking with route optimization and job management.",
     technologies: ["React", "TypeScript", "Node.js", "GIS"],
     visual: "fleet-dispatch",
+    longDescription: "Fleet Dispatch is a real-time fleet coordination system that utilizes interactive GIS mapping to allocate heavy mining machinery and track truck movements across multiple pits. The application features route optimization algorithms that minimize queuing delays and congestion, boosting daily output.",
+    features: [
+      "Dynamic GIS-based open-pit topographic map plotting.",
+      "Automated truck allocation recommendations with one-click approval.",
+      "Live status reporting for shovels, excavators, and dump yards.",
+      "Color-coded congestion alerts for specific routes and junctions.",
+      "Real-time queue time estimates and turn-around analytics."
+    ],
   },
   {
     slug: "mining-cycle-time",
@@ -113,6 +131,14 @@ export const projects: Project[] = [
       "Measure and analyze cycle times across the fleet to improve productivity and reduce delays.",
     technologies: ["Flutter", "Dart", "Firebase", "Charts"],
     visual: "cycle-time",
+    longDescription: "This cycle-time tracking application enables operators and mining engineers to measure the load, haul, dump, and return segments of truck cycles. By uncovering operational delays, it provides clear visibility into bottlenecks at shovels or crusher queues.",
+    features: [
+      "Stopwatch-style segment timer for easy operational tracking.",
+      "Automatic circular breakdown charts of loading, hauling, dumping, and returning ratios.",
+      "Delay code logging (e.g., road maintenance, traffic, queue times).",
+      "Historical trend analysis across different trucks and operators.",
+      "Cloud database synchronization for live analysis by office teams."
+    ],
   },
   {
     slug: "melbourne-mover",
@@ -122,6 +148,14 @@ export const projects: Project[] = [
       "Transport and moving-services application connecting customers with movers, covering booking, live job tracking and dispatch.",
     technologies: ["Flutter", "Dart", "Firebase", "Node.js"],
     visual: "melbourne-mover",
+    longDescription: "Melbourne Mover is a customer-facing logistics and transport application that streamlines moving jobs. It includes booking flow, live tracking of the dispatch truck, and transparent pricing structures based on items and distance.",
+    features: [
+      "Interactive map tracking for current moving job progress.",
+      "Pricing calculator based on truck sizes (Van, Medium, Large) and distance.",
+      "Mover profile system featuring reviews, ratings, and vehicle capacities.",
+      "Real-time messaging and quick-call triggers between customers and drivers.",
+      "Automated PDF invoice generation and job history logs."
+    ],
   },
   {
     slug: "restaurant-process-optimization",
@@ -131,6 +165,14 @@ export const projects: Project[] = [
       "Process-optimized solution streamlining order flow, kitchen operations and service timing for restaurant operations.",
     technologies: ["React", "TypeScript", "Node.js", "Firebase"],
     visual: "restaurant-optimization",
+    longDescription: "Optima Kitchen is a process optimization platform built to streamline the workflow in high-volume restaurants. Acting as a digital kitchen display system (KDS), it replaces paper tickets, tracks prep timers, and analyzes station efficiency.",
+    features: [
+      "Interactive kitchen display board with status lanes (Prepping, Cooking, Plated).",
+      "Color-coded warning timers for orders exceeding target preparation limits.",
+      "Prep station assignments and task queue management for kitchen staff.",
+      "Live business intelligence dashboard visualizing peak busy hours and ticket trends.",
+      "Firebase real-time sync for zero-latency updates across terminal screens."
+    ],
   },
 ]
 

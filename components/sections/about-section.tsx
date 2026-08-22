@@ -14,7 +14,7 @@ export function AboutSection() {
           <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-visible rounded-[18px] border border-border bg-surface p-3 shadow-[0_12px_35px_rgba(7,27,70,0.07)] lg:mx-0">
             <div className="relative h-full w-full overflow-hidden rounded-[14px] bg-primary-soft">
               <Image
-                src="/assets/avatar/anjana-portrait.png"
+                src="/profile_nobg.png"
                 alt="Portrait of Anjana Rodrigo"
                 fill
                 className="object-contain object-bottom"
