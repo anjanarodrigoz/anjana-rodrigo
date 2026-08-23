@@ -193,6 +193,85 @@
   }
 }
 
+/* Hero visual: the mine layer floats while the avatar stays grounded. */
+.hero-grid-pattern {
+  background-image:
+    linear-gradient(hsl(var(--primary) / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+@keyframes hero-mine-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(-0.18deg);
+  }
+}
+
+@keyframes hero-mine-shadow {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scaleX(0.94);
+  }
+}
+
+@keyframes hero-visual-glow {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+.hero-mine-float {
+  animation: hero-mine-float 6.8s ease-in-out infinite;
+  transform-origin: 48% 70%;
+  will-change: transform;
+}
+
+.hero-mine-shadow {
+  animation: hero-mine-shadow 6.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.hero-visual-glow {
+  animation: hero-visual-glow 7.5s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  @keyframes hero-mine-float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -7px, 0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mine-float,
+  .hero-mine-shadow,
+  .hero-visual-glow {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* Selection colors */
 ::selection {
   @apply bg-primary/20 text-foreground;
