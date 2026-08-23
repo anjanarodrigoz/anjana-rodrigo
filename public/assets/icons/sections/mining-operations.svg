@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mining operations">
-  <circle cx="32" cy="32" r="29" fill="#EEF4FF" stroke="#D7E5FF"/>
-  <path d="M13 23h26l7 12H20l-7-12Z" fill="#0868F7"/>
-  <path d="M39 23h8l4 12h-5l-7-12Z" fill="#F3A712"/>
-  <path d="M17 35h36v7H17z" fill="#0B2A64"/>
-  <circle cx="24" cy="45" r="6" fill="#071B46"/><circle cx="24" cy="45" r="2.5" fill="#A9C9FF"/>
-  <circle cx="46" cy="45" r="6" fill="#071B46"/><circle cx="46" cy="45" r="2.5" fill="#A9C9FF"/>
-  <path d="M13 19h17" stroke="#68B5FF" stroke-width="3" stroke-linecap="round"/>
-</svg>

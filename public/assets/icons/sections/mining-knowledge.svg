@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mining knowledge">
-  <circle cx="32" cy="32" r="29" fill="#EEF4FF" stroke="#D7E5FF"/>
-  <path d="M8 47 24 19l8 12 7-10 17 26H8Z" fill="#A9B8CE"/>
-  <path d="m17 47 8-14 5 7 3-5 8 12H17Z" fill="#637895"/>
-  <path d="m38 13 13 13M45 12l7 7-17 17-5 2 2-5 13-21Z" fill="#F3A712" stroke="#0B2A64" stroke-width="2" stroke-linejoin="round"/>
-</svg>
