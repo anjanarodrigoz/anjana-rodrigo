@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail } from "lucide-react"
+import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
 import { Header } from "@/components/site/Header"
 import { Reveal } from "@/components/site/Reveal"
@@ -342,12 +342,25 @@ export default function HomePage() {
                 </p>
 
                 <div className="contact-actions">
-                  <a className="btn btn-invert btn-lg" href={`mailto:${contact.email}`}>
-                    Start a conversation
+                  <a
+                    className="btn btn-invert btn-lg"
+                    href={contact.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Chat on WhatsApp
                     <ArrowRight aria-hidden="true" />
                   </a>
                   <a className="contact-email" href={`mailto:${contact.email}`}>
                     {contact.email}
+                  </a>
+                  <a
+                    className="contact-email"
+                    href={contact.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {contact.phone}
                   </a>
                 </div>
               </div>
@@ -410,7 +423,11 @@ export default function HomePage() {
             <a href={contact.github} target="_blank" rel="noreferrer">
               GitHub
             </a>
+            <a href={contact.whatsapp} target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
             <a href={`mailto:${contact.email}`}>Email</a>
+            <a href={`tel:${contact.phoneRaw}`}>{contact.phone}</a>
           </div>
 
           <div className="footer-social">
@@ -420,8 +437,14 @@ export default function HomePage() {
             <a href={contact.github} target="_blank" rel="noreferrer" aria-label="GitHub">
               <Github aria-hidden="true" />
             </a>
+            <a href={contact.whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp">
+              <MessageCircle aria-hidden="true" />
+            </a>
             <a href={`mailto:${contact.email}`} aria-label="Email">
               <Mail aria-hidden="true" />
+            </a>
+            <a href={`tel:${contact.phoneRaw}`} aria-label="Phone">
+              <Phone aria-hidden="true" />
             </a>
           </div>
         </div>

@@ -21,6 +21,9 @@ export const nav = [
 
 export const contact = {
   email: "anjanarodrigoz@gmail.com",
+  phone: "+94 76 980 9256",
+  phoneRaw: "+94769809256",
+  whatsapp: "https://wa.me/94769809256",
   linkedin: "https://linkedin.com/in/anjana-rodrigo-a41539191",
   github: "https://github.com/anjanarodrigoz",
 }
