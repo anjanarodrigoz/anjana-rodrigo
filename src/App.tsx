@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone 
 import { Header } from "@/components/site/Header"
 import { Reveal } from "@/components/site/Reveal"
 import { capabilities, contact, credentials, expertise, nav, process, projects, roles } from "@/content"
+import { useClickSound } from "@/hooks"
 
 function SectionHeading({
   eyebrow,
@@ -43,6 +44,8 @@ function Contours() {
 }
 
 export default function HomePage() {
+  useClickSound()
+
   return (
     <>
       <Header />

@@ -106,3 +106,43 @@ export function useBodyLock(locked: boolean) {
     }
   }, [locked])
 }
+
+/** Plays a short, quiet UI tick when an interactive control is pressed. */
+export function useClickSound() {
+  useEffect(() => {
+    let audioContext: AudioContext | null = null
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || !(event.target instanceof Element)) return
+
+      const control = event.target.closest(
+        "a, button, summary, [role='button'], input[type='button'], input[type='submit']",
+      )
+      if (!control || control.matches(":disabled, [aria-disabled='true'], [data-no-click-sound]")) return
+
+      audioContext ??= new AudioContext()
+      if (audioContext.state === "suspended") void audioContext.resume()
+
+      const now = audioContext.currentTime
+      const oscillator = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+
+      oscillator.type = "sine"
+      oscillator.frequency.setValueAtTime(620, now)
+      oscillator.frequency.exponentialRampToValueAtTime(420, now + 0.045)
+      gain.gain.setValueAtTime(0.028, now)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055)
+
+      oscillator.connect(gain)
+      gain.connect(audioContext.destination)
+      oscillator.start(now)
+      oscillator.stop(now + 0.06)
+    }
+
+    document.addEventListener("pointerdown", onPointerDown, { passive: true })
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown)
+      if (audioContext) void audioContext.close()
+    }
+  }, [])
+}
