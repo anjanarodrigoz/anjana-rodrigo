@@ -74,6 +74,24 @@ export const projects = [
     tone: "light" as const,
     featured: false,
   },
+  {
+    title: "Crack Survey",
+    discipline: "Mobile · Field Engineering",
+    year: "2024",
+    copy: "A mobile inspection workflow for capturing, measuring, classifying, and synchronising structural crack records in the field.",
+    image: "/assets/projects/crack-survey.png",
+    tone: "light" as const,
+    featured: false,
+  },
+  {
+    title: "Blast Pattern Design",
+    discipline: "Mobile · Mining Design",
+    year: "2024",
+    copy: "A field-ready design tool for configuring blast-hole geometry, validating safety parameters, and exporting production patterns.",
+    image: "/assets/projects/blast-pattern.png",
+    tone: "light" as const,
+    featured: false,
+  },
 ]
 
 export const roles = [
