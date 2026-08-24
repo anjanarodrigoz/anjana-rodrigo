@@ -618,23 +618,39 @@ h3 {
 
 .hero {
   position: relative;
+  isolation: isolate;
   padding-top: clamp(44px, 6vw, 76px);
   padding-bottom: clamp(56px, 6.6vw, 104px);
   overflow: hidden;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 52%, var(--canvas) 100%);
 }
 
-/* Engineering grid field — replaces the old masked dot pattern with a
-   cleaner survey-grid reference that fades out toward the copy. */
+/* Exact wireframe-room geometry: a transparent central back wall with a
+   continuous ceiling, floor, and side-wall grid expanding to the hero edges. */
 .hero-field {
   position: absolute;
-  inset: 0;
+  z-index: 0;
+  top: 2%;
+  right: 0;
+  bottom: 19%;
+  left: 0;
   pointer-events: none;
-  background-image: linear-gradient(to right, rgba(11, 95, 224, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(11, 95, 224, 0.055) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse 70% 62% at 72% 34%, #000 0%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 62% at 72% 34%, #000 0%, transparent 78%);
+  background: url("/assets/hero/perspective-grid-room.svg") center top / 100% 100% no-repeat;
+  opacity: 0.7;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 86%, transparent 100%);
+}
+
+.hero-field::before,
+.hero-field::after,
+.hero::before,
+.hero::after {
+  content: none;
+}
+
+.hero > .shell {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-glow {
@@ -750,8 +766,9 @@ h3 {
 /* The island floats; the figure stays planted. */
 .hero-mine {
   position: absolute;
-  top: 0;
-  left: -5%;
+  top: 2%;
+  left: -26%;
+  z-index: 2;
   width: 84%;
   animation: float 7s ease-in-out infinite;
 }
@@ -782,7 +799,7 @@ h3 {
 .hero-figure {
   position: absolute;
   right: -6%;
-  bottom: -7%;
+  bottom: -13%;
   z-index: 3;
   height: 92%;
   aspect-ratio: 979 / 1606;
@@ -1730,6 +1747,10 @@ h3 {
     width: 100%;
     max-width: 760px;
     margin-inline: auto;
+  }
+
+  .hero-mine {
+    left: 8%;
   }
 
   .experience-grid,
