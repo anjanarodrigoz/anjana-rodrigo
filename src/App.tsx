@@ -1,8 +1,10 @@
-import type { ReactNode } from "react"
-import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
+import { useState, type ReactNode } from "react"
+import { ArrowRight, ArrowUpRight, Play, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
 import { Header } from "@/components/site/Header"
 import { MineCanvas } from "@/components/site/MineCanvas"
+import { MineBookDemo } from "@/components/prototypes/MineBookDemo"
+import { PrototypeDialog } from "@/components/prototypes/PrototypeDialog"
 import { Reveal } from "@/components/site/Reveal"
 import { capabilities, contact, credentials, expertise, minebook, nav, projects, roles } from "@/content"
 import { useClickSound } from "@/hooks"
@@ -46,6 +48,9 @@ function Contours() {
 
 export default function HomePage() {
   useClickSound()
+  const [openProto, setOpenProto] = useState<string | null>(null)
+  const [mbView, setMbView] = useState<"live" | "screenshot">("live")
+  const openProject = projects.find((project) => project.id === openProto)
 
   return (
     <>
@@ -78,7 +83,7 @@ export default function HomePage() {
               <p className="hero-lede">Mining engineer building software for the pit.</p>
 
               <div className="hero-actions">
-                <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
+                <a className="btn btn-primary btn-lg btn-mb" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
                   Onboard to MineBook
                   <ArrowUpRight aria-hidden="true" />
                 </a>
@@ -125,6 +130,15 @@ export default function HomePage() {
             </Reveal>
 
             <Reveal className="minebook-stage">
+              <div className="minebook-tabs" role="group" aria-label="MineBook view">
+                <button type="button" aria-pressed={mbView === "live"} onClick={() => setMbView("live")}>
+                  <Play aria-hidden="true" />
+                  Live prototype
+                </button>
+                <button type="button" aria-pressed={mbView === "screenshot"} onClick={() => setMbView("screenshot")}>
+                  Screenshot
+                </button>
+              </div>
               <div className="minebook-frame">
                 <div className="minebook-chrome" aria-hidden="true">
                   <i />
@@ -132,13 +146,17 @@ export default function HomePage() {
                   <i />
                   <span>minebook.lk</span>
                 </div>
-                <img
-                  src="/assets/projects/minebook.png"
-                  alt="MineBook overview dashboard showing material moved, pit production against plan, haulage status, equipment health, alerts and shift output"
-                  width="1513"
-                  height="1039"
-                  loading="lazy"
-                />
+                {mbView === "live" ? (
+                  <MineBookDemo />
+                ) : (
+                  <img
+                    src="/assets/projects/minebook.png"
+                    alt="MineBook overview dashboard showing material moved, pit production against plan, haulage status, equipment health, alerts and shift output"
+                    width="1513"
+                    height="1039"
+                    loading="lazy"
+                  />
+                )}
               </div>
             </Reveal>
 
@@ -201,9 +219,17 @@ export default function HomePage() {
                   step={index}
                   className="project-card"
                 >
-                  <div className="project-media">
-                    <img src={project.image} alt={`${project.title} interface`} loading="lazy" />
-                  </div>
+                  <button
+                    className="project-media"
+                    type="button"
+                    onClick={() => setOpenProto(project.id)}
+                    aria-label={`Open the ${project.title} prototype`}
+                  >
+                    <img src={project.image} alt="" loading="lazy" />
+                    <span className="project-play" aria-hidden="true">
+                      <Play />
+                    </span>
+                  </button>
 
                   <div className="project-body">
                     <p className="project-meta">
@@ -212,10 +238,16 @@ export default function HomePage() {
                     </p>
                     <h3>{project.title}</h3>
 
-                    <a className="project-link" href="#contact">
-                      Discuss this project
-                      <ArrowUpRight aria-hidden="true" />
-                    </a>
+                    <div className="project-actions">
+                      <button className="btn btn-primary btn-sm" type="button" onClick={() => setOpenProto(project.id)}>
+                        <Play aria-hidden="true" />
+                        Try the prototype
+                      </button>
+                      <a className="project-link" href="#contact">
+                        Discuss
+                        <ArrowUpRight aria-hidden="true" />
+                      </a>
+                    </div>
                   </div>
                 </Reveal>
               ))}
@@ -390,6 +422,8 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+
+      <PrototypeDialog id={openProto} title={openProject?.title ?? ""} onClose={() => setOpenProto(null)} />
 
       <footer className="footer">
         <div className="shell footer-grid">

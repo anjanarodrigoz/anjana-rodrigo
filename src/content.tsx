@@ -65,6 +65,7 @@ export const capabilities: { index: string; title: string; copy: string; icon: L
 
 export const projects = [
   {
+    id: "minebook",
     title: "MineBook",
     discipline: "Product Design · Data Platform",
     year: "2024",
@@ -74,6 +75,7 @@ export const projects = [
     featured: true,
   },
   {
+    id: "fleet-dispatch",
     title: "Fleet Dispatch",
     discipline: "Mining Systems · Software",
     year: "2023",
@@ -83,6 +85,7 @@ export const projects = [
     featured: false,
   },
   {
+    id: "cycle-time",
     title: "Mining Cycle‑Time",
     discipline: "Analytics · Decision Support",
     year: "2023",
@@ -92,6 +95,7 @@ export const projects = [
     featured: false,
   },
   {
+    id: "crack-survey",
     title: "Crack Survey",
     discipline: "Mobile · Field Engineering",
     year: "2024",
@@ -101,6 +105,7 @@ export const projects = [
     featured: false,
   },
   {
+    id: "blast-pattern",
     title: "Blast Pattern Design",
     discipline: "Mobile · Mining Design",
     year: "2024",

@@ -37,6 +37,12 @@
   --blue-strong: #0847ab;
   --blue-100: #dfeaff;
   --blue-50: #f3f7ff;
+
+  /* MineBook brand orange — used only inside the MineBook product. */
+  --mb: #f76707;
+  --mb-strong: #d9480f;
+  --mb-100: #ffe3cc;
+  --mb-50: #fff4eb;
   --ink-2: #262626;
   --ink-3: #525252;
   --ink-4: #6b6b6b;
@@ -382,6 +388,14 @@ h3 {
 .btn-primary:hover,
 .btn-invert:hover {
   background: var(--blue-strong);
+}
+
+.btn-mb {
+  background: var(--mb-strong);
+}
+
+.btn-mb:hover {
+  background: #b83a0b;
 }
 
 .btn-ghost {
@@ -817,6 +831,45 @@ h3 {
    MineBook — the one place colour lives
    ========================================================================== */
 
+/* Inside the MineBook section the accent becomes MineBook orange. */
+.minebook {
+  --blue: var(--mb-strong);
+  --blue-strong: #b83a0b;
+  --blue-100: var(--mb-100);
+  --blue-50: var(--mb-50);
+}
+
+.minebook-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.minebook-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding-inline: 16px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-full);
+}
+
+.minebook-tabs button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--mb-strong);
+  border-color: var(--mb-strong);
+}
+
+.minebook-tabs svg {
+  width: 14px;
+  height: 14px;
+}
+
 .minebook-stage {
   position: relative;
   perspective: 1800px;
@@ -1078,6 +1131,57 @@ h3 {
     filter: none;
     transition-delay: 0.4s;
   }
+}
+
+.project-media {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  text-align: inherit;
+}
+
+.project-play {
+  position: absolute;
+  inset: auto 16px 16px auto;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: #fff;
+  background: var(--blue);
+  border-radius: 50%;
+  box-shadow: 0 10px 24px rgba(11, 95, 224, 0.35);
+  transform: scale(0.9);
+  opacity: 0.9;
+  transition:
+    transform var(--dur-2) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+
+.project-play svg {
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+}
+
+.project-card:hover .project-play {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.project-actions .project-link {
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .project-body {
