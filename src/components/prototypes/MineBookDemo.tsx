@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Pause, Play, RotateCcw } from "lucide-react"
 
-import { Kpi, Segmented, fmt, prefersReducedMotion, useInterval } from "./ui"
+import { Kpi, Segmented, fmt, prefersReducedMotion, useInView, useInterval } from "./ui"
 
 type Shift = "Day" | "Night"
 type View = "overview" | "fleet" | "alerts"
@@ -100,7 +100,9 @@ export function MineBookDemo() {
     }
   }
 
-  useInterval(advance, running ? 1100 : null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(rootRef)
+  useInterval(advance, running && inView ? 1100 : null)
 
   const reset = (nextShift = shift) => {
     setShift(nextShift)
@@ -135,7 +137,7 @@ export function MineBookDemo() {
     )
 
   return (
-    <div className="mb-app proto proto-mb">
+    <div className="mb-app proto proto-mb" ref={rootRef}>
       <nav className="mb-side" aria-label="MineBook prototype">
         <p className="mb-logo">
           <i aria-hidden="true" />

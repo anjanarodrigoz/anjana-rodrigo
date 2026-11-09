@@ -52,11 +52,10 @@ components.json      shadcn configuration
 
 - **White + blue.** White canvas, black type, brand blue (`#0b5fe0`, from the AR logo) as the only accent.
 - **Minimal copy.** Headlines and short labels; no long paragraphs.
-- Product screenshots are shown in full colour.
 - **Hero.** A procedural open-pit mine (terraced benches, spiral haul road, haul trucks, excavator, blast-hole pattern, survey scan and dust) rendered with three.js. It follows the pointer, dollies on scroll, pauses off-screen, renders a single still frame under `prefers-reduced-motion`, and falls back to a static contour backdrop without WebGL.
 - **MineBook in orange.** The MineBook section switches the accent to MineBook's brand orange (`--mb`); the rest of the site stays blue.
-- **Working prototypes.** Every product has an interactive prototype (`src/components/prototypes/`):
-  - *MineBook* — live shift dashboard (production vs plan, haulage states, fleet status, alerts), inline in its section.
+- **Working prototypes instead of screenshots.** Every product is shown as an interactive prototype embedded in the page (`src/components/prototypes/`); simulations pause while off-screen:
+  - *MineBook* — live shift dashboard (production vs plan, haulage states, fleet status, alerts).
   - *Fleet Dispatch* — animated haul map; assign trucks to shovels, break down a shovel, auto-balance by match factor.
   - *Mining Cycle-Time* — cycle breakdown, fleet output and the biggest improvement lever.
   - *Crack Survey* — trace cracks on a wall, measure, classify by width, sync offline/online.

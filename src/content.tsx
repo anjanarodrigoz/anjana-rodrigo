@@ -70,8 +70,6 @@ export const projects = [
     discipline: "Product Design · Data Platform",
     year: "2024",
     copy: "A connected operations platform for production, equipment, alerts, and reporting — one surface for the whole pit.",
-    image: "/assets/projects/minebook.png",
-    tone: "dark" as const,
     featured: true,
   },
   {
@@ -80,8 +78,6 @@ export const projects = [
     discipline: "Mining Systems · Software",
     year: "2023",
     copy: "Live fleet allocation, route intelligence, and operational job coordination.",
-    image: "/assets/projects/fleet-dispatch.png",
-    tone: "light" as const,
     featured: false,
   },
   {
@@ -90,8 +86,6 @@ export const projects = [
     discipline: "Analytics · Decision Support",
     year: "2023",
     copy: "Cycle analysis that exposes delay where it happens and lifts equipment productivity.",
-    image: "/assets/projects/cycle-time.png",
-    tone: "light" as const,
     featured: false,
   },
   {
@@ -100,8 +94,6 @@ export const projects = [
     discipline: "Mobile · Field Engineering",
     year: "2024",
     copy: "A mobile inspection workflow for capturing, measuring, classifying, and synchronising structural crack records in the field.",
-    image: "/assets/projects/crack-survey.png",
-    tone: "light" as const,
     featured: false,
   },
   {
@@ -110,8 +102,6 @@ export const projects = [
     discipline: "Mobile · Mining Design",
     year: "2024",
     copy: "A field-ready design tool for configuring blast-hole geometry, validating safety parameters, and exporting production patterns.",
-    image: "/assets/projects/blast-pattern.png",
-    tone: "light" as const,
     featured: false,
   },
 ]

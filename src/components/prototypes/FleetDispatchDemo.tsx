@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Shuffle } from "lucide-react"
 
-import { Kpi, Segmented, fmt, prefersReducedMotion, useFrame } from "./ui"
+import { Kpi, Segmented, fmt, prefersReducedMotion, useFrame, useInView } from "./ui"
 
 type ShovelId = "S1" | "S2"
 type DestId = "CR" | "WD"
@@ -49,7 +49,7 @@ const pointAt = (pts: Pt[], f: number): Pt => {
 
 /** Real-world cycle in minutes: load + haul + dump + return, from route length (px → km). */
 const cycleMinutes = (shovel: ShovelId, dest: DestId) => {
-  const km = routeLength(ROUTES[`${shovel}-${dest}`]) / 160
+  const km = routeLength(ROUTES[`${shovel}-${dest}`]) / 320
   return LOAD_MIN + 1.2 + km * 2 * 4.2 + 1.5
 }
 
@@ -62,18 +62,20 @@ const truckPosition = (t: Truck): { pt: Pt; stage: string } => {
   return { pt: pointAt(route, 1 - (p - 0.58) / 0.42), stage: "Returning" }
 }
 
-const initial: Truck[] = Array.from({ length: 9 }, (_, i) => ({
+const initial: Truck[] = Array.from({ length: 14 }, (_, i) => ({
   id: `DT-${101 + i}`,
-  shovel: i < 6 ? "S1" : "S2",
+  shovel: i < 8 ? "S1" : "S2",
   dest: i % 3 === 0 ? "WD" : "CR",
-  phase: (i * 0.137) % 1,
+  phase: (i * 0.0713) % 1,
 }))
 
 export function FleetDispatchDemo() {
   const [trucks, setTrucks] = useState<Truck[]>(initial)
   const [selected, setSelected] = useState<string>("DT-101")
   const [s2Down, setS2Down] = useState(false)
-  const animate = !prefersReducedMotion()
+  const rootRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(rootRef)
+  const animate = !prefersReducedMotion() && inView
 
   useFrame((dt) => {
     setTrucks((list) =>
@@ -141,7 +143,7 @@ export function FleetDispatchDemo() {
   }
 
   return (
-    <div className="proto">
+    <div className="proto" ref={rootRef}>
       <div className="proto-kpis">
         <Kpi label="Fleet output" value={`${fmt(totalTph)} t/h`} note={`${trucks.length} trucks · ${PAYLOAD} t payload`} />
         {shovels.map((s) => (
