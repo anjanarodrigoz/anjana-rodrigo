@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 export const nav = [
+  { label: "MineBook", href: "#minebook" },
   { label: "Work", href: "#work" },
   { label: "About", href: "#about" },
   { label: "Experience", href: "#experience" },
@@ -26,6 +27,22 @@ export const contact = {
   whatsapp: "https://wa.me/94769809256",
   linkedin: "https://linkedin.com/in/anjana-rodrigo-a41539191",
   github: "https://github.com/anjanarodrigoz",
+}
+
+export const minebook = {
+  url: "https://minebook.lk",
+  onboardUrl: "https://minebook.lk",
+  features: [
+    { label: "Production", copy: "Shift, day and month tonnes against plan — by pit, bench and material." },
+    { label: "Fleet", copy: "Loading, hauling, spotting and queuing states for every truck in the cycle." },
+    { label: "Equipment", copy: "Availability, utilisation and health scores with service schedules." },
+    { label: "Alerts", copy: "Engine, congestion, blast and weather events routed to the right crew." },
+  ],
+  steps: [
+    { index: "01", title: "Register your operation", copy: "Create a MineBook workspace for your company and add your pits." },
+    { index: "02", title: "Add fleet & people", copy: "Import equipment, operators and shift patterns — spreadsheet or by hand." },
+    { index: "03", title: "Go live on the pit floor", copy: "Crews log from the field; supervisors see production move in real time." },
+  ],
 }
 
 export const capabilities: { index: string; title: string; copy: string; icon: LucideIcon }[] = [

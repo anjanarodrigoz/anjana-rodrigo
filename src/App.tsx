@@ -2,8 +2,9 @@ import type { ReactNode } from "react"
 import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
 import { Header } from "@/components/site/Header"
+import { MineCanvas } from "@/components/site/MineCanvas"
 import { Reveal } from "@/components/site/Reveal"
-import { capabilities, contact, credentials, expertise, nav, process, projects, roles } from "@/content"
+import { capabilities, contact, credentials, expertise, minebook, nav, process, projects, roles } from "@/content"
 import { useClickSound } from "@/hooks"
 
 function SectionHeading({
@@ -52,14 +53,32 @@ export default function HomePage() {
 
       <main>
         <section className="hero" id="home">
-          <div className="hero-field" aria-hidden="true" />
-          <div className="hero-glow" aria-hidden="true" />
+          <div className="hero-backdrop" aria-hidden="true" />
+          <MineCanvas className="hero-canvas" />
+          <div className="hero-vignette" aria-hidden="true" />
+
+          <div className="hero-hud" aria-hidden="true">
+            <span className="hud-corner tl" />
+            <span className="hud-corner tr" />
+            <span className="hud-corner bl" />
+            <span className="hud-corner br" />
+            <p className="hud-readout hud-top">
+              <span>PIT 01 · OPEN CUT</span>
+              <span>8 BENCHES · 1.15 RL STEP</span>
+            </p>
+            <p className="hud-readout hud-bottom">
+              <span>
+                <i className="hud-live" /> HAUL CYCLE · LIVE MODEL
+              </span>
+              <span>PROCEDURAL MODEL · DRAG TO LOOK</span>
+            </p>
+          </div>
 
           <div className="shell hero-grid">
             <div className="hero-copy">
               <p className="status-chip">
                 <i aria-hidden="true" />
-                Open to consulting work
+                Mining engineer · Software developer
               </p>
 
               <h1>
@@ -72,12 +91,13 @@ export default function HomePage() {
               </p>
 
               <div className="hero-actions">
-                <a className="btn btn-primary btn-lg" href="#work">
+                <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
+                  Onboard to MineBook
+                  <ArrowUpRight aria-hidden="true" />
+                </a>
+                <a className="btn btn-ghost btn-lg" href="#work">
                   Explore selected work
                   <ArrowRight aria-hidden="true" />
-                </a>
-                <a className="btn btn-ghost btn-lg" href="#about">
-                  About Anjana
                 </a>
               </div>
 
@@ -91,35 +111,20 @@ export default function HomePage() {
                   <dd>2020</dd>
                 </div>
                 <div>
-                  <dt>Focus</dt>
-                  <dd>Operations intelligence</dd>
+                  <dt>Product</dt>
+                  <dd>MineBook</dd>
                 </div>
               </dl>
             </div>
-
-            <div className="hero-visual">
-              <div className="hero-mine">
-                <img
-                  src="/assets/hero/floating-mine-summary-transparent-v4.png"
-                  alt="Isometric open-pit mine with live readouts for drill availability, active fleet, and plant throughput"
-                  width="1672"
-                  height="941"
-                />
-                <div className="hero-mine-shadow" aria-hidden="true" />
-              </div>
-
-              <div className="hero-figure">
-                <img
-                  src="/assets/hero/mining-engineer-tablet-white.png"
-                  alt="Mining engineer in a hard hat and high-visibility vest, holding a tablet"
-                  width="979"
-                  height="1606"
-                />
-                <div className="hero-figure-shadow" aria-hidden="true" />
-              </div>
-            </div>
           </div>
 
+          <a className="scroll-cue" href="#minebook" aria-label="Scroll to MineBook">
+            <span />
+          </a>
+
+        </section>
+
+        <section className="capability-band" aria-label="Capabilities">
           <div className="shell">
             <ul className="capability-rail">
               {capabilities.map((item, index) => {
@@ -139,6 +144,86 @@ export default function HomePage() {
           </div>
         </section>
 
+        <section className="section minebook" id="minebook">
+          <div className="shell">
+            <Reveal className="heading-row">
+              <SectionHeading eyebrow="Flagship product">
+                MineBook — the whole pit, <em>on one surface.</em>
+              </SectionHeading>
+              <p className="heading-row-lede">
+                A connected operations platform for production, fleet, equipment, alerts and shift
+                reporting. Built by a mining engineer, for the people who run the pit.
+              </p>
+            </Reveal>
+
+            <Reveal className="minebook-stage">
+              <div className="minebook-frame">
+                <div className="minebook-chrome" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <span>minebook.lk</span>
+                </div>
+                <img
+                  src="/assets/projects/minebook.png"
+                  alt="MineBook overview dashboard showing material moved, pit production against plan, haulage status, equipment health, alerts and shift output"
+                  width="1513"
+                  height="1039"
+                  loading="lazy"
+                />
+              </div>
+              <p className="minebook-note">In colour — because it&apos;s the product.</p>
+            </Reveal>
+
+            <ul className="minebook-features">
+              {minebook.features.map((item, index) => (
+                <Reveal as="li" key={item.label} step={index}>
+                  <span className="mono-index">{String(index + 1).padStart(2, "0")}</span>
+                  <h3>{item.label}</h3>
+                  <p>{item.copy}</p>
+                </Reveal>
+              ))}
+            </ul>
+
+            <Reveal className="onboard-card">
+              <div className="onboard-copy">
+                <p className="eyebrow">
+                  <i aria-hidden="true" />
+                  Onboarding now open
+                </p>
+                <h2>
+                  Bring your operation <em>onboard MineBook.</em>
+                </h2>
+                <p>
+                  Three steps from spreadsheet and radio calls to a live view of the pit. Start on
+                  minebook.lk, or talk to me first about how it fits your site.
+                </p>
+                <div className="onboard-actions">
+                  <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
+                    Start onboarding at minebook.lk
+                    <ArrowUpRight aria-hidden="true" />
+                  </a>
+                  <a className="btn btn-ghost btn-lg" href={contact.whatsapp} target="_blank" rel="noreferrer">
+                    Book a walkthrough
+                  </a>
+                </div>
+              </div>
+
+              <ol className="onboard-steps">
+                {minebook.steps.map((step) => (
+                  <li key={step.index}>
+                    <span className="onboard-index">{step.index}</span>
+                    <div>
+                      <h3>{step.title}</h3>
+                      <p>{step.copy}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          </div>
+        </section>
+
         <section className="section work" id="work">
           <div className="shell">
             <Reveal className="heading-row">
@@ -147,17 +232,17 @@ export default function HomePage() {
               </SectionHeading>
               <p className="heading-row-lede">
                 Practical products shaped by engineering context, real user workflows, and
-                measurable operational outcomes.
+                measurable operational outcomes. Look closer and each one comes into colour.
               </p>
             </Reveal>
 
             <div className="project-grid">
-              {projects.map((project, index) => (
+              {projects.filter((project) => !project.featured).map((project, index) => (
                 <Reveal
                   as="article"
                   key={project.title}
                   step={index}
-                  className={`project-card ${project.featured ? "is-featured" : ""} ${project.tone}`}
+                  className="project-card"
                 >
                   <div className="project-media">
                     <img src={project.image} alt={`${project.title} interface`} loading="lazy" />
@@ -281,7 +366,7 @@ export default function HomePage() {
                 const Icon = item.icon
                 return (
                   <Reveal as="article" className="credential-card" key={item.institution} step={index}>
-                    <span className={`credential-icon ${item.accent}`}>
+                    <span className="credential-icon">
                       <Icon />
                     </span>
                     <h3>{item.institution}</h3>
