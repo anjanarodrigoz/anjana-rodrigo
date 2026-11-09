@@ -109,17 +109,17 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setClearColor(0x000000, 0)
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMapping = THREE.NoToneMapping
 
   const scene = new THREE.Scene()
-  const fog = new THREE.Fog(0x050505, 26, 62)
+  const fog = new THREE.Fog(0xffffff, 26, 62)
   scene.fog = fog
 
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200)
 
   // -- Lighting: one hard key, a cool-neutral fill — strictly greyscale. ----
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x0a0a0a, 0.55))
-  const sun = new THREE.DirectionalLight(0xffffff, 2.4)
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xb0b0b0, 1.9))
+  const sun = new THREE.DirectionalLight(0xffffff, 1.1)
   sun.position.set(-14, 22, 10)
   scene.add(sun)
 
@@ -131,7 +131,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   // -- Terrain -----------------------------------------------------------
   const SIZE = 58
-  const SEG = 220
+  const SEG = 320
   const terrainGeo = track(new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG))
   terrainGeo.rotateX(-Math.PI / 2)
   const pos = terrainGeo.attributes.position as THREE.BufferAttribute
@@ -142,13 +142,13 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   const terrain = new THREE.Mesh(
     terrainGeo,
-    track(new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.95, metalness: 0, flatShading: true })),
+    track(new THREE.MeshStandardMaterial({ color: 0xededed, roughness: 0.95, metalness: 0 })),
   )
   scene.add(terrain)
 
   // -- Survey contours: crest and toe lines of every bench -----------------
-  const contourMat = track(new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 }))
-  const faintMat = track(new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 }))
+  const contourMat = track(new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.6 }))
+  const faintMat = track(new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16 }))
   const contours = new THREE.Group()
   const ring = (inward: number, lift: number, mat: THREE.LineBasicMaterial) => {
     const pts: THREE.Vector3[] = []
@@ -184,15 +184,15 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
   const roadCurve = new THREE.CatmullRomCurve3(roadPts)
   const roadLine = new THREE.Line(
     track(new THREE.BufferGeometry().setFromPoints(roadCurve.getPoints(600))),
-    track(new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.28, gapSize: 0.22, transparent: true, opacity: 0.85 })),
+    track(new THREE.LineDashedMaterial({ color: 0x000000, dashSize: 0.28, gapSize: 0.22, transparent: true, opacity: 0.85 })),
   )
   roadLine.computeLineDistances()
   scene.add(roadLine)
 
   // -- Haul trucks ---------------------------------------------------------
-  const bodyMat = track(new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5, metalness: 0.1 }))
-  const darkMat = track(new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8 }))
-  const loadMat = track(new THREE.MeshStandardMaterial({ color: 0x6b6b6b, roughness: 1, flatShading: true }))
+  const bodyMat = track(new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.5, metalness: 0.1 }))
+  const darkMat = track(new THREE.MeshStandardMaterial({ color: 0x4d4d4d, roughness: 0.8 }))
+  const loadMat = track(new THREE.MeshStandardMaterial({ color: 0x9c9c9c, roughness: 1, flatShading: true }))
   const boxGeo = track(new THREE.BoxGeometry(1, 1, 1))
   const wheelGeo = track(new THREE.CylinderGeometry(0.17, 0.17, 0.12, 14))
   wheelGeo.rotateX(Math.PI / 2)
@@ -250,7 +250,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
   const scanGeo = track(new THREE.RingGeometry(0.1, PIT_RADIUS * 1.25, 96, 1))
   scanGeo.rotateX(-Math.PI / 2)
   const scanMat = track(
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05, side: THREE.DoubleSide, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.05, side: THREE.DoubleSide, depthWrite: false }),
   )
   const scan = new THREE.Mesh(scanGeo, scanMat)
   scene.add(scan)
@@ -289,7 +289,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
   dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3))
   const dust = new THREE.Points(
     dustGeo,
-    track(new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.5, depthWrite: false })),
+    track(new THREE.PointsMaterial({ color: 0x000000, size: 0.04, transparent: true, opacity: 0.3, depthWrite: false })),
   )
   scene.add(dust)
 
@@ -356,7 +356,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
     const sweep = (t * 0.08) % 1
     scan.position.y = 1 - sweep * (BENCHES * BENCH_HEIGHT + 1)
-    scanMat.opacity = 0.09 * Math.sin(sweep * Math.PI)
+    scanMat.opacity = 0.06 * Math.sin(sweep * Math.PI)
 
     dust.rotation.y = t * 0.01
     const arr = dustGeo.attributes.position.array as Float32Array
