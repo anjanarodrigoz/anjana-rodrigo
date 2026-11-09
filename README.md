@@ -62,4 +62,4 @@ components.json      shadcn configuration
   - *Blast Pattern Design* — pattern geometry, explosive and powder factor, design checks, V-pattern timing, CSV export.
   Prototypes use simulated data and rules of thumb; they are demos, not engineering tools.
 - **MineBook onboarding.** A dedicated section with a three-step onboarding flow and calls to action linking to [minebook.lk](https://minebook.lk).
-- Type: Inter Tight (display), Instrument Serif italics (accents), Inter (body), JetBrains Mono (labels).
+- Type: Inter only, upright (no italics) across the whole site; emphasis uses blue, not a different font.
