@@ -1,6 +1,6 @@
 import * as THREE from "three"
 
-import { guideScreen, type StageId } from "@/journey"
+import { screenAnchors, type StageId } from "@/journey"
 
 /**
  * A floating-island open-pit mine in a diorama style: grassy top with trees,
@@ -547,44 +547,97 @@ export function createIslandScene(canvas: HTMLCanvasElement, options: { still?: 
     }
   }
 
-  // -- The guide: a small engineer in a hard hat --------------------------
+  // -- The guide: Anjana — curly black hair, short beard, navy suit and tie --
   const guide = new THREE.Group()
   const legs: THREE.Object3D[] = []
   const arms: THREE.Object3D[] = []
+  const headGroup = new THREE.Group()
   {
-    const skin = track(new THREE.MeshStandardMaterial({ color: 0xa8714d, roughness: 0.7 }))
-    const navy = track(new THREE.MeshStandardMaterial({ color: 0x1b2a44, roughness: 0.8 }))
-    const vest = track(new THREE.MeshStandardMaterial({ color: 0x1f5fd6, roughness: 0.6 }))
-    const hair = track(new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.9 }))
-    const limb = (parent: THREE.Object3D, mat: THREE.Material, x: number, y: number, h: number, w: number) => {
+    const sphere = track(new THREE.SphereGeometry(1, 20, 14))
+    const skin = track(new THREE.MeshStandardMaterial({ color: 0x9a6243, roughness: 0.65 }))
+    const suit = track(new THREE.MeshStandardMaterial({ color: 0x1c2740, roughness: 0.7 }))
+    const shirt = track(new THREE.MeshStandardMaterial({ color: 0xf5f7fa, roughness: 0.6 }))
+    const tie = track(new THREE.MeshStandardMaterial({ color: 0x2b3f6b, roughness: 0.5 }))
+    const hair = track(new THREE.MeshStandardMaterial({ color: 0x15100d, roughness: 0.95 }))
+    const shoe = track(new THREE.MeshStandardMaterial({ color: 0x3b2618, roughness: 0.4 }))
+
+    const limb = (mat: THREE.Material, x: number, y: number, h: number, w: number, hand?: THREE.Material) => {
       const pivot = new THREE.Group()
       pivot.position.set(x, y, 0)
       const m = new THREE.Mesh(box, mat)
       m.scale.set(w, h, w)
       m.position.y = -h / 2
       pivot.add(m)
-      parent.add(pivot)
+      if (hand) {
+        const fist = new THREE.Mesh(sphere, hand)
+        fist.scale.setScalar(w * 0.55)
+        fist.position.y = -h - w * 0.3
+        pivot.add(fist)
+      }
+      guide.add(pivot)
       return pivot
     }
-    legs.push(limb(guide, navy, -0.09, 0.5, 0.5, 0.13), limb(guide, navy, 0.09, 0.5, 0.5, 0.13))
-    part(guide, box, dark, -0.09, 0.03, 0.04, 0.14, 0.07, 0.22)
-    part(guide, box, dark, 0.09, 0.03, 0.04, 0.14, 0.07, 0.22)
-    part(guide, box, vest, 0, 0.75, 0, 0.36, 0.5, 0.22)
-    part(guide, box, white, 0, 0.7, 0.112, 0.37, 0.05, 0.01)
-    part(guide, box, white, 0, 0.82, 0.112, 0.37, 0.05, 0.01)
-    arms.push(limb(guide, vest, -0.23, 0.98, 0.45, 0.1), limb(guide, vest, 0.23, 0.98, 0.45, 0.1))
-    // Tablet in the left hand.
+
+    // Trousers and shoes.
+    legs.push(limb(suit, -0.085, 0.52, 0.5, 0.13), limb(suit, 0.085, 0.52, 0.5, 0.13))
+    for (const leg of legs) {
+      const s2 = new THREE.Mesh(box, shoe)
+      s2.scale.set(0.13, 0.06, 0.22)
+      s2.position.set(0, -0.52, 0.04)
+      leg.add(s2)
+    }
+    // Jacket, shirt, tie, lapels.
+    part(guide, box, suit, 0, 0.8, 0, 0.38, 0.56, 0.22)
+    part(guide, box, shirt, 0, 0.92, 0.112, 0.12, 0.3, 0.01)
+    part(guide, box, tie, 0, 0.86, 0.118, 0.045, 0.34, 0.01)
+    part(guide, box, tie, 0, 1.04, 0.118, 0.06, 0.04, 0.012)
+    const lapL = part(guide, box, suit, -0.07, 0.95, 0.118, 0.035, 0.22, 0.012)
+    lapL.rotation.z = 0.35
+    const lapR = part(guide, box, suit, 0.07, 0.95, 0.118, 0.035, 0.22, 0.012)
+    lapR.rotation.z = -0.35
+    // Sleeves with hands.
+    arms.push(limb(suit, -0.235, 1.04, 0.46, 0.11, skin), limb(suit, 0.235, 1.04, 0.46, 0.11, skin))
     const tablet = new THREE.Mesh(box, dark)
     tablet.scale.set(0.2, 0.26, 0.03)
-    tablet.position.set(0, -0.42, 0.08)
+    tablet.position.set(0, -0.44, 0.09)
     tablet.rotation.x = -0.5
     arms[0].add(tablet)
-    const head = part(guide, track(new THREE.SphereGeometry(1, 16, 12)), skin, 0, 1.17, 0, 0.15, 0.17, 0.15)
-    head.name = "head"
-    part(guide, track(new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2)), white, 0, 1.24, 0, 0.18, 0.14, 0.18)
-    part(guide, cyl, white, 0, 1.24, 0.02, 0.21, 0.02, 0.23)
-    part(guide, box, hair, 0, 1.2, -0.08, 0.26, 0.12, 0.08)
-    guide.scale.setScalar(1.6)
+
+    // Neck and head — slightly oversized so the face reads from a distance.
+    part(guide, cyl, skin, 0, 1.12, 0, 0.06, 0.08, 0.06)
+    headGroup.position.set(0, 1.3, 0)
+    guide.add(headGroup)
+    part(headGroup, sphere, skin, 0, 0, 0, 0.16, 0.19, 0.165)
+    // Ears.
+    part(headGroup, sphere, skin, -0.16, -0.01, 0, 0.03, 0.045, 0.025)
+    part(headGroup, sphere, skin, 0.16, -0.01, 0, 0.03, 0.045, 0.025)
+    // Curly hair: a dense cluster of small dark spheres on top and sides.
+    for (let i = 0; i < 46; i++) {
+      const u = hash(i, 1.3)
+      const phi = hash(i, 7.7) * Math.PI * 2
+      const theta = Math.acos(1 - u * 1.15) // upper cap, a little down the sides
+      const r = 0.16
+      const x = Math.sin(theta) * Math.cos(phi) * r
+      const y = Math.cos(theta) * r * 1.12 + 0.03
+      const z = Math.sin(theta) * Math.sin(phi) * r
+      if (z > 0.11 && y < 0.12) continue // keep the forehead clear
+      const curl = part(headGroup, sphere, hair, x, y, z - 0.01, 0.055, 0.05, 0.055)
+      curl.scale.multiplyScalar(0.85 + hash(i, 3) * 0.35)
+    }
+    // Short beard and moustache.
+    const beard = part(headGroup, sphere, hair, 0, -0.1, 0.06, 0.135, 0.1, 0.11)
+    beard.scale.set(0.135, 0.1, 0.11)
+    part(headGroup, box, hair, 0, -0.045, 0.155, 0.08, 0.018, 0.02)
+    // Face: eyes, brows, smile.
+    const eye = track(new THREE.MeshStandardMaterial({ color: 0x120c08, roughness: 0.3 }))
+    part(headGroup, sphere, eye, -0.055, 0.03, 0.15, 0.017, 0.02, 0.012)
+    part(headGroup, sphere, eye, 0.055, 0.03, 0.15, 0.017, 0.02, 0.012)
+    part(headGroup, box, hair, -0.055, 0.075, 0.152, 0.05, 0.012, 0.012)
+    part(headGroup, box, hair, 0.055, 0.075, 0.152, 0.05, 0.012, 0.012)
+    part(headGroup, box, shirt, 0, -0.085, 0.163, 0.05, 0.012, 0.01)
+    part(headGroup, sphere, skin, 0, -0.005, 0.165, 0.025, 0.035, 0.03) // nose
+
+    guide.scale.setScalar(1.8)
     island.add(guide)
   }
 
@@ -634,6 +687,21 @@ export function createIslandScene(canvas: HTMLCanvasElement, options: { still?: 
     },
   }
 
+  // Points in the world that each stop's card attaches to.
+  const guideHead = () => guidePos.clone().add(v(0, 2.9, 0))
+  const anchorFor: Record<StageId, () => THREE.Vector3> = {
+    welcome: guideHead,
+    office: () => ground(OFFICE.x, OFFICE.z).add(v(0, 2, 0)),
+    control: () => ground(PLANT.x, PLANT.z).add(v(1.2, 4.2, -0.6)),
+    drill: () => DRILL.clone().add(v(0, 3.2, 0)),
+    load: () => excavator.position.clone().add(v(0, 2.4, 0)),
+    haul: () => trucks[1].mesh.position.clone().add(v(0, 1.6, 0)),
+    walls: () => stops.walls.spot.clone().add(v(0, 1.8, 0)),
+    lookout: guideHead,
+    gate: () => ground(GATE.x, GATE.z).add(v(0, 1.8, 0)),
+  }
+  const projected = new THREE.Vector3()
+
   // -- Interaction & sizing --------------------------------------------------
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 }
   const onPointer = (event: PointerEvent) => {
@@ -665,7 +733,6 @@ export function createIslandScene(canvas: HTMLCanvasElement, options: { still?: 
   const camLook = v(1.5, -3, 0)
   const guidePos = stops.welcome.spot.clone()
   const tangent = new THREE.Vector3()
-  const head = new THREE.Vector3()
   let walkPhase = 0
   let frame = 0
   let running = !options.still
@@ -716,6 +783,8 @@ export function createIslandScene(canvas: HTMLCanvasElement, options: { still?: 
     legs[1].rotation.x = -swing
     arms[0].rotation.x = step > 0.004 ? -swing * 0.7 : -0.9 // holds the tablet up when standing
     arms[1].rotation.x = step > 0.004 ? swing * 0.7 : Math.sin(t * 2) * 0.15 - 0.2
+    arms[1].rotation.z = step > 0.004 ? 0 : 0.25 + Math.sin(t * 1.3) * 0.08 // relaxed, gesturing
+    headGroup.rotation.y = step > 0.004 ? 0 : Math.sin(t * 0.7) * 0.12
 
     // Camera: blend the two stop framings, then ease toward them.
     const ca = a.cam(a.spot)
@@ -736,21 +805,23 @@ export function createIslandScene(canvas: HTMLCanvasElement, options: { still?: 
     fog.near = dist * 1.2
     fog.far = dist * 3
 
-    // Hero framing: island right of the copy on desktop, above it on phones.
-    const s = weight("welcome")
+    // Leave room for the card: subject slightly left on wide screens,
+    // and in the upper part of the screen on phones (card docks at the bottom).
     const { clientWidth: w, clientHeight: h } = canvas
-    // Elsewhere, lift the subject into the open space above the content card.
-    const offX = wide ? -w * 0.22 * s : 0
-    const offY = portrait ? h * 0.16 * s + h * 0.12 * (1 - s) : h * 0.1 * (1 - s)
+    const offX = wide ? w * 0.08 : 0
+    const offY = portrait ? h * 0.17 : 0
     if (offX || offY) camera.setViewOffset(w, h, offX, offY, w, h)
     else camera.clearViewOffset()
 
-    // Publish the guide's head position in screen space for the speech bubble.
+    // Publish each stop's anchor in screen space for the cards.
     camera.updateMatrixWorld()
-    head.copy(guidePos).add(v(0, 1.75, 0)).project(camera)
-    guideScreen.visible = head.z < 1 && Math.abs(head.x) < 1.05 && Math.abs(head.y) < 1.05
-    guideScreen.x = ((head.x + 1) / 2) * w
-    guideScreen.y = ((1 - head.y) / 2) * h
+    for (const id of Object.keys(anchorFor) as StageId[]) {
+      projected.copy(anchorFor[id]()).project(camera)
+      const slot = (screenAnchors[id] ??= { x: 0, y: 0, visible: false })
+      slot.visible = projected.z < 1 && Math.abs(projected.x) < 1.1 && Math.abs(projected.y) < 1.1
+      slot.x = ((projected.x + 1) / 2) * w
+      slot.y = ((1 - projected.y) / 2) * h
+    }
   }
 
   let last = performance.now()

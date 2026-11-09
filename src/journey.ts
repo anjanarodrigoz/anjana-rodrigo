@@ -63,5 +63,5 @@ export function readJourney(): Journey {
   return { from: last.id, to: last.id, t: 0, active: last.id }
 }
 
-/** Shared channel for the guide's on-screen position (written by the 3D scene every frame). */
-export const guideScreen = { x: 0, y: 0, visible: false }
+/** Screen position of each stop's anchor in the 3D scene, written by the scene every frame. */
+export const screenAnchors: Partial<Record<StageId, { x: number; y: number; visible: boolean }>> = {}

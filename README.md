@@ -25,13 +25,15 @@ npm run preview
 
 ## How it works
 
-- **The island** (`src/three/islandScene.ts`) is built in code: grassy top with trees, a benched pit with a spiral haul road, yellow trucks, excavator and drill rig, a processing plant with silos, conveyor, crusher and pond, a site office and gate, and a rock underside that glows blue. It is fixed behind the whole page.
-- **The tour** (`src/journey.ts`) lists the stops. Each page section declares its stop with `data-stage`; scrolling between sections moves the camera and walks the guide character to the next stop.
-- **The guide** is a small engineer in a hard hat and blue vest. Each stop has a speech note with Anjana's photo; a dashed arrow (`GuideArrow`) points from the note to the guide.
-- **Tour stops:** Welcome → About me (site office) → MineBook (processing plant) → Blast Pattern (drill bench) → Fleet Dispatch (pit floor) → Cycle-Time (haul road) → Crack Survey (pit walls) → Experience & credentials (lookout) → Contact (mine gate).
-- **Prototypes** (`src/components/prototypes/`) are interactive demos with simulated data and rules of thumb — not engineering tools.
-- **Navigation:** a numbered tour rail on wide screens; a progress strip on phones.
-- Without WebGL the page is plain white and fully usable; under `prefers-reduced-motion` the scene renders still frames only when you scroll.
+- **Full-screen mine tour** (`src/pages/TourPage.tsx`). The 3D floating-island mine (`src/three/islandScene.ts`) always fills the screen. Scrolling walks a 3D Anjana — curly black hair, short beard, navy suit and tie — between tour stops (`src/journey.ts`).
+- **Cards inside the mine** (`src/components/tour/StopCards.tsx`). Each stop shows one small card pinned next to the object it describes, joined by a leader line; the scene publishes each anchor's screen position every frame. On phones the card docks at the bottom with the line pointing up into the mine.
+- **Detail pages** (hash routes in `src/router.ts`, so any static host works):
+  - `#/project/<id>` — project details and its working prototype (`src/components/prototypes/`), with previous/next links.
+  - `#/about` — photo, contact, capabilities, experience, credentials, expertise.
+  - "Back" returns to the same stop in the mine (`#/tour/<stop>`).
+- **Stops:** Welcome → About me (site office) → MineBook (processing plant) → Blast Pattern (drill bench) → Fleet Dispatch (pit floor) → Cycle-Time (haul road) → Crack Survey (pit walls) → Experience (lookout) → Contact (mine gate).
+- Prototypes use simulated data and rules of thumb — demos, not engineering tools.
+- Without WebGL the cards still work over a white page; under `prefers-reduced-motion` the scene renders still frames only when you scroll.
 
 ## Design
 
