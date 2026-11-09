@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone 
 import { Header } from "@/components/site/Header"
 import { MineCanvas } from "@/components/site/MineCanvas"
 import { Reveal } from "@/components/site/Reveal"
-import { capabilities, contact, credentials, expertise, minebook, nav, process, projects, roles } from "@/content"
+import { capabilities, contact, credentials, expertise, minebook, nav, projects, roles } from "@/content"
 import { useClickSound } from "@/hooks"
 
 function SectionHeading({
@@ -62,16 +62,6 @@ export default function HomePage() {
             <span className="hud-corner tr" />
             <span className="hud-corner bl" />
             <span className="hud-corner br" />
-            <p className="hud-readout hud-top">
-              <span>PIT 01 · OPEN CUT</span>
-              <span>8 BENCHES · 1.15 RL STEP</span>
-            </p>
-            <p className="hud-readout hud-bottom">
-              <span>
-                <i className="hud-live" /> HAUL CYCLE · LIVE MODEL
-              </span>
-              <span>PROCEDURAL MODEL · DRAG TO LOOK</span>
-            </p>
           </div>
 
           <div className="shell hero-grid">
@@ -85,10 +75,7 @@ export default function HomePage() {
                 Engineering smarter <em>mining operations.</em>
               </h1>
 
-              <p className="hero-lede">
-                I pair mining engineering judgement with software precision, building the tools that
-                turn pit floor complexity into decisions teams can act on.
-              </p>
+              <p className="hero-lede">Mining engineer building software for the pit.</p>
 
               <div className="hero-actions">
                 <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
@@ -101,20 +88,6 @@ export default function HomePage() {
                 </a>
               </div>
 
-              <dl className="hero-proof">
-                <div>
-                  <dt>Discipline</dt>
-                  <dd>Earth Resources Eng.</dd>
-                </div>
-                <div>
-                  <dt>Building since</dt>
-                  <dd>2020</dd>
-                </div>
-                <div>
-                  <dt>Product</dt>
-                  <dd>MineBook</dd>
-                </div>
-              </dl>
             </div>
           </div>
 
@@ -136,7 +109,6 @@ export default function HomePage() {
                     </span>
                     <span className="mono-index">{item.index}</span>
                     <h3>{item.title}</h3>
-                    <p>{item.copy}</p>
                   </Reveal>
                 )
               })}
@@ -148,12 +120,8 @@ export default function HomePage() {
           <div className="shell">
             <Reveal className="heading-row">
               <SectionHeading eyebrow="Flagship product">
-                MineBook — the whole pit, <em>on one surface.</em>
+                MineBook. <em>The whole pit, one screen.</em>
               </SectionHeading>
-              <p className="heading-row-lede">
-                A connected operations platform for production, fleet, equipment, alerts and shift
-                reporting. Built by a mining engineer, for the people who run the pit.
-              </p>
             </Reveal>
 
             <Reveal className="minebook-stage">
@@ -172,7 +140,6 @@ export default function HomePage() {
                   loading="lazy"
                 />
               </div>
-              <p className="minebook-note">In colour — because it&apos;s the product.</p>
             </Reveal>
 
             <ul className="minebook-features">
@@ -180,7 +147,6 @@ export default function HomePage() {
                 <Reveal as="li" key={item.label} step={index}>
                   <span className="mono-index">{String(index + 1).padStart(2, "0")}</span>
                   <h3>{item.label}</h3>
-                  <p>{item.copy}</p>
                 </Reveal>
               ))}
             </ul>
@@ -194,10 +160,6 @@ export default function HomePage() {
                 <h2>
                   Bring your operation <em>onboard MineBook.</em>
                 </h2>
-                <p>
-                  Three steps from spreadsheet and radio calls to a live view of the pit. Start on
-                  minebook.lk, or talk to me first about how it fits your site.
-                </p>
                 <div className="onboard-actions">
                   <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
                     Start onboarding at minebook.lk
@@ -215,7 +177,6 @@ export default function HomePage() {
                     <span className="onboard-index">{step.index}</span>
                     <div>
                       <h3>{step.title}</h3>
-                      <p>{step.copy}</p>
                     </div>
                   </li>
                 ))}
@@ -230,10 +191,6 @@ export default function HomePage() {
               <SectionHeading eyebrow="Selected work">
                 Projects designed for <em>real operations.</em>
               </SectionHeading>
-              <p className="heading-row-lede">
-                Practical products shaped by engineering context, real user workflows, and
-                measurable operational outcomes. Look closer and each one comes into colour.
-              </p>
             </Reveal>
 
             <div className="project-grid">
@@ -254,7 +211,6 @@ export default function HomePage() {
                       <span className="project-year">{project.year}</span>
                     </p>
                     <h3>{project.title}</h3>
-                    <p className="project-copy">{project.copy}</p>
 
                     <a className="project-link" href="#contact">
                       Discuss this project
@@ -279,15 +235,7 @@ export default function HomePage() {
                   Engineering insight, built into every <em>digital solution.</em>
                 </SectionHeading>
 
-                <p>
-                  I combine mining engineering knowledge with software development and data analytics
-                  to build tools that solve real operational challenges, not generic dashboards.
-                </p>
-                <p>
-                  From mine planning and production intelligence to mobile field systems, I focus on
-                  solutions that help teams work smarter, decide faster, and deliver measurable
-                  results.
-                </p>
+                <p>Mining engineering + software + data — tools for real operations.</p>
 
                 <ul className="tag-row">
                   <li>Mining Systems</li>
@@ -320,7 +268,6 @@ export default function HomePage() {
                     <p className="timeline-period">{item.period}</p>
                     <h3>{item.role}</h3>
                     <p className="timeline-org">{item.org}</p>
-                    <p className="timeline-copy">{item.copy}</p>
                   </li>
                 ))}
               </ol>
@@ -355,10 +302,6 @@ export default function HomePage() {
               <SectionHeading eyebrow="Credentials">
                 Education &amp; <em>professional standing.</em>
               </SectionHeading>
-              <p className="heading-row-lede">
-                Formal engineering training, published research, and professional membership in two
-                jurisdictions.
-              </p>
             </Reveal>
 
             <div className="credential-grid">
@@ -379,36 +322,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section process">
-          <div className="shell">
-            <Reveal>
-              <SectionHeading
-                eyebrow="How I work"
-                align="center"
-                lede="A short, repeatable path from an operational problem to a tool people actually use."
-              >
-                From operational problem to <em>practical product.</em>
-              </SectionHeading>
-            </Reveal>
-
-            <ol className="process-grid">
-              {process.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <Reveal as="li" key={item.title} step={index}>
-                    <span className="process-node">
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <span className="mono-index">{item.index}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.copy}</p>
-                  </Reveal>
-                )
-              })}
-            </ol>
-          </div>
-        </section>
-
         <section className="section contact" id="contact">
           <div className="shell">
             <Reveal className="contact-card">
@@ -424,10 +337,7 @@ export default function HomePage() {
                 <h2>
                   Have a mining challenge <em>worth solving?</em>
                 </h2>
-                <p className="contact-lede">
-                  Tell me about the operation and the decision you&apos;re trying to make. I&apos;ll
-                  tell you honestly whether software is the answer.
-                </p>
+                <p className="contact-lede">Tell me about your operation.</p>
 
                 <div className="contact-actions">
                   <a

@@ -1,11 +1,8 @@
 import {
   BarChart3,
-  Boxes,
   Code2,
   Hammer,
-  LineChart,
   Route,
-  ScanSearch,
   UsersRound,
   Wrench,
   type LucideIcon,
@@ -147,12 +144,6 @@ export const expertise: { label: string; icon: LucideIcon }[] = [
   { label: "Technical Leadership", icon: UsersRound },
 ]
 
-export const process: { index: string; title: string; copy: string; icon: LucideIcon }[] = [
-  { index: "01", title: "Discover", copy: "Understand the operational challenge and define clear objectives.", icon: ScanSearch },
-  { index: "02", title: "Model", copy: "Map the data, workflows, constraints, and practical solution path.", icon: Boxes },
-  { index: "03", title: "Build", copy: "Develop intuitive tools with the people who will actually use them.", icon: Code2 },
-  { index: "04", title: "Improve", copy: "Measure performance, learn continuously, and improve the system.", icon: LineChart },
-]
 
 const MoratuwaIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">

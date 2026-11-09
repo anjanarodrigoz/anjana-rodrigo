@@ -1,6 +1,6 @@
 # Anjana Rodrigo — Portfolio
 
-A responsive portfolio for a mining engineer and software developer, and the front door for **MineBook** ([minebook.lk](https://minebook.lk)). The site is strictly black and white on a white canvas; the hero is a real-time three.js model of an open-pit mine, and the only colour on the page is product imagery.
+A responsive portfolio for a mining engineer and software developer, and the front door for **MineBook** ([minebook.lk](https://minebook.lk)). The site is white with a single brand-blue accent; the hero is a real-time three.js model of an open-pit mine, and product screenshots are shown in full colour.
 
 ## Technology
 
@@ -50,8 +50,9 @@ components.json      shadcn configuration
 
 ## Design system
 
-- **Monochrome.** White canvas, black ink, neutral greys. No brand colour in the UI.
-- **Product is the colour.** The MineBook dashboard is shown in full colour; the other project screenshots are greyscale and colourise on hover/focus (or as they scroll in on touch devices).
+- **White + blue.** White canvas, black type, brand blue (`#0b5fe0`, from the AR logo) as the only accent.
+- **Minimal copy.** Headlines and short labels; no long paragraphs.
+- Product screenshots are shown in full colour.
 - **Hero.** A procedural open-pit mine (terraced benches, spiral haul road, haul trucks, excavator, blast-hole pattern, survey scan and dust) rendered with three.js. It follows the pointer, dollies on scroll, pauses off-screen, renders a single still frame under `prefers-reduced-motion`, and falls back to a static contour backdrop without WebGL.
 - **MineBook onboarding.** A dedicated section with a three-step onboarding flow and calls to action linking to [minebook.lk](https://minebook.lk).
 - Type: Inter Tight (display), Instrument Serif italics (accents), Inter (body), JetBrains Mono (labels).
