@@ -1,464 +1,252 @@
 import type { ReactNode } from "react"
-import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
-import { Header } from "@/components/site/Header"
-import { DepthGauge } from "@/components/site/DepthGauge"
-import { MineCanvas } from "@/components/site/MineCanvas"
-import { MineBookDemo } from "@/components/prototypes/MineBookDemo"
 import { prototypes } from "@/components/prototypes/registry"
-import { Reveal } from "@/components/site/Reveal"
-import { capabilities, contact, credentials, expertise, minebook, nav, projects, roles } from "@/content"
-import { useClickSound } from "@/hooks"
-import { stages, type StageId } from "@/journey"
+import { GuideArrow } from "@/components/tour/GuideArrow"
+import { GuideNote } from "@/components/tour/GuideNote"
+import { IslandCanvas } from "@/components/tour/IslandCanvas"
+import { TourRail } from "@/components/tour/TourRail"
+import { useActiveStage } from "@/components/tour/useActiveStage"
+import { capabilities, contact, credentials, expertise, minebook, projects, roles } from "@/content"
+import type { StageId } from "@/journey"
 
-function SectionHeading({
-  eyebrow,
-  children,
-  lede,
-  align = "left",
-}: {
-  eyebrow: string
-  children: ReactNode
-  lede?: string
-  align?: "left" | "center"
-}) {
-  return (
-    <div className={`section-heading ${align === "center" ? "is-center" : ""}`}>
-      <p className="eyebrow">
-        <i aria-hidden="true" />
-        {eyebrow}
-      </p>
-      <h2>{children}</h2>
-      {lede ? <p className="section-lede">{lede}</p> : null}
-    </div>
-  )
-}
-
-/** Decorative topographic contour lines — a nod to a mine survey plan. */
-function Contours() {
-  const outline =
-    "M200 40 C280 40 344 92 356 168 C368 244 322 320 250 348 C178 376 96 350 62 288 C28 226 44 138 104 90 C132 68 166 40 200 40 Z"
-
-  return (
-    <svg className="contours" viewBox="0 0 400 420" aria-hidden="true" focusable="false">
-      {[1, 0.84, 0.68, 0.52, 0.36, 0.2].map((scale) => (
-        <path key={scale} d={outline} transform={`translate(205 194) scale(${scale}) translate(-205 -194)`} />
-      ))}
-    </svg>
-  )
-}
-
-/** Which mine stage each product lives at, in descent order. */
-const productStages: { id: string; stage: StageId }[] = [
+/** Each product's stop on the island, in tour order. */
+const productStops: { id: string; stage: StageId }[] = [
   { id: "blast-pattern", stage: "drill" },
   { id: "fleet-dispatch", stage: "load" },
   { id: "cycle-time", stage: "haul" },
   { id: "crack-survey", stage: "walls" },
 ]
 
-export default function HomePage() {
-  useClickSound()
+/** A tour stop: open space to see the island and the guide, then a content card. */
+function Stop({ stage, id, children, label }: { stage: StageId; id: string; children: ReactNode; label: string }) {
+  return (
+    <section className="stop" id={id} data-stage={stage} aria-label={label}>
+      <div className="wrap">
+        <div className="stop-view">
+          <GuideNote stage={stage} />
+        </div>
+        <div className="card">{children}</div>
+      </div>
+    </section>
+  )
+}
+
+function Kicker({ children }: { children: ReactNode }) {
+  return <p className="kicker">{children}</p>
+}
+
+export default function App() {
+  const active = useActiveStage()
+  const MineBookPrototype = prototypes.minebook
 
   return (
     <>
-      <MineCanvas className="mine-canvas" />
-      <Header />
-      <DepthGauge />
+      <IslandCanvas />
+      <GuideArrow />
+
+      <header className="topbar">
+        <a className="brand" href="#welcome" aria-label="Anjana Rodrigo — back to top">
+          <img src="/assets/brand/ar-logo.png" alt="" width="36" height="36" />
+          <span>Anjana Rodrigo</span>
+        </a>
+        <a className="pill pill-solid" href="#contact">
+          Let&apos;s talk
+        </a>
+      </header>
+
+      <TourRail active={active} />
 
       <main>
-        <section className="hero" id="home" data-stage="surface">
-          <div className="hero-vignette" aria-hidden="true" />
-
-          <div className="hero-hud" aria-hidden="true">
-            <span className="hud-corner tl" />
-            <span className="hud-corner tr" />
-            <span className="hud-corner bl" />
-            <span className="hud-corner br" />
-          </div>
-
-          <div className="shell hero-grid">
-            <div className="hero-copy">
-              <p className="status-chip">
-                <i aria-hidden="true" />
-                Mining engineer · Software developer
-              </p>
-
+        {/* 01 · Welcome */}
+        <section className="welcome" id="welcome" data-stage="welcome" aria-label="Welcome">
+          <div className="wrap welcome-grid">
+            <div className="welcome-copy">
+              <Kicker>Mining engineer · Software developer</Kicker>
               <h1>
-                Engineering smarter <em>mining operations.</em>
+                Anjana
+                <br />
+                Rodrigo
               </h1>
-
-              <p className="hero-lede">Mining engineer building software for the pit.</p>
-
-              <div className="hero-actions">
-                <a className="btn btn-primary btn-lg btn-mb" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
-                  Onboard to MineBook
+              <p className="welcome-line">I build software that runs mines better.</p>
+              <div className="actions">
+                <a className="pill pill-solid pill-lg" href="#about">
+                  Start the tour
+                  <ArrowDown aria-hidden="true" />
+                </a>
+                <a className="pill pill-lg" href={minebook.url} target="_blank" rel="noreferrer">
+                  MineBook
                   <ArrowUpRight aria-hidden="true" />
                 </a>
-                <a className="btn btn-ghost btn-lg" href="#minebook">
-                  Descend into the pit
-                  <ArrowRight aria-hidden="true" />
-                </a>
               </div>
-
+              <GuideNote stage="welcome" />
             </div>
           </div>
-
-          <a className="scroll-cue" href="#minebook" aria-label="Scroll to MineBook">
-            <span />
-          </a>
-
         </section>
 
-        <section className="capability-band" aria-label="Capabilities" data-stage="surface">
-          <div className="shell">
-            <ul className="capability-rail">
-              {capabilities.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <Reveal as="li" key={item.title} step={index}>
-                    <span className="capability-icon">
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <span className="mono-index">{item.index}</span>
-                    <h3>{item.title}</h3>
-                  </Reveal>
-                )
-              })}
-            </ul>
-          </div>
-        </section>
-
-        <section className="section minebook" id="minebook" data-stage="control">
-          <div className="shell">
-            <Reveal className="heading-row">
-              <SectionHeading eyebrow="RL +12 m · Mine control">
-                MineBook. <em>The whole pit, one screen.</em>
-              </SectionHeading>
-            </Reveal>
-
-            <Reveal className="minebook-stage">
-              <div className="minebook-frame">
-                <div className="minebook-chrome" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                  <span>minebook.lk</span>
-                </div>
-                <MineBookDemo />
-              </div>
-            </Reveal>
-
-            <ul className="minebook-features">
-              {minebook.features.map((item, index) => (
-                <Reveal as="li" key={item.label} step={index}>
-                  <span className="mono-index">{String(index + 1).padStart(2, "0")}</span>
-                  <h3>{item.label}</h3>
-                </Reveal>
-              ))}
-            </ul>
-
-            <Reveal className="onboard-card">
-              <div className="onboard-copy">
-                <p className="eyebrow">
-                  <i aria-hidden="true" />
-                  Onboarding now open
-                </p>
-                <h2>
-                  Bring your operation <em>onboard MineBook.</em>
-                </h2>
-                <div className="onboard-actions">
-                  <a className="btn btn-primary btn-lg" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
-                    Start onboarding at minebook.lk
-                    <ArrowUpRight aria-hidden="true" />
-                  </a>
-                  <a className="btn btn-ghost btn-lg" href={contact.whatsapp} target="_blank" rel="noreferrer">
-                    Book a walkthrough
-                  </a>
-                </div>
-              </div>
-
-              <ol className="onboard-steps">
-                {minebook.steps.map((step) => (
-                  <li key={step.index}>
-                    <span className="onboard-index">{step.index}</span>
-                    <div>
-                      <h3>{step.title}</h3>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </Reveal>
-          </div>
-        </section>
-
-        {productStages.map(({ id, stage }, index) => {
-          const project = projects.find((item) => item.id === id)
-          const Prototype = prototypes[id]
-          const info = stages.find((item) => item.id === stage)
-          if (!project || !Prototype || !info) return null
-          return (
-            <section
-              className="section stage-section"
-              id={index === 0 ? "work" : project.id}
-              data-stage={stage}
-              key={id}
-              aria-labelledby={`${id}-title`}
-            >
-              <div className="shell">
-                <Reveal className="stage-head">
-                  <p className="eyebrow">
-                    <i aria-hidden="true" />
-                    {info.rl} · {info.label}
-                  </p>
-                  <div className="stage-title">
-                    <h2 id={`${id}-title`}>{project.title}</h2>
-                    <a className="project-link" href="#contact">
-                      Discuss
-                      <ArrowUpRight aria-hidden="true" />
-                    </a>
-                  </div>
-                  <p className="project-meta">
-                    <span>{project.discipline}</span>
-                    <span className="project-year">{project.year}</span>
-                  </p>
-                </Reveal>
-                <Reveal className="product-stage">
-                  <Prototype />
-                </Reveal>
-              </div>
-            </section>
-          )
-        })}
-
-        <section className="section about" id="about" data-stage="office">
-          <div className="shell">
-            <Reveal className="about-card">
-              <div className="portrait">
-                <img src="/assets/about/anjana-professional.png" alt="Anjana Rodrigo" loading="lazy" />
-              </div>
-
-              <div className="about-copy">
-                <SectionHeading eyebrow="RL +4 m · Site office">
-                  Engineering insight, built into every <em>digital solution.</em>
-                </SectionHeading>
-
-                <p>Mining engineering + software + data — tools for real operations.</p>
-
-                <ul className="tag-row">
-                  <li>Mining Systems</li>
-                  <li>Full-Stack Development</li>
-                  <li>Operational Analytics</li>
-                </ul>
-
-                <a className="btn btn-primary" href="#experience">
-                  See the experience
-                  <ArrowRight aria-hidden="true" />
-                </a>
-              </div>
-
-              <Contours />
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="section experience" id="experience" data-stage="office">
-          <div className="shell experience-grid">
-            <Reveal className="panel timeline-panel">
-              <SectionHeading eyebrow="Experience">
-                Built across engineering, products, and <em>operations.</em>
-              </SectionHeading>
-
-              <ol className="timeline">
-                {roles.map((item) => (
-                  <li key={item.role}>
-                    <span className={`timeline-node ${item.current ? "is-current" : ""}`} aria-hidden="true" />
-                    <p className="timeline-period">{item.period}</p>
-                    <h3>{item.role}</h3>
-                    <p className="timeline-org">{item.org}</p>
-                  </li>
-                ))}
-              </ol>
-            </Reveal>
-
-            <Reveal className="panel expertise-panel" step={1}>
-              <p className="eyebrow">
-                <i aria-hidden="true" />
-                Expertise
+        {/* 02 · About */}
+        <Stop stage="office" id="about" label="About me">
+          <div className="about">
+            <img className="about-photo" src="/assets/about/anjana-professional.png" alt="Anjana Rodrigo" loading="lazy" />
+            <div className="about-copy">
+              <Kicker>About me</Kicker>
+              <h2>Engineering judgement, written as software.</h2>
+              <p className="lead">
+                Earth Resources Engineer (University of Moratuwa) building tools for real operations since 2020.
               </p>
-
-              <ul className="expertise-grid">
-                {expertise.map((item) => {
-                  const Icon = item.icon
+              <ul className="chips">
+                {capabilities.map((c) => {
+                  const Icon = c.icon
                   return (
-                    <li key={item.label}>
-                      <span>
-                        <Icon aria-hidden="true" />
-                      </span>
-                      <strong>{item.label}</strong>
+                    <li key={c.title}>
+                      <Icon aria-hidden="true" />
+                      {c.title}
                     </li>
                   )
                 })}
               </ul>
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="section credentials" id="credentials" data-stage="office">
-          <div className="shell">
-            <Reveal className="heading-row">
-              <SectionHeading eyebrow="Credentials">
-                Education &amp; <em>professional standing.</em>
-              </SectionHeading>
-            </Reveal>
-
-            <div className="credential-grid">
-              {credentials.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <Reveal as="article" className="credential-card" key={item.institution} step={index}>
-                    <span className="credential-icon">
-                      <Icon />
-                    </span>
-                    <h3>{item.institution}</h3>
-                    <p>{item.detail}</p>
-                    <p className="credential-period">{item.period}</p>
-                  </Reveal>
-                )
-              })}
+              <ul className="chips chips-quiet">
+                {expertise.map((e) => (
+                  <li key={e.label}>{e.label}</li>
+                ))}
+              </ul>
             </div>
           </div>
-        </section>
+        </Stop>
 
-        <section className="section contact" id="contact" data-stage="gate">
-          <div className="shell">
-            <Reveal className="contact-card">
-              <svg className="wire-terrain" viewBox="0 0 500 260" aria-hidden="true" focusable="false" preserveAspectRatio="none">
-                <path d="M10 225 96 111 151 172 235 43 302 131 366 76 490 225M10 225h480M96 111l139 114M151 172l84-129 131 182M235 43l67 88 64-55M96 111l55 61 151-41 64-55M151 172l151-41 64 94" />
-              </svg>
-
-              <div className="contact-copy">
-                <p className="eyebrow">
-                  <i aria-hidden="true" />
-                  RL +2 m · Mine gate
-                </p>
-                <h2>
-                  Have a mining challenge <em>worth solving?</em>
-                </h2>
-                <p className="contact-lede">Tell me about your operation.</p>
-
-                <div className="contact-actions">
-                  <a
-                    className="btn btn-invert btn-lg"
-                    href={contact.whatsapp}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Chat on WhatsApp
-                    <ArrowRight aria-hidden="true" />
-                  </a>
-                  <a className="contact-email" href={`mailto:${contact.email}`}>
-                    {contact.email}
-                  </a>
-                  <a
-                    className="contact-email"
-                    href={contact.whatsapp}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {contact.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="contact-visual" aria-hidden="true">
-                <div className="mini-dash">
-                  <div className="mini-dash-head">
-                    <span>Production overview</span>
-                    <i />
-                  </div>
-                  <div className="mini-dash-stats">
-                    <div>
-                      <small>Production</small>
-                      <strong>24,530</strong>
-                    </div>
-                    <div>
-                      <small>Utilisation</small>
-                      <strong>72%</strong>
-                    </div>
-                  </div>
-                  <div className="mini-dash-bars">
-                    {[52, 72, 43, 86, 65, 92, 70, 98].map((height, index) => (
-                      <i key={index} style={{ height: `${height}%` }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Reveal>
+        {/* 03 · MineBook */}
+        <Stop stage="control" id="minebook" label="MineBook">
+          <div className="card-head">
+            <div>
+              <Kicker>Project 01 · Flagship</Kicker>
+              <h2>MineBook</h2>
+              <p className="lead">The whole operation on one screen.</p>
+            </div>
+            <a className="pill pill-solid" href={minebook.onboardUrl} target="_blank" rel="noreferrer">
+              Onboard at minebook.lk
+              <ArrowUpRight aria-hidden="true" />
+            </a>
           </div>
-        </section>
+          <div className="browser">
+            <div className="browser-bar" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <span>minebook.lk</span>
+            </div>
+            <MineBookPrototype />
+          </div>
+          <ol className="steps">
+            {minebook.steps.map((s) => (
+              <li key={s.index}>
+                <b>{s.index}</b>
+                {s.title}
+              </li>
+            ))}
+          </ol>
+        </Stop>
+
+        {/* 04–07 · Products at their places in the mine */}
+        {productStops.map(({ id, stage }, i) => {
+          const project = projects.find((p) => p.id === id)
+          const Prototype = prototypes[id]
+          if (!project || !Prototype) return null
+          return (
+            <Stop stage={stage} id={i === 0 ? "work" : id} label={project.title} key={id}>
+              <div className="card-head">
+                <div>
+                  <Kicker>
+                    Project {String(i + 2).padStart(2, "0")} · {project.discipline}
+                  </Kicker>
+                  <h2>{project.title}</h2>
+                </div>
+                <a className="pill" href="#contact">
+                  Discuss
+                  <ArrowUpRight aria-hidden="true" />
+                </a>
+              </div>
+              <Prototype />
+            </Stop>
+          )
+        })}
+
+        {/* 08 · Experience & credentials */}
+        <Stop stage="lookout" id="experience" label="Experience">
+          <Kicker>Experience</Kicker>
+          <h2>Where I&apos;ve worked.</h2>
+          <ol className="roles">
+            {roles.map((r) => (
+              <li key={r.role} className={r.current ? "is-current" : undefined}>
+                <span>{r.period}</span>
+                <strong>{r.role}</strong>
+                <em>{r.org}</em>
+              </li>
+            ))}
+          </ol>
+          <Kicker>Credentials</Kicker>
+          <ul className="creds">
+            {credentials.map((c) => {
+              const Icon = c.icon
+              return (
+                <li key={c.institution}>
+                  <span className="cred-icon">
+                    <Icon />
+                  </span>
+                  <strong>{c.institution}</strong>
+                  <span>{c.detail}</span>
+                  <em>{c.period}</em>
+                </li>
+              )
+            })}
+          </ul>
+        </Stop>
+
+        {/* 09 · Contact */}
+        <Stop stage="gate" id="contact" label="Contact">
+          <div className="contact">
+            <div>
+              <Kicker>Contact</Kicker>
+              <h2>Have a mine worth improving?</h2>
+              <div className="actions">
+                <a className="pill pill-solid pill-lg" href={contact.whatsapp} target="_blank" rel="noreferrer">
+                  <MessageCircle aria-hidden="true" />
+                  WhatsApp
+                </a>
+                <a className="pill pill-lg" href={`mailto:${contact.email}`}>
+                  <Mail aria-hidden="true" />
+                  Email
+                </a>
+              </div>
+            </div>
+            <ul className="contact-list">
+              <li>
+                <Mail aria-hidden="true" />
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </li>
+              <li>
+                <Phone aria-hidden="true" />
+                <a href={`tel:${contact.phoneRaw}`}>{contact.phone}</a>
+              </li>
+              <li>
+                <Linkedin aria-hidden="true" />
+                <a href={contact.linkedin} target="_blank" rel="noreferrer">
+                  LinkedIn
+                </a>
+              </li>
+              <li>
+                <Github aria-hidden="true" />
+                <a href={contact.github} target="_blank" rel="noreferrer">
+                  GitHub
+                </a>
+              </li>
+            </ul>
+          </div>
+        </Stop>
       </main>
 
-
       <footer className="footer">
-        <div className="shell footer-grid">
-          <div className="footer-brand">
-            <img src="/assets/brand/ar-logo.png" alt="" width="44" height="44" />
-            <p>
-              Mining engineering.
-              <br />
-              Software precision.
-              <br />
-              Better decisions.
-            </p>
-          </div>
-
-          <nav className="footer-nav" aria-label="Footer">
-            <p className="footer-label">Navigate</p>
-            {nav.map((item) => (
-              <a href={item.href} key={item.href}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="footer-nav">
-            <p className="footer-label">Elsewhere</p>
-            <a href={contact.linkedin} target="_blank" rel="noreferrer">
-              LinkedIn
-            </a>
-            <a href={contact.github} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href={contact.whatsapp} target="_blank" rel="noreferrer">
-              WhatsApp
-            </a>
-            <a href={`mailto:${contact.email}`}>Email</a>
-            <a href={`tel:${contact.phoneRaw}`}>{contact.phone}</a>
-          </div>
-
-          <div className="footer-social">
-            <a href={contact.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
-              <Linkedin aria-hidden="true" />
-            </a>
-            <a href={contact.github} target="_blank" rel="noreferrer" aria-label="GitHub">
-              <Github aria-hidden="true" />
-            </a>
-            <a href={contact.whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp">
-              <MessageCircle aria-hidden="true" />
-            </a>
-            <a href={`mailto:${contact.email}`} aria-label="Email">
-              <Mail aria-hidden="true" />
-            </a>
-            <a href={`tel:${contact.phoneRaw}`} aria-label="Phone">
-              <Phone aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-
-        <div className="shell footer-bottom">
-          <span>© 2026 Anjana Rodrigo</span>
-          <span>Engineering practical digital systems for real operations.</span>
-        </div>
+        <span>© 2026 Anjana Rodrigo</span>
+        <span>Mining engineering · Software</span>
       </footer>
     </>
   )

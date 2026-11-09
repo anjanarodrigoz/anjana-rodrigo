@@ -137,7 +137,7 @@ export function MineBookDemo() {
     )
 
   return (
-    <div className="mb-app proto proto-mb" ref={rootRef}>
+    <div className="mb-app proto" ref={rootRef}>
       <nav className="mb-side" aria-label="MineBook prototype">
         <p className="mb-logo">
           <i aria-hidden="true" />
@@ -219,9 +219,9 @@ export function MineBookDemo() {
                   <line key={f} x1="0" x2={W} y1={y(plan * f)} y2={y(plan * f)} stroke="rgba(0,0,0,.06)" />
                 ))}
                 <line x1="0" y1={H} x2={W} y2={y(plan)} stroke="#9a9a9a" strokeDasharray="6 5" strokeWidth="1.5" />
-                <polygon points={area} fill="var(--mb)" opacity="0.14" />
-                <polyline points={line} fill="none" stroke="var(--mb)" strokeWidth="2.5" strokeLinejoin="round" />
-                <circle cx={x(step)} cy={y(moved)} r="4.5" fill="var(--mb-strong)" />
+                <polygon points={area} fill="var(--blue)" opacity="0.14" />
+                <polyline points={line} fill="none" stroke="var(--blue)" strokeWidth="2.5" strokeLinejoin="round" />
+                <circle cx={x(step)} cy={y(moved)} r="4.5" fill="var(--blue-strong)" />
               </svg>
             </div>
 

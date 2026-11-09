@@ -1,7 +1,7 @@
 /* ==========================================================================
    Working prototypes — shared UI kit
    Each prototype is a small, self-contained React app. They inherit the site
-   tokens; MineBook overrides the accent to its orange brand colour.
+   tokens and use the single blue accent.
    ========================================================================== */
 
 .proto {
@@ -17,11 +17,6 @@
   color: var(--ink-2);
 }
 
-.proto-mb {
-  --p-accent: var(--mb);
-  --p-accent-strong: var(--mb-strong);
-  --p-accent-soft: var(--mb-50);
-}
 
 .proto-badge {
   justify-self: start;
@@ -358,7 +353,7 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--mb), var(--mb-strong));
+  background: linear-gradient(135deg, var(--blue), var(--blue-strong));
 }
 
 .mb-side button {
@@ -376,7 +371,7 @@
 
 .mb-side button[aria-current="page"] {
   color: #fff;
-  background: var(--mb-strong);
+  background: var(--blue-strong);
 }
 
 .mb-side button b {
@@ -422,7 +417,7 @@
 .mb-bar div i {
   display: block;
   height: 100%;
-  background: var(--mb);
+  background: var(--blue);
   border-radius: inherit;
   transition: width 0.6s var(--ease);
 }
