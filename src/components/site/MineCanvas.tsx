@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
+import { readJourney } from "@/journey"
 import type { MineSceneHandle } from "@/three/mineScene"
 
 const supportsWebGL = () => {
@@ -12,9 +13,10 @@ const supportsWebGL = () => {
 }
 
 /**
- * Hosts the three.js open-pit scene. three.js is loaded on demand so the first
- * paint of the page never waits on it; without WebGL the hero keeps its static
- * contour backdrop.
+ * Hosts the three.js mine, fixed behind the whole page. Scrolling moves the
+ * camera through the mine's stages (see journey.ts). three.js is loaded on
+ * demand so the first paint never waits on it; without WebGL the page is
+ * simply white.
  */
 export function MineCanvas({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -28,10 +30,15 @@ export function MineCanvas({ className }: { className?: string }) {
     let cancelled = false
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+    let queued = 0
     const onScroll = () => {
-      const hero = canvas.parentElement
-      if (!hero || !handle) return
-      handle.setScroll(window.scrollY / Math.max(1, hero.offsetHeight))
+      if (queued) return
+      queued = requestAnimationFrame(() => {
+        queued = 0
+        if (!handle) return
+        const j = readJourney()
+        handle.setJourney(j.from, j.to, j.t)
+      })
     }
 
     import("@/three/mineScene")
@@ -41,6 +48,7 @@ export function MineCanvas({ className }: { className?: string }) {
         setReady(true)
         onScroll()
         window.addEventListener("scroll", onScroll, { passive: true })
+        window.addEventListener("resize", onScroll)
       })
       .catch(() => {
         /* Static backdrop remains — the scene is decoration, not content. */
@@ -49,6 +57,8 @@ export function MineCanvas({ className }: { className?: string }) {
     return () => {
       cancelled = true
       window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+      cancelAnimationFrame(queued)
       handle?.dispose()
     }
   }, [])

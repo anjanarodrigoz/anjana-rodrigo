@@ -10,7 +10,7 @@ import {
 
 export const nav = [
   { label: "MineBook", href: "#minebook" },
-  { label: "Work", href: "#work" },
+  { label: "The pit", href: "#work" },
   { label: "About", href: "#about" },
   { label: "Experience", href: "#experience" },
   { label: "Credentials", href: "#credentials" },

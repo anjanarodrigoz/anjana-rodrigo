@@ -2,12 +2,14 @@ import type { ReactNode } from "react"
 import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
 import { Header } from "@/components/site/Header"
+import { DepthGauge } from "@/components/site/DepthGauge"
 import { MineCanvas } from "@/components/site/MineCanvas"
 import { MineBookDemo } from "@/components/prototypes/MineBookDemo"
 import { prototypes } from "@/components/prototypes/registry"
 import { Reveal } from "@/components/site/Reveal"
 import { capabilities, contact, credentials, expertise, minebook, nav, projects, roles } from "@/content"
 import { useClickSound } from "@/hooks"
+import { stages, type StageId } from "@/journey"
 
 function SectionHeading({
   eyebrow,
@@ -46,17 +48,25 @@ function Contours() {
   )
 }
 
+/** Which mine stage each product lives at, in descent order. */
+const productStages: { id: string; stage: StageId }[] = [
+  { id: "blast-pattern", stage: "drill" },
+  { id: "fleet-dispatch", stage: "load" },
+  { id: "cycle-time", stage: "haul" },
+  { id: "crack-survey", stage: "walls" },
+]
+
 export default function HomePage() {
   useClickSound()
 
   return (
     <>
+      <MineCanvas className="mine-canvas" />
       <Header />
+      <DepthGauge />
 
       <main>
-        <section className="hero" id="home">
-          <div className="hero-backdrop" aria-hidden="true" />
-          <MineCanvas className="hero-canvas" />
+        <section className="hero" id="home" data-stage="surface">
           <div className="hero-vignette" aria-hidden="true" />
 
           <div className="hero-hud" aria-hidden="true">
@@ -84,8 +94,8 @@ export default function HomePage() {
                   Onboard to MineBook
                   <ArrowUpRight aria-hidden="true" />
                 </a>
-                <a className="btn btn-ghost btn-lg" href="#work">
-                  Explore selected work
+                <a className="btn btn-ghost btn-lg" href="#minebook">
+                  Descend into the pit
                   <ArrowRight aria-hidden="true" />
                 </a>
               </div>
@@ -99,7 +109,7 @@ export default function HomePage() {
 
         </section>
 
-        <section className="capability-band" aria-label="Capabilities">
+        <section className="capability-band" aria-label="Capabilities" data-stage="surface">
           <div className="shell">
             <ul className="capability-rail">
               {capabilities.map((item, index) => {
@@ -118,10 +128,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section minebook" id="minebook">
+        <section className="section minebook" id="minebook" data-stage="control">
           <div className="shell">
             <Reveal className="heading-row">
-              <SectionHeading eyebrow="Flagship product">
+              <SectionHeading eyebrow="RL +12 m · Mine control">
                 MineBook. <em>The whole pit, one screen.</em>
               </SectionHeading>
             </Reveal>
@@ -181,46 +191,46 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section work" id="work">
-          <div className="shell">
-            <Reveal className="heading-row">
-              <SectionHeading eyebrow="Selected work">
-                Projects designed for <em>real operations.</em>
-              </SectionHeading>
-            </Reveal>
+        {productStages.map(({ id, stage }, index) => {
+          const project = projects.find((item) => item.id === id)
+          const Prototype = prototypes[id]
+          const info = stages.find((item) => item.id === stage)
+          if (!project || !Prototype || !info) return null
+          return (
+            <section
+              className="section stage-section"
+              id={index === 0 ? "work" : project.id}
+              data-stage={stage}
+              key={id}
+              aria-labelledby={`${id}-title`}
+            >
+              <div className="shell">
+                <Reveal className="stage-head">
+                  <p className="eyebrow">
+                    <i aria-hidden="true" />
+                    {info.rl} · {info.label}
+                  </p>
+                  <div className="stage-title">
+                    <h2 id={`${id}-title`}>{project.title}</h2>
+                    <a className="project-link" href="#contact">
+                      Discuss
+                      <ArrowUpRight aria-hidden="true" />
+                    </a>
+                  </div>
+                  <p className="project-meta">
+                    <span>{project.discipline}</span>
+                    <span className="project-year">{project.year}</span>
+                  </p>
+                </Reveal>
+                <Reveal className="product-stage">
+                  <Prototype />
+                </Reveal>
+              </div>
+            </section>
+          )
+        })}
 
-            <div className="product-list">
-              {projects
-                .filter((project) => !project.featured)
-                .map((project, index) => {
-                  const Prototype = prototypes[project.id]
-                  return (
-                    <Reveal as="article" key={project.id} className="product-block">
-                      <header className="product-head">
-                        <span className="mono-index">{String(index + 1).padStart(2, "0")}</span>
-                        <div>
-                          <p className="project-meta">
-                            <span>{project.discipline}</span>
-                            <span className="project-year">{project.year}</span>
-                          </p>
-                          <h3 id={`${project.id}-title`}>{project.title}</h3>
-                        </div>
-                        <a className="project-link" href="#contact">
-                          Discuss
-                          <ArrowUpRight aria-hidden="true" />
-                        </a>
-                      </header>
-                      <div className="product-stage">
-                        <Prototype />
-                      </div>
-                    </Reveal>
-                  )
-                })}
-            </div>
-          </div>
-        </section>
-
-        <section className="section about" id="about">
+        <section className="section about" id="about" data-stage="office">
           <div className="shell">
             <Reveal className="about-card">
               <div className="portrait">
@@ -228,7 +238,7 @@ export default function HomePage() {
               </div>
 
               <div className="about-copy">
-                <SectionHeading eyebrow="About Anjana">
+                <SectionHeading eyebrow="RL +4 m · Site office">
                   Engineering insight, built into every <em>digital solution.</em>
                 </SectionHeading>
 
@@ -251,7 +261,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section experience" id="experience">
+        <section className="section experience" id="experience" data-stage="office">
           <div className="shell experience-grid">
             <Reveal className="panel timeline-panel">
               <SectionHeading eyebrow="Experience">
@@ -293,7 +303,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section credentials" id="credentials">
+        <section className="section credentials" id="credentials" data-stage="office">
           <div className="shell">
             <Reveal className="heading-row">
               <SectionHeading eyebrow="Credentials">
@@ -319,7 +329,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section contact" id="contact">
+        <section className="section contact" id="contact" data-stage="gate">
           <div className="shell">
             <Reveal className="contact-card">
               <svg className="wire-terrain" viewBox="0 0 500 260" aria-hidden="true" focusable="false" preserveAspectRatio="none">
@@ -329,7 +339,7 @@ export default function HomePage() {
               <div className="contact-copy">
                 <p className="eyebrow">
                   <i aria-hidden="true" />
-                  Let&apos;s build something useful
+                  RL +2 m · Mine gate
                 </p>
                 <h2>
                   Have a mining challenge <em>worth solving?</em>

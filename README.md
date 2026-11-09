@@ -52,7 +52,8 @@ components.json      shadcn configuration
 
 - **White + blue.** White canvas, black type, brand blue (`#0b5fe0`, from the AR logo) as the only accent.
 - **Minimal copy.** Headlines and short labels; no long paragraphs.
-- **Hero.** A procedural open-pit mine (terraced benches, spiral haul road, haul trucks, excavator, blast-hole pattern, survey scan and dust) rendered with three.js. It follows the pointer, dollies on scroll, pauses off-screen, renders a single still frame under `prefers-reduced-motion`, and falls back to a static contour backdrop without WebGL.
+- **Scroll through the mine.** The 3D mine is fixed behind the whole page. Scrolling moves the camera through it stage by stage — surface → mine control (MineBook) → drill & blast (Blast Pattern Design) → load & haul (Fleet Dispatch) → haul road (Cycle-Time) → pit walls (Crack Survey) → site office (About, Experience, Credentials) → mine gate (Contact). Sections declare their stage with `data-stage`; `src/journey.ts` maps scroll position to the camera, and a depth gauge shows the current RL.
+- **3D scene.** A procedural open-pit mine (terraced benches, spiral haul road, haul trucks, excavator, drill rig, blast-hole pattern, crusher, conveyor, stockpile, site office, gate, survey scan and dust) rendered with three.js. It follows the pointer, renders still frames (only on scroll) under `prefers-reduced-motion`, and the page stays plain white without WebGL.
 - **MineBook in orange.** The MineBook section switches the accent to MineBook's brand orange (`--mb`); the rest of the site stays blue.
 - **Working prototypes instead of screenshots.** Every product is shown as an interactive prototype embedded in the page (`src/components/prototypes/`); simulations pause while off-screen:
   - *MineBook* — live shift dashboard (production vs plan, haulage states, fleet status, alerts).
