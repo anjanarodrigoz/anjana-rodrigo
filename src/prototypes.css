@@ -457,59 +457,6 @@
   color: var(--ink-4);
 }
 
-/* Dialog ------------------------------------------------------------------ */
-
-.proto-dialog {
-  width: min(100% - 24px, 1080px);
-  max-height: min(100dvh - 24px, 860px);
-  padding: 0;
-  color: var(--ink-2);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--r-xl);
-  box-shadow: 0 40px 100px -30px rgba(0, 20, 60, 0.45);
-}
-
-.proto-dialog::backdrop {
-  background: rgba(8, 20, 45, 0.55);
-}
-
-.proto-dialog-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 22px;
-  background: #fff;
-  border-bottom: 1px solid var(--line);
-}
-
-.proto-dialog-head h2 {
-  font-size: 1.375rem;
-  letter-spacing: -0.03em;
-}
-
-.proto-dialog-head button {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-}
-
-.proto-dialog-head svg {
-  width: 18px;
-  height: 18px;
-}
-
-.proto-dialog-body {
-  padding: 22px;
-}
-
 /* Responsive -------------------------------------------------------------- */
 
 @media (max-width: 860px) {
@@ -539,9 +486,6 @@
 }
 
 @media (max-width: 560px) {
-  .proto-dialog-body {
-    padding: 14px;
-  }
 
   .mb-main {
     padding: 12px;

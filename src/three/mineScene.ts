@@ -9,9 +9,12 @@ import * as THREE from "three"
  * scan sweeps through the benches, and dust drifts above the floor.
  */
 
+import type { StageId } from "@/journey"
+
 export interface MineSceneHandle {
   dispose: () => void
-  setScroll: (progress: number) => void
+  /** Move the camera between two journey stages (t: 0 → 1). */
+  setJourney: (from: StageId, to: StageId, t: number) => void
 }
 
 interface Options {
@@ -117,7 +120,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200)
 
-  // -- Lighting: one hard key, a cool-neutral fill — strictly greyscale. ----
+  // -- Lighting: soft sky fill plus one key light. ---------------------------
   scene.add(new THREE.HemisphereLight(0xffffff, 0xb0b0b0, 1.9))
   const sun = new THREE.DirectionalLight(0xffffff, 1.1)
   sun.position.set(-14, 22, 10)
@@ -220,7 +223,7 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
     const loaded = i % 2 === 0
     const truck = makeTruck(loaded)
     scene.add(truck)
-    return { mesh: truck, offset: i / 6, speed: 0.012 + (i % 3) * 0.002, up: loaded }
+    return { mesh: truck, offset: i / 6, speed: 0.012 + (i % 3) * 0.002, up: loaded, dir: new THREE.Vector3(1, 0, 0) }
   })
 
   // -- Excavator on the pit floor -----------------------------------------
@@ -257,7 +260,8 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   // -- Drill-hole grid on one bench (blast pattern) -----------------------
   const holeGeo = track(new THREE.CylinderGeometry(0.035, 0.035, 0.16, 6))
-  const holes = new THREE.InstancedMesh(holeGeo, bodyMat, 60)
+  const holeMat = track(new THREE.MeshStandardMaterial({ color: 0x0b5fe0, emissive: 0x0b5fe0, emissiveIntensity: 0 }))
+  const holes = new THREE.InstancedMesh(holeGeo, holeMat, 60)
   {
     const m = new THREE.Matrix4()
     let n = 0
@@ -274,6 +278,104 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
     }
   }
   scene.add(holes)
+
+  // -- Surface infrastructure: crusher, conveyor, stockpile, office, gate ---
+  const lightMat = track(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7 }))
+  const ground = (x: number, z: number) => new THREE.Vector3(x, heightAt(x, z), z)
+  const block = (mat: THREE.Material, at: THREE.Vector3, sx: number, sy: number, sz: number, ry = 0) => {
+    const mesh = new THREE.Mesh(boxGeo, mat)
+    mesh.scale.set(sx, sy, sz)
+    mesh.position.set(at.x, at.y + sy / 2, at.z)
+    mesh.rotation.y = ry
+    scene.add(mesh)
+    return mesh
+  }
+
+  const CRUSHER = ground(18, -8)
+  block(darkMat, CRUSHER, 2.2, 1.4, 2)
+  {
+    const hopperGeo = track(new THREE.CylinderGeometry(1, 0.45, 0.9, 4, 1, true))
+    const hopper = new THREE.Mesh(hopperGeo, bodyMat)
+    hopper.position.set(CRUSHER.x, CRUSHER.y + 1.85, CRUSHER.z)
+    hopper.rotation.y = Math.PI / 4
+    scene.add(hopper)
+  }
+
+  const STOCKPILE = ground(25, -15)
+  {
+    const pile = new THREE.Mesh(track(new THREE.ConeGeometry(2.6, 1.9, 9)), loadMat)
+    pile.position.set(STOCKPILE.x, STOCKPILE.y + 0.95, STOCKPILE.z)
+    scene.add(pile)
+    // Conveyor: an inclined belt from the crusher to the top of the pile.
+    const a = new THREE.Vector3(CRUSHER.x + 0.8, CRUSHER.y + 1.2, CRUSHER.z - 0.8)
+    const b = new THREE.Vector3(STOCKPILE.x, STOCKPILE.y + 2.4, STOCKPILE.z)
+    const belt = new THREE.Mesh(boxGeo, bodyMat)
+    belt.scale.set(a.distanceTo(b), 0.12, 0.45)
+    belt.position.copy(a).lerp(b, 0.5)
+    belt.lookAt(b)
+    belt.rotateY(Math.PI / 2)
+    scene.add(belt)
+    for (let k = 1; k < 4; k++) {
+      const at = a.clone().lerp(b, k / 4)
+      const g = ground(at.x, at.z)
+      block(darkMat, g, 0.12, at.y - g.y, 0.12)
+    }
+  }
+
+  const OFFICE = ground(17, 10)
+  block(lightMat, OFFICE, 3.2, 1.1, 1.6, 0.4)
+  block(bodyMat, OFFICE.clone().add(new THREE.Vector3(0, 1.1, 0)), 3.3, 0.12, 1.7, 0.4)
+  block(lightMat, ground(19.4, 12.2), 1.6, 1.6, 1.4, 0.4)
+  // Light vehicles parked by the office.
+  for (let k = 0; k < 3; k++) block(darkMat, ground(14.6 + k * 0.7, 12.6 - k * 0.3), 0.32, 0.26, 0.6, 0.4)
+
+  const GATE = ground(26, 3)
+  block(darkMat, GATE.clone().add(new THREE.Vector3(0, 0, -1.2)), 0.2, 1.4, 0.2)
+  block(darkMat, GATE.clone().add(new THREE.Vector3(0, 0, 1.2)), 0.2, 1.4, 0.2)
+  block(bodyMat, GATE.clone().add(new THREE.Vector3(0, 1.1, 0)), 0.14, 0.14, 2.6)
+
+  // Surface roads: ramp top → crusher, ramp top → office → gate.
+  {
+    const top = rampPoint(0)
+    const rampTop = ground(Math.cos(top.theta) * top.r, Math.sin(top.theta) * top.r)
+    const road = (pts: THREE.Vector3[]) => {
+      const curve = new THREE.CatmullRomCurve3(pts.map((v) => ground(v.x, v.z).add(new THREE.Vector3(0, 0.06, 0))))
+      const dense = curve.getPoints(120).map((v) => ground(v.x, v.z).add(new THREE.Vector3(0, 0.06, 0)))
+      const line = new THREE.Line(
+        track(new THREE.BufferGeometry().setFromPoints(dense)),
+        roadLine.material as THREE.LineDashedMaterial,
+      )
+      line.computeLineDistances()
+      scene.add(line)
+    }
+    road([rampTop, ground(14, 1), ground(16.5, -5), CRUSHER])
+    road([rampTop, ground(14, 6), OFFICE.clone().add(new THREE.Vector3(-1.5, 0, -1.4)), ground(22, 5), GATE])
+  }
+
+  // -- Drill rig beside the blast pattern ----------------------------------
+  const blastTheta = -2.1 + 7 * 0.07
+  const blastInward = 3 * BENCH_WIDTH + 0.3 + 1.5 * 0.38
+  const blastR = (PIT_RADIUS - blastInward) * shape(blastTheta)
+  const BLAST = ground(Math.cos(blastTheta) * blastR, Math.sin(blastTheta) * blastR)
+  const drillRig = new THREE.Group()
+  {
+    const theta = blastTheta + 0.62
+    const r = (PIT_RADIUS - blastInward) * shape(theta)
+    const at = ground(Math.cos(theta) * r, Math.sin(theta) * r)
+    const base = new THREE.Mesh(boxGeo, darkMat)
+    base.scale.set(0.9, 0.3, 0.6)
+    base.position.y = 0.2
+    const cab = new THREE.Mesh(boxGeo, bodyMat)
+    cab.scale.set(0.4, 0.4, 0.5)
+    cab.position.set(-0.25, 0.55, 0)
+    const mast = new THREE.Mesh(boxGeo, bodyMat)
+    mast.scale.set(0.12, 2.4, 0.12)
+    mast.position.set(0.35, 1.4, 0)
+    drillRig.add(base, cab, mast)
+    drillRig.position.copy(at)
+    drillRig.rotation.y = -theta
+    scene.add(drillRig)
+  }
 
   // -- Dust ------------------------------------------------------------------
   const DUST = 900
@@ -295,52 +397,83 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   // -- Interaction ---------------------------------------------------------
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 }
-  let scroll = 0
+  const journey: { from: StageId; to: StageId; t: number } = { from: "surface", to: "surface", t: 0 }
   const onPointer = (event: PointerEvent) => {
     pointer.tx = (event.clientX / window.innerWidth) * 2 - 1
     pointer.ty = (event.clientY / window.innerHeight) * 2 - 1
   }
   window.addEventListener("pointermove", onPointer, { passive: true })
 
-  let distance = 1
+  let portrait = false
+  let wide = false
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = canvas
     if (!w || !h) return
     renderer.setSize(w, h, false)
     camera.aspect = w / h
-    // Pull back on narrow screens so the whole pit stays in frame.
-    camera.fov = w / h < 1 ? 40 : 34
-    distance = w / h < 0.8 ? 2.1 : 1
-    fog.near = 26 * distance
-    fog.far = 62 * distance
-    // On wide screens, slide the pit right so the headline has clear ground.
-    // On phones, lift it into the top of the screen above the copy.
-    if (w / h > 1.25) camera.setViewOffset(w, h, -w * 0.16, 0, w, h)
-    else if (w / h < 0.8) camera.setViewOffset(w, h, 0, h * 0.17, w, h)
-    else camera.clearViewOffset()
+    camera.fov = w / h < 1 ? 46 : 36
+    portrait = w / h < 0.8
+    wide = w / h > 1.25
     camera.updateProjectionMatrix()
   }
   const resizeObserver = new ResizeObserver(resize)
   resizeObserver.observe(canvas)
   resize()
 
+  // -- Camera waypoints, one per journey stage -----------------------------
+  const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z)
+  const UP = v(0, 1, 0)
+  const EXCAVATOR = excavator.position.clone()
+  const blastDir = v(Math.cos(blastTheta), 0, Math.sin(blastTheta))
+  const wallTheta = 0.95
+  const wallR = (PIT_RADIUS - 4.5 * BENCH_WIDTH) * shape(wallTheta)
+  const WALL = ground(Math.cos(wallTheta) * wallR, Math.sin(wallTheta) * wallR)
+  const wallDir = v(Math.cos(wallTheta), 0, Math.sin(wallTheta))
+
+  const waypoint = (id: StageId, t: number): { pos: THREE.Vector3; look: THREE.Vector3 } => {
+    switch (id) {
+      case "surface": {
+        const orbit = t * 0.035
+        return { pos: v(Math.cos(orbit) * 30, 17, Math.sin(orbit) * 30), look: v(0, -4, 0) }
+      }
+      case "control":
+        return { pos: v(4, 36, 16), look: v(0, -5, 0) }
+      case "drill":
+        return { pos: BLAST.clone().addScaledVector(blastDir, -7.5).addScaledVector(UP, 4.2), look: BLAST.clone() }
+      case "load":
+        return { pos: EXCAVATOR.clone().add(v(3, 6.5, 4)), look: EXCAVATOR.clone().add(v(0, 0.4, 0)) }
+      case "haul": {
+        const truck = trucks[0]
+        const at = truck.mesh.position
+        return {
+          pos: at.clone().addScaledVector(truck.dir, -3.6).addScaledVector(UP, 2.1),
+          look: at.clone().addScaledVector(truck.dir, 4).addScaledVector(UP, 0.2),
+        }
+      }
+      case "walls":
+        return { pos: WALL.clone().addScaledVector(wallDir, -8.5).addScaledVector(UP, 1.6), look: WALL.clone().addScaledVector(UP, 1.2) }
+      case "office":
+        return { pos: OFFICE.clone().add(v(-11, 7, 10)), look: OFFICE.clone().add(v(2, 0.5, -3)) }
+      case "gate":
+        return { pos: v(44, 30, 26), look: v(4, -3, -2) }
+    }
+  }
+
   // -- Loop ------------------------------------------------------------------
   const clock = new THREE.Clock()
-  const target = new THREE.Vector3(0, -4, 0)
+  const camPos = v(30, 17, 0)
+  const camLook = v(0, -4, 0)
   const tangent = new THREE.Vector3()
   let frame = 0
   let running = !options.still
-  let visible = true
+  let snap = true
+
+  const weight = (id: StageId) =>
+    (journey.from === id ? 1 - journey.t : 0) + (journey.to === id ? journey.t : 0)
 
   const update = (t: number) => {
     pointer.x += (pointer.tx - pointer.x) * 0.04
     pointer.y += (pointer.ty - pointer.y) * 0.04
-
-    const orbit = t * 0.035 + pointer.x * 0.35
-    const radius = (30 - scroll * 8) * distance
-    const height = (17 + pointer.y * -2.5 - scroll * 5) * distance
-    camera.position.set(Math.cos(orbit) * radius, height, Math.sin(orbit) * radius)
-    camera.lookAt(target)
 
     for (const truck of trucks) {
       let u = (truck.offset + t * truck.speed) % 1
@@ -350,13 +483,47 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
       if (truck.up) tangent.negate()
       truck.mesh.position.copy(p)
       truck.mesh.rotation.y = Math.atan2(-tangent.z, tangent.x) + Math.PI
+      truck.dir.lerp(tangent.setY(0).normalize(), 0.08).normalize()
     }
 
+    // Blend the two stage waypoints, then ease the real camera toward them.
+    const a = waypoint(journey.from, t)
+    const b = waypoint(journey.to, t)
+    const pos = a.pos.lerp(b.pos, journey.t)
+    const look = a.look.lerp(b.look, journey.t)
+    // Phones see less width, so step back from the subject.
+    if (portrait) pos.sub(look).multiplyScalar(1.45).add(look)
+    // Gentle pointer parallax.
+    pos.add(v(pointer.x * 0.8, -pointer.y * 0.5, 0))
+
+    const ease = snap ? 1 : 0.06
+    snap = false
+    camPos.lerp(pos, ease)
+    camLook.lerp(look, ease)
+    camera.position.copy(camPos)
+    camera.lookAt(camLook)
+
+    // Fog follows the camera so close-ups and wide shots both read.
+    const dist = camPos.distanceTo(camLook)
+    fog.near = dist * 0.9
+    fog.far = dist * 2.3
+
+    // Frame the hero: pit to the right on desktop, above the copy on phones.
+    const s = weight("surface")
+    const { clientWidth: w, clientHeight: h } = canvas
+    if (s > 0.01 && (wide || portrait)) {
+      camera.setViewOffset(w, h, wide ? -w * 0.16 * s : 0, portrait ? h * 0.17 * s : 0, w, h)
+    } else {
+      camera.clearViewOffset()
+    }
+
+    // Stage highlights.
+    holeMat.emissiveIntensity = weight("drill") * (0.6 + 0.4 * Math.sin(t * 4))
     excavator.rotation.y = Math.sin(t * 0.6) * 0.9
 
     const sweep = (t * 0.08) % 1
     scan.position.y = 1 - sweep * (BENCHES * BENCH_HEIGHT + 1)
-    scanMat.opacity = 0.06 * Math.sin(sweep * Math.PI)
+    scanMat.opacity = (0.05 + weight("walls") * 0.12) * Math.sin(sweep * Math.PI)
 
     dust.rotation.y = t * 0.01
     const arr = dustGeo.attributes.position.array as Float32Array
@@ -369,19 +536,11 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
 
   const tick = () => {
     frame = 0
-    if (!running || !visible) return
+    if (!running) return
     update(clock.getElapsedTime())
     renderer.render(scene, camera)
     frame = requestAnimationFrame(tick)
   }
-
-  const visibility = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting
-    if (visible && running && !frame) {
-      frame = requestAnimationFrame(tick)
-    }
-  })
-  visibility.observe(canvas)
 
   if (options.still) {
     update(4)
@@ -391,9 +550,12 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
   }
 
   return {
-    setScroll(progress) {
-      scroll = Math.min(1, Math.max(0, progress))
+    setJourney(from, to, t) {
+      journey.from = from
+      journey.to = to
+      journey.t = t
       if (options.still) {
+        snap = true
         update(4)
         renderer.render(scene, camera)
       }
@@ -403,7 +565,6 @@ export function createMineScene(canvas: HTMLCanvasElement, options: Options = {}
       cancelAnimationFrame(frame)
       window.removeEventListener("pointermove", onPointer)
       resizeObserver.disconnect()
-      visibility.disconnect()
       holes.dispose()
       disposables.forEach((item) => item.dispose())
       renderer.dispose()

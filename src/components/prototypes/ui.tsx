@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react"
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react"
 
 /** Labelled range input with a live value readout. */
 export function Slider({
@@ -129,3 +129,18 @@ export const fmt = (value: number, digits = 0) =>
 
 export const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+/** True while the element is on (or near) screen — used to pause simulations. */
+export function useInView(ref: RefObject<Element>) {
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node || typeof IntersectionObserver === "undefined") return setInView(true)
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "120px" })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [ref])
+
+  return inView
+}

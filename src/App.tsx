@@ -1,13 +1,15 @@
-import { useState, type ReactNode } from "react"
-import { ArrowRight, ArrowUpRight, Play, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
+import type { ReactNode } from "react"
+import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
 
 import { Header } from "@/components/site/Header"
+import { DepthGauge } from "@/components/site/DepthGauge"
 import { MineCanvas } from "@/components/site/MineCanvas"
 import { MineBookDemo } from "@/components/prototypes/MineBookDemo"
-import { PrototypeDialog } from "@/components/prototypes/PrototypeDialog"
+import { prototypes } from "@/components/prototypes/registry"
 import { Reveal } from "@/components/site/Reveal"
 import { capabilities, contact, credentials, expertise, minebook, nav, projects, roles } from "@/content"
 import { useClickSound } from "@/hooks"
+import { stages, type StageId } from "@/journey"
 
 function SectionHeading({
   eyebrow,
@@ -46,20 +48,25 @@ function Contours() {
   )
 }
 
+/** Which mine stage each product lives at, in descent order. */
+const productStages: { id: string; stage: StageId }[] = [
+  { id: "blast-pattern", stage: "drill" },
+  { id: "fleet-dispatch", stage: "load" },
+  { id: "cycle-time", stage: "haul" },
+  { id: "crack-survey", stage: "walls" },
+]
+
 export default function HomePage() {
   useClickSound()
-  const [openProto, setOpenProto] = useState<string | null>(null)
-  const [mbView, setMbView] = useState<"live" | "screenshot">("live")
-  const openProject = projects.find((project) => project.id === openProto)
 
   return (
     <>
+      <MineCanvas className="mine-canvas" />
       <Header />
+      <DepthGauge />
 
       <main>
-        <section className="hero" id="home">
-          <div className="hero-backdrop" aria-hidden="true" />
-          <MineCanvas className="hero-canvas" />
+        <section className="hero" id="home" data-stage="surface">
           <div className="hero-vignette" aria-hidden="true" />
 
           <div className="hero-hud" aria-hidden="true">
@@ -87,8 +94,8 @@ export default function HomePage() {
                   Onboard to MineBook
                   <ArrowUpRight aria-hidden="true" />
                 </a>
-                <a className="btn btn-ghost btn-lg" href="#work">
-                  Explore selected work
+                <a className="btn btn-ghost btn-lg" href="#minebook">
+                  Descend into the pit
                   <ArrowRight aria-hidden="true" />
                 </a>
               </div>
@@ -102,7 +109,7 @@ export default function HomePage() {
 
         </section>
 
-        <section className="capability-band" aria-label="Capabilities">
+        <section className="capability-band" aria-label="Capabilities" data-stage="surface">
           <div className="shell">
             <ul className="capability-rail">
               {capabilities.map((item, index) => {
@@ -121,24 +128,15 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section minebook" id="minebook">
+        <section className="section minebook" id="minebook" data-stage="control">
           <div className="shell">
             <Reveal className="heading-row">
-              <SectionHeading eyebrow="Flagship product">
+              <SectionHeading eyebrow="RL +12 m · Mine control">
                 MineBook. <em>The whole pit, one screen.</em>
               </SectionHeading>
             </Reveal>
 
             <Reveal className="minebook-stage">
-              <div className="minebook-tabs" role="group" aria-label="MineBook view">
-                <button type="button" aria-pressed={mbView === "live"} onClick={() => setMbView("live")}>
-                  <Play aria-hidden="true" />
-                  Live prototype
-                </button>
-                <button type="button" aria-pressed={mbView === "screenshot"} onClick={() => setMbView("screenshot")}>
-                  Screenshot
-                </button>
-              </div>
               <div className="minebook-frame">
                 <div className="minebook-chrome" aria-hidden="true">
                   <i />
@@ -146,17 +144,7 @@ export default function HomePage() {
                   <i />
                   <span>minebook.lk</span>
                 </div>
-                {mbView === "live" ? (
-                  <MineBookDemo />
-                ) : (
-                  <img
-                    src="/assets/projects/minebook.png"
-                    alt="MineBook overview dashboard showing material moved, pit production against plan, haulage status, equipment health, alerts and shift output"
-                    width="1513"
-                    height="1039"
-                    loading="lazy"
-                  />
-                )}
+                <MineBookDemo />
               </div>
             </Reveal>
 
@@ -203,59 +191,46 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section work" id="work">
-          <div className="shell">
-            <Reveal className="heading-row">
-              <SectionHeading eyebrow="Selected work">
-                Projects designed for <em>real operations.</em>
-              </SectionHeading>
-            </Reveal>
-
-            <div className="project-grid">
-              {projects.filter((project) => !project.featured).map((project, index) => (
-                <Reveal
-                  as="article"
-                  key={project.title}
-                  step={index}
-                  className="project-card"
-                >
-                  <button
-                    className="project-media"
-                    type="button"
-                    onClick={() => setOpenProto(project.id)}
-                    aria-label={`Open the ${project.title} prototype`}
-                  >
-                    <img src={project.image} alt="" loading="lazy" />
-                    <span className="project-play" aria-hidden="true">
-                      <Play />
-                    </span>
-                  </button>
-
-                  <div className="project-body">
-                    <p className="project-meta">
-                      <span>{project.discipline}</span>
-                      <span className="project-year">{project.year}</span>
-                    </p>
-                    <h3>{project.title}</h3>
-
-                    <div className="project-actions">
-                      <button className="btn btn-primary btn-sm" type="button" onClick={() => setOpenProto(project.id)}>
-                        <Play aria-hidden="true" />
-                        Try the prototype
-                      </button>
-                      <a className="project-link" href="#contact">
-                        Discuss
-                        <ArrowUpRight aria-hidden="true" />
-                      </a>
-                    </div>
+        {productStages.map(({ id, stage }, index) => {
+          const project = projects.find((item) => item.id === id)
+          const Prototype = prototypes[id]
+          const info = stages.find((item) => item.id === stage)
+          if (!project || !Prototype || !info) return null
+          return (
+            <section
+              className="section stage-section"
+              id={index === 0 ? "work" : project.id}
+              data-stage={stage}
+              key={id}
+              aria-labelledby={`${id}-title`}
+            >
+              <div className="shell">
+                <Reveal className="stage-head">
+                  <p className="eyebrow">
+                    <i aria-hidden="true" />
+                    {info.rl} · {info.label}
+                  </p>
+                  <div className="stage-title">
+                    <h2 id={`${id}-title`}>{project.title}</h2>
+                    <a className="project-link" href="#contact">
+                      Discuss
+                      <ArrowUpRight aria-hidden="true" />
+                    </a>
                   </div>
+                  <p className="project-meta">
+                    <span>{project.discipline}</span>
+                    <span className="project-year">{project.year}</span>
+                  </p>
                 </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+                <Reveal className="product-stage">
+                  <Prototype />
+                </Reveal>
+              </div>
+            </section>
+          )
+        })}
 
-        <section className="section about" id="about">
+        <section className="section about" id="about" data-stage="office">
           <div className="shell">
             <Reveal className="about-card">
               <div className="portrait">
@@ -263,7 +238,7 @@ export default function HomePage() {
               </div>
 
               <div className="about-copy">
-                <SectionHeading eyebrow="About Anjana">
+                <SectionHeading eyebrow="RL +4 m · Site office">
                   Engineering insight, built into every <em>digital solution.</em>
                 </SectionHeading>
 
@@ -286,7 +261,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section experience" id="experience">
+        <section className="section experience" id="experience" data-stage="office">
           <div className="shell experience-grid">
             <Reveal className="panel timeline-panel">
               <SectionHeading eyebrow="Experience">
@@ -328,7 +303,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section credentials" id="credentials">
+        <section className="section credentials" id="credentials" data-stage="office">
           <div className="shell">
             <Reveal className="heading-row">
               <SectionHeading eyebrow="Credentials">
@@ -354,7 +329,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section contact" id="contact">
+        <section className="section contact" id="contact" data-stage="gate">
           <div className="shell">
             <Reveal className="contact-card">
               <svg className="wire-terrain" viewBox="0 0 500 260" aria-hidden="true" focusable="false" preserveAspectRatio="none">
@@ -364,7 +339,7 @@ export default function HomePage() {
               <div className="contact-copy">
                 <p className="eyebrow">
                   <i aria-hidden="true" />
-                  Let&apos;s build something useful
+                  RL +2 m · Mine gate
                 </p>
                 <h2>
                   Have a mining challenge <em>worth solving?</em>
@@ -423,7 +398,6 @@ export default function HomePage() {
         </section>
       </main>
 
-      <PrototypeDialog id={openProto} title={openProject?.title ?? ""} onClose={() => setOpenProto(null)} />
 
       <footer className="footer">
         <div className="shell footer-grid">
