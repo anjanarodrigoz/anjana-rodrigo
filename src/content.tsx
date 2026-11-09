@@ -27,9 +27,12 @@ export const contact = {
 }
 
 export const minebook = {
+  role: "Founder",
+  since: "2024",
   url: "https://minebook.lk",
   onboardUrl: "https://minebook.lk",
   features: [
+    { label: "Connected mine", copy: "Drills, shovels, trucks, crusher, plant and office feed one live data model." },
     { label: "Production", copy: "Shift, day and month tonnes against plan — by pit, bench and material." },
     { label: "Fleet", copy: "Loading, hauling, spotting and queuing states for every truck in the cycle." },
     { label: "Equipment", copy: "Availability, utilisation and health scores with service schedules." },
@@ -67,9 +70,9 @@ export const projects = [
   {
     id: "minebook",
     title: "MineBook",
-    discipline: "Product Design · Data Platform",
-    year: "2024",
-    copy: "A connected operations platform for production, equipment, alerts, and reporting — one surface for the whole pit.",
+    discipline: "Founder · Mining Data Processing",
+    year: "2024 — Present",
+    copy: "The mining data-processing platform I founded and still build: drills, shovels, trucks, crusher, plant and office connected as one system, so every tonne is tracked from blast to product.",
     featured: true,
   },
   {
@@ -108,18 +111,32 @@ export const projects = [
 
 export const roles = [
   {
+    role: "Chief Technology Officer",
+    org: "Starloge (Pvt) Ltd",
+    period: "Apr 2026 — Present",
+    copy: "Leading Starloge's technology, product engineering and technical team.",
+    current: true,
+  },
+  {
+    role: "Founder",
+    org: "MineBook",
+    period: "2024 — Present",
+    copy: "Founded and still building MineBook — mining data processing that connects the pit, fleet, plant and office in one system.",
+    current: true,
+  },
+  {
     role: "Team Leader, MIS Development",
     org: "University of Moratuwa",
-    period: "2024 — Present",
-    copy: "Leading practical information systems that improve university workflows and visibility.",
-    current: true,
+    period: "2024 — Apr 2026",
+    copy: "Led practical information systems that improved university workflows and visibility.",
+    current: false,
   },
   {
     role: "Software Engineering Consultant",
     org: "Idea8",
-    period: "2024 — Present",
-    copy: "Designing reliable software products and translating operational needs into usable systems.",
-    current: true,
+    period: "2024 — Apr 2026",
+    copy: "Designed reliable software products and translated operational needs into usable systems.",
+    current: false,
   },
   {
     role: "Mobile Application Developer",

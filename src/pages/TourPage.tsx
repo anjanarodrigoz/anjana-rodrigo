@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 
+import { ConnectedTags } from "@/components/tour/ConnectedTags"
 import { IslandCanvas } from "@/components/tour/IslandCanvas"
 import { StopCards } from "@/components/tour/StopCards"
 import { TourRail } from "@/components/tour/TourRail"
@@ -35,6 +36,7 @@ export function TourPage({ stage }: { stage?: StageId }) {
       </header>
 
       <TourRail active={active} />
+      <ConnectedTags show={active === "control"} />
       <StopCards active={active} />
 
       {/* Invisible scroll track: one screen per stop drives the walk. */}

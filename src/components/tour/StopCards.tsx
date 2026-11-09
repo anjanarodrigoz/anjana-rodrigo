@@ -54,7 +54,10 @@ const cards: Record<StageId, ReactNode> = {
           <h2>About me</h2>
         </div>
       </div>
-      <p>Earth Resources Engineer (University of Moratuwa), building tools for real operations since 2020.</p>
+      <p>
+        CTO at Starloge (Pvt) Ltd and founder of MineBook. Earth Resources Engineer (University of Moratuwa), building
+        tools for real operations since 2020.
+      </p>
       <a className="pill" href={href.about()}>
         More about me
         <ArrowRight aria-hidden="true" />
@@ -63,9 +66,12 @@ const cards: Record<StageId, ReactNode> = {
   ),
   control: (
     <>
-      <p className="tag">Project 01 · Processing plant</p>
+      <p className="tag">Founder · Since 2024</p>
       <h2>MineBook</h2>
-      <p>The whole operation on one screen: production, fleet, equipment and alerts.</p>
+      <p>
+        Mining data processing for the whole operation. Every drill, shovel, truck, crusher, stockpile, plant and
+        office in this mine reports into one connected system.
+      </p>
       <div className="card-actions">
         <a className="pill pill-solid" href={href.project("minebook")}>
           Open project
@@ -87,15 +93,24 @@ const cards: Record<StageId, ReactNode> = {
       <p className="tag">Lookout</p>
       <h2>Experience</h2>
       <ul className="mini-roles">
-        {roles.map((r) => (
-          <li key={r.role}>
-            <strong>{r.role}</strong>
-            <span>
-              {r.org} · {r.period}
-            </span>
-          </li>
-        ))}
+        {roles
+          .filter((r) => r.current)
+          .map((r) => (
+            <li key={r.role} className="is-current">
+              <strong>
+                {r.role}, {r.org}
+              </strong>
+              <span>{r.period}</span>
+            </li>
+          ))}
       </ul>
+      <p className="fine">
+        Previously:{" "}
+        {roles
+          .filter((r) => !r.current)
+          .map((r) => r.org)
+          .join(" · ")}
+      </p>
       <a className="pill" href={href.about()}>
         Experience & credentials
         <ArrowRight aria-hidden="true" />
@@ -158,6 +173,10 @@ export function StopCards({ active }: { active: StageId }) {
         if (docked) {
           x = (w - cw) / 2
           y = h - ch - 58
+        } else if (s.id === "control") {
+          // MineBook shows the whole mine: keep the card in the open sky.
+          x = w - cw - 40
+          y = 84
         } else if (anchor?.visible) {
           const right = anchor.x < w * 0.6
           x = right ? anchor.x + 56 : anchor.x - 56 - cw

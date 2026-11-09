@@ -64,4 +64,14 @@ export function readJourney(): Journey {
 }
 
 /** Screen position of each stop's anchor in the 3D scene, written by the scene every frame. */
-export const screenAnchors: Partial<Record<StageId, { x: number; y: number; visible: boolean }>> = {}
+export const screenAnchors: Partial<Record<string, { x: number; y: number; visible: boolean }>> = {}
+
+/** Live state of the mine published by the scene (for MineBook's connected-system tags). */
+export const mineState = {
+  trucks: [] as { id: string; state: string; payload: number }[],
+  passes: 126,
+  loadsToday: 412,
+  blasts: 3,
+  crusherTph: 1240,
+  stockpile: 24530,
+}

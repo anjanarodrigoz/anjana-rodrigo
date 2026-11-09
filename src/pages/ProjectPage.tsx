@@ -35,6 +35,14 @@ export function ProjectPage({ id }: { id: string }) {
           Project {String(i + 1).padStart(2, "0")} · {project.discipline} · {project.year}
         </p>
         <h1 className="page-title">{project.title}</h1>
+        {id === "minebook" ? (
+          <p className="founder">
+            <img src="/assets/about/anjana-professional.png" alt="" width="40" height="40" />
+            <span>
+              <strong>Anjana Rodrigo</strong> · Founder, since {minebook.since} — still building it
+            </span>
+          </p>
+        ) : null}
         <p className="page-lead">{project.copy}</p>
         <div className="card-actions">
           {id === "minebook" ? (
