@@ -61,5 +61,14 @@ export const player = {
   goal: null as { x: number; z: number } | null,
 }
 
+/** The scroll tour: distance walked along the route, and whether scrolling is driving. */
+export const tour = {
+  /** Where scrolling has asked to be, as distance along the route. */
+  s: 0,
+  /** Where the character's guide point currently is on the route. */
+  at: 0,
+  active: false,
+}
+
 /** Movement input from keyboard or the on-screen joystick. x: right, y: forward. */
 export const input = { x: 0, y: 0, run: false }

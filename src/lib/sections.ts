@@ -48,7 +48,7 @@ export const sections: Zone[] = [
   { id: "software", nav: "Projects", world: "software", at: [S.software.x, S.software.z], radius: 10, arrive: { x: S.software.x, z: S.software.z + 1.6, heading: Math.PI }, helmet: false, tablet: false },
   { id: "experience", nav: "Experience", world: "experience", at: [S.experience.x, S.experience.z], radius: 10, arrive: { x: S.experience.x - 9 * 0.62, z: S.experience.z + 5.9 * 0.62, heading: Math.PI }, helmet: false, tablet: false },
   { id: "research", nav: "Research", world: "research", at: [S.research.x, S.research.z], radius: 10, arrive: { x: S.research.x, z: S.research.z + 7.5, heading: Math.PI }, helmet: false, tablet: false },
-  { id: "about", nav: "About", world: "mine", at: [S.about.x, S.about.z], radius: 4, arrive: { x: S.about.x + 1.6, z: S.about.z - 1.2, heading: 0.6 }, helmet: true, tablet: false },
+  { id: "about", nav: "About", world: "mine", at: [S.about.x, S.about.z], radius: 4, arrive: { x: S.about.x + 1.8, z: S.about.z + 1.2, heading: 1.6 }, helmet: true, tablet: false },
   { id: "contact", nav: "Contact", world: "mine", at: [S.contact.x, S.contact.z], radius: 4, arrive: { x: S.contact.x - 0.4, z: S.contact.z + 2, heading: Math.PI }, helmet: false, tablet: false },
 ]
 

@@ -22,9 +22,9 @@ export const MAGAZINE = { x: -19, z: -7.5 }
 /** Levelled sites in the valley where the other parts of the story live. */
 export const SITES = {
   software: { x: 28.5, z: 12.9, r: 10.5 },
-  research: { x: 26.7, z: -14.5, r: 10.5 },
-  experience: { x: -31.5, z: -9.5, r: 10 },
-  about: { x: -12, z: -14, r: 3.2 },
+  research: { x: -8, z: -19.5, r: 9.5 },
+  experience: { x: 28.5, z: -14.5, r: 10 },
+  about: { x: -31.5, z: -9.5, r: 3.2 },
   contact: { x: 9, z: 22, r: 3.2 },
 } as const
 const SITE_LIST = Object.values(SITES)

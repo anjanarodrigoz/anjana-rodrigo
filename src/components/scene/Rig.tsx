@@ -8,7 +8,8 @@ import * as THREE from "three"
 import { experience } from "@/lib/content"
 import { EXPERIENCE_PATH, EXPERIENCE_SCALE, OBSTACLES, WORLD_ORIGIN, experienceStop, sections, zoneAt, zoneIndex } from "@/lib/sections"
 import { sound } from "@/lib/sound"
-import { input, player, rig, useWorld } from "@/lib/store"
+import { input, player, rig, tour, useWorld } from "@/lib/store"
+import { pointAt, sOfRole, sOfZone } from "@/lib/tour"
 import { SITES, pitCoords, rimR, topHeight } from "@/three/terrain"
 
 const EXP = zoneIndex("experience")
@@ -35,6 +36,8 @@ export function stepRole(dir: 1 | -1) {
   if (next < 0 || next >= EXPERIENCE_PATH.length) return false
   store.set({ roleIndex: next, started: true, panel: null })
   player.goal = experienceStop(next)
+  tour.s = tour.at = sOfRole(next)
+  tour.active = false
   return true
 }
 
@@ -49,6 +52,8 @@ export function travelTo(index: number) {
     .to(rig, { dissolve: 1, duration: 0.55, ease: "power2.in" })
     .add(() => {
       player.goal = null
+      tour.s = tour.at = sOfZone(index)
+      tour.active = false
       player.x = a.x
       player.z = a.z
       player.vx = player.vz = 0
@@ -125,7 +130,18 @@ export function Rig() {
     const top = (input.run ? RUN : WALK) * mag
     let wx = 0
     let wz = 0
-    if (moving) p.goal = null
+    if (moving) {
+      p.goal = null
+      tour.active = false
+    } else if (tour.active) {
+      // Scrolling drives: a guide point runs along the route toward the scrolled-to
+      // distance, and the character follows it, so he never cuts across the map.
+      const gap = tour.s - tour.at
+      const pace = Math.min(RUN, Math.max(1.5, Math.abs(gap) * 1.2))
+      tour.at += Math.sign(gap) * Math.min(Math.abs(gap), pace * dt)
+      const g = pointAt(tour.at)
+      if (Math.hypot(g.x - p.x, g.z - p.z) > 0.12) p.goal = g
+    }
     if (p.goal) {
       // Walk straight to the stop and halt on it exactly: no drift, no overshoot.
       const gx = p.goal.x - p.x
@@ -137,7 +153,8 @@ export function Rig() {
         p.vx = p.vz = 0
         p.goal = null
       } else {
-        const sp = Math.min(RUN * 0.8, Math.max(1.2, gd * 4))
+        // Near: walk. Far behind the scroll: break into a run to catch up.
+        const sp = Math.min(RUN, Math.max(1.2, gd * 2.2))
         wx = (gx / gd) * sp
         wz = (gz / gd) * sp
         p.vx = wx

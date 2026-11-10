@@ -7,7 +7,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { about, experience, minebook, profile, research, software, softwareStack } from "@/lib/content"
 import { sections } from "@/lib/sections"
 import { setMuted, sound, unlock } from "@/lib/sound"
-import { input, useWorld } from "@/lib/store"
+import { input, player, tour, useWorld } from "@/lib/store"
+import { TOUR_LENGTH, nearestS, sOfRole, sOfZone } from "@/lib/tour"
 
 import { Panels } from "./Panels"
 import { stepRole, travelTo } from "./scene/Rig"
@@ -152,16 +153,42 @@ export default function Experience() {
       keys.clear()
       sync()
     }
-    // Experience: one scroll moves exactly one stop along the path, then halts.
+    // Scroll walks the tour route. A small scroll is a walk, a big one a run.
+    // In Experience, one scroll moves exactly one stop along the path, then halts.
     let lock = 0
     const wheel = (e: WheelEvent) => {
-      if (sections[useWorld.getState().active]?.id !== "experience") return
       if ((e.target as HTMLElement).closest?.("aside")) return
       e.preventDefault()
       const now = performance.now()
-      if (now < lock || Math.abs(e.deltaY) < 8) return
-      lock = now + 650
-      stepRole(e.deltaY > 0 ? 1 : -1)
+      const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY
+      // The stretch of route between the first and last role is stepped, not glided.
+      const first = sOfRole(0)
+      const last = sOfRole(experience.length - 1)
+      const cur = tour.active ? tour.s : nearestS(player.x, player.z)
+      const dir = dy > 0 ? 1 : -1
+      if (cur >= first - 0.5 && cur <= last + 0.5) {
+        if (now < lock || Math.abs(dy) < 8) return
+        lock = now + 650
+        if (stepRole(dir)) return
+        // Past the first or last role: carry on along the tour.
+      }
+      if (!tour.active) {
+        tour.s = tour.at = nearestS(player.x, player.z)
+        tour.active = true
+      }
+      let next = Math.max(0, Math.min(TOUR_LENGTH, tour.s + dy * 0.05))
+      // Arriving at the experience path: stop dead on its first (or last) role.
+      if (tour.s < first - 0.5 && next >= first) {
+        next = first
+        set({ roleIndex: 0 })
+        lock = now + 900
+      } else if (tour.s > last + 0.5 && next <= last) {
+        next = last
+        set({ roleIndex: experience.length - 1 })
+        lock = now + 900
+      }
+      tour.s = next
+      if (!useWorld.getState().started) set({ started: true })
     }
     window.addEventListener("wheel", wheel, { passive: false })
     window.addEventListener("keydown", down)
@@ -242,7 +269,13 @@ export default function Experience() {
           <p className="mt-3 text-sm font-medium opacity-75">{profile.roles}</p>
           <Lead>{profile.intro}</Lead>
           <div className="mt-7 flex flex-wrap gap-3">
-            <button type="button" className={solid} onClick={() => set({ started: true })}>
+            <button type="button" className={solid} onClick={() => {
+                // Set off on the tour: walk to the first place.
+                tour.at = nearestS(player.x, player.z)
+                tour.s = sOfZone(1)
+                tour.active = true
+                set({ started: true })
+              }}>
               Explore My World <ArrowDown className="h-4 w-4" />
             </button>
             <button type="button" className={ghost} onClick={() => travelTo(2)}>
@@ -395,10 +428,10 @@ export default function Experience() {
             data-ui
             className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:fine)]:flex ${started && active > 0 ? "opacity-0" : "opacity-100"}`}
           >
-            <Key>W</Key>
+            Scroll to walk the tour | <Key>W</Key>
             <Key>A</Key>
             <Key>S</Key>
-            <Key>D</Key> walk | <Key>Shift</Key> run | drag to look | <Key>1</Key>-<Key>7</Key> fast travel
+            <Key>D</Key> free walk | <Key>Shift</Key> run | drag to look
           </p>
           <p className="pointer-events-none fixed bottom-8 right-6 z-20 hidden text-[11px] font-medium text-charcoal/70 [@media(pointer:coarse)]:block">Drag to look | push far to run</p>
         </>
