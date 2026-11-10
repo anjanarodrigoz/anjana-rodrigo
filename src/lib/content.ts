@@ -103,12 +103,12 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "restaurant",
-    who: "Restaurant owners and staff",
-    does: [],
+    who: "Restaurant owners, managers and staff",
+    does: ["Keeps menu, order, table and stock records in one place", "Stores sales data for daily and monthly reports", "Gives owners a clear view of the numbers behind the business"],
     action: "Select it to send an order",
     title: "Restaurant Management App",
-    meta: "Business Management",
-    line: "An app for managing restaurant operations.",
+    meta: "Business Management | Data Management",
+    line: "A restaurant management app built around data management: the records a restaurant runs on, kept in one system.",
     device: "mobile",
   },
 ]
