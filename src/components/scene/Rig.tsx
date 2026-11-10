@@ -5,79 +5,66 @@ import gsap from "gsap"
 import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three"
 
-import { experience } from "@/lib/content"
-import { EXPERIENCE_PATH, EXPERIENCE_SCALE, OBSTACLES, WORLD_ORIGIN, experienceStop, sections, zoneAt, zoneIndex } from "@/lib/sections"
+import { WORLD_ORIGIN, sections, zoneAt } from "@/lib/sections"
 import { sound } from "@/lib/sound"
-import { input, player, rig, tour, useWorld } from "@/lib/store"
-import { SITES, pitCoords, rimR, topHeight } from "@/three/terrain"
+import { player, rig, tour, useWorld } from "@/lib/store"
+import { SITES, pitCoords, topHeight } from "@/three/terrain"
 
-const EXP = zoneIndex("experience")
-const WALK = 3.4
-const RUN = 8
-const ACCEL = 16
 
-/** Ground height under the character, including the experience model board. */
+// Teleports take real time even when frames are slow, instead of crawling.
+gsap.ticker.lagSmoothing(0)
+
+/** Ground height under the character, including the raised floors of the sites. */
 export const standHeight = (x: number, z: number) => {
-  const e = SITES.experience
-  const onBoard = Math.hypot(x - e.x, z - e.z) < 13.5 * EXPERIENCE_SCALE
-  // The projects and research floors sit just above the ground.
-  const onFloor = [SITES.software, SITES.research].some((s) => Math.hypot(x - s.x, z - s.z) < 9)
-  return topHeight(x, z) + (onBoard ? 0.1 + 0.3 * EXPERIENCE_SCALE : onFloor ? 0.1 : 0)
+  const onFloor = [SITES.software, SITES.research, SITES.experience].some((s) => Math.hypot(x - s.x, z - s.z) < 9)
+  return topHeight(x, z) + (onFloor ? 0.1 : 0)
 }
 
-/** Dissolve, jump to a point, reappear. Used for every scroll teleport. */
-function jump(x: number, z: number, heading: number, fast = false) {
+/** Dissolve, jump to a point, reappear. Every move in the world is a teleport. */
+function jump(x: number, z: number, heading: number) {
   gsap.killTweensOf(rig)
   sound.teleport()
   gsap
     .timeline()
-    .to(rig, { dissolve: 1, duration: fast ? 0.3 : 0.5, ease: "power2.in" })
+    .to(rig, { dissolve: 1, duration: 0.5, ease: "power2.in" })
     .add(() => {
-      player.goal = null
       player.x = x
       player.z = z
-      player.vx = player.vz = 0
-      player.heading = heading
+      // The camera looks the way `heading` points; he stands facing back at it.
+      player.heading = heading + Math.PI
       player.camYaw = heading + Math.PI
-      player.camPitch = 0.4
+      player.camPitch = 0.32
       player.y = standHeight(x, z)
     })
-    .to(rig, { dissolve: 0, duration: fast ? 0.35 : 0.55, ease: "power2.out" })
+    .to(rig, { dissolve: 0, duration: 0.55, ease: "power2.out" })
 }
 
 /**
- * Experience: teleport to the next or previous role.
- * One scroll, one stop. Returns false at either end of the path.
+ * In a place that shows one thing at a time, move to the next or previous
+ * item. Returns false at either end, so the caller can move on to the next place.
  */
-export function stepRole(dir: 1 | -1) {
+export function stepItem(dir: 1 | -1) {
   const store = useWorld.getState()
-  const next = store.roleIndex + dir
-  if (next < 0 || next >= EXPERIENCE_PATH.length) return false
-  store.set({ roleIndex: next, started: true, panel: null })
-  const stop = experienceStop(next)
-  jump(stop.x, stop.z, Math.PI, true)
+  const count = sections[store.active]?.items ?? 0
+  const next = store.sub + dir
+  if (!count || next < 0 || next >= count) return false
+  store.set({ sub: next, started: true, panel: null })
+  sound.open()
   return true
 }
 
-/** Teleport to a place. For Experience, `role` picks which stop to land on. */
-export function travelTo(index: number, role = 0) {
+/** Teleport to a place. `sub` picks which item is on show when it has several. */
+export function travelTo(index: number, sub = 0) {
   const i = Math.max(0, Math.min(sections.length - 1, index))
   tour.place = i
-  useWorld.getState().set({ started: i !== 0 || useWorld.getState().started })
-  if (sections[i].id === "experience") {
-    useWorld.getState().set({ roleIndex: role })
-    const stop = experienceStop(role)
-    jump(stop.x, stop.z, Math.PI)
-    return
-  }
+  useWorld.getState().set({ started: i !== 0 || useWorld.getState().started, sub })
   const a = sections[i].arrive
   jump(a.x, a.z, a.heading)
 }
 
 /**
- * The game loop: moves the character from input, keeps him on the ground and
- * out of buildings, follows with a third-person camera, and tracks which
- * place he is standing in.
+ * Per-frame loop: keeps the character on the ground and facing the viewer,
+ * frames him with an orbiting camera, and tracks which place he is in.
  */
 export function Rig() {
   const { camera, scene, size, gl } = useThree()
@@ -108,8 +95,8 @@ export function Rig() {
     const move = (e: PointerEvent) => {
       if (!dragging) return
       player.camYaw -= (e.clientX - lx) * 0.006
-      player.camPitch = THREE.MathUtils.clamp(player.camPitch + (e.clientY - ly) * 0.004, 0.08, 1.1)
-      player.sinceDrag = 0
+      // Touch keeps vertical swipes for moving between places.
+      if (e.pointerType !== "touch") player.camPitch = THREE.MathUtils.clamp(player.camPitch + (e.clientY - ly) * 0.004, 0.08, 1.1)
       lx = e.clientX
       ly = e.clientY
     }
@@ -130,106 +117,17 @@ export function Rig() {
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.05)
     const p = player
-    const moving = Math.hypot(input.x, input.y) > 0.08 && rig.dissolve < 0.2
+    p.y = standHeight(p.x, p.z)
+    // He always turns to face the viewer, wherever the camera orbits.
+    const turn = ((p.camYaw - p.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI
+    p.heading += turn * Math.min(1, dt * 6)
 
-    // Desired velocity, relative to where the camera is looking.
-    const fx = -Math.sin(p.camYaw)
-    const fz = -Math.cos(p.camYaw)
-    const mag = Math.min(1, Math.hypot(input.x, input.y))
-    const top = (input.run ? RUN : WALK) * mag
-    let wx = 0
-    let wz = 0
-    if (moving) p.goal = null
-    if (p.goal) {
-      // Walk straight to the stop and halt on it exactly: no drift, no overshoot.
-      const gx = p.goal.x - p.x
-      const gz = p.goal.z - p.z
-      const gd = Math.hypot(gx, gz)
-      if (gd < 0.12) {
-        p.x = p.goal.x
-        p.z = p.goal.z
-        p.vx = p.vz = 0
-        p.goal = null
-      } else {
-        // Near: walk. Far behind the scroll: break into a run to catch up.
-        const sp = Math.min(RUN, Math.max(1.2, gd * 2.2))
-        wx = (gx / gd) * sp
-        wz = (gz / gd) * sp
-        p.vx = wx
-        p.vz = wz
-      }
-    } else if (moving) {
-      const ix = input.x / Math.max(mag, 1e-3)
-      const iy = input.y / Math.max(mag, 1e-3)
-      wx = (fx * iy - fz * ix) * top
-      wz = (fz * iy + fx * ix) * top
-    }
-    // Accelerate toward it, so starts, stops and turns have weight.
-    const dvx = wx - p.vx
-    const dvz = wz - p.vz
-    const dv = Math.hypot(dvx, dvz)
-    const step = Math.min(dv, ACCEL * dt)
-    if (dv > 1e-4) {
-      p.vx += (dvx / dv) * step
-      p.vz += (dvz / dv) * step
-    }
-    let nx = p.x + p.vx * dt
-    let nz = p.z + p.vz * dt
-
-    // Stay in the valley, and out of buildings.
-    const rr = Math.hypot(nx, nz) / rimR(Math.atan2(nz, nx))
-    if (rr > 1.86) {
-      const k = 1.86 / rr
-      nx *= k
-      nz *= k
-    }
-    for (const [ox, oz, hx, hz] of OBSTACLES) {
-      if (hz === 0) {
-        const d = Math.hypot(nx - ox, nz - oz)
-        if (d < hx + 0.35 && d > 1e-3) {
-          nx = ox + ((nx - ox) / d) * (hx + 0.35)
-          nz = oz + ((nz - oz) / d) * (hx + 0.35)
-        }
-      } else {
-        const dx = nx - ox
-        const dz = nz - oz
-        if (Math.abs(dx) < hx + 0.35 && Math.abs(dz) < hz + 0.35) {
-          if (hx + 0.35 - Math.abs(dx) < hz + 0.35 - Math.abs(dz)) nx = ox + Math.sign(dx) * (hx + 0.35)
-          else nz = oz + Math.sign(dz) * (hz + 0.35)
-        }
-      }
-    }
-    // Bench faces are steep: slow the climb instead of gliding up them.
-    const ground = standHeight(nx, nz)
-    const rise = ground - p.y
-    if (rise > 0.5 && pitCoords(nx, nz).d < 1.05) {
-      nx = p.x + (nx - p.x) * 0.35
-      nz = p.z + (nz - p.z) * 0.35
-    }
-    p.x = nx
-    p.z = nz
-    const gy = standHeight(p.x, p.z)
-    p.y += (gy - p.y) * Math.min(1, dt * (gy > p.y ? 9 : 14))
-    p.speed = Math.hypot(p.vx, p.vz)
-    if (p.speed > 0.3) {
-      const want = Math.atan2(p.vx, p.vz)
-      const diff = ((want - p.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI
-      p.heading += THREE.MathUtils.clamp(diff, -9 * dt, 9 * dt)
-    }
-
-    // Camera: swing behind the character while he moves, unless being dragged.
-    p.sinceDrag += dt
-    if (p.speed > 1 && p.sinceDrag > 1.2) {
-      const want = p.heading + Math.PI
-      const diff = ((want - p.camYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI
-      p.camYaw += diff * Math.min(1, dt * 1.1)
-    }
     const portrait = size.width / size.height < 0.8
     const zone = zoneAt(p.x, p.z)
     const started = useWorld.getState().started
     // Pull back for a wider view at the start and inside the pit.
     const inPit = pitCoords(p.x, p.z).d < 1
-    const dist = (started ? (inPit ? 11 : 8.5) : 15) * (portrait ? 1.25 : 1)
+    const dist = (started ? (inPit ? 10 : 7) : 11) * (portrait ? 1.25 : 1)
     const pitch = started ? p.camPitch : 0.36
     look.set(p.x, p.y + 1.5, p.z)
     camPos.set(p.x + Math.sin(p.camYaw) * Math.cos(pitch) * dist, p.y + 1.5 + Math.sin(pitch) * dist, p.z + Math.cos(p.camYaw) * Math.cos(pitch) * dist)
@@ -244,6 +142,9 @@ export function Rig() {
       cam.fov = fov
       cam.updateProjectionMatrix()
     }
+    // Wide screens: slide the scene right so the exhibit clears the text column.
+    if (size.width / size.height > 1.25) cam.setViewOffset(size.width, size.height, -size.width * 0.15, 0, size.width, size.height)
+    else if (cam.view) cam.clearViewOffset()
 
     // Sun and its shadow follow the character.
     target.position.set(p.x, 0, p.z)
@@ -262,23 +163,7 @@ export function Rig() {
       store.set({ active: zone, panel: null })
       if (zone > 0 && store.started) sound.arrive()
     }
-    if (!store.started && (moving || zone !== 0)) store.set({ started: true })
-    if (zone === EXP) {
-      // When walking freely, show the role whose stop is nearest.
-      if (!p.goal && moving) {
-        let idx = 0
-        let best = Infinity
-        experience.forEach((_, i) => {
-          const s = experienceStop(i)
-          const d = Math.hypot(p.x - s.x, p.z - s.z)
-          if (d < best) {
-            best = d
-            idx = i
-          }
-        })
-        if (idx !== store.roleIndex) store.set({ roleIndex: idx })
-      }
-    }
+    if (!store.started && zone !== 0) store.set({ started: true })
   })
 
   return (

@@ -5,7 +5,6 @@ import { useMemo, useRef } from "react"
 import * as THREE from "three"
 
 import { sections } from "@/lib/sections"
-import { sound } from "@/lib/sound"
 import { player, rig, useWorld } from "@/lib/store"
 
 /**
@@ -14,8 +13,8 @@ import { player, rig, useWorld } from "@/lib/store"
  * in the mining and construction scenes. Built procedurally from smooth
  * primitives (a prototype stand-in for a sculpted GLB character).
  *
- * The visitor walks and runs him around the world. His gait is driven by
- * real ground speed. Fast travel dissolves him into green particles.
+ * He stands facing the viewer and travels by dissolving into green
+ * particles and reappearing at the next place.
  */
 
 const PARTICLES = 140
@@ -32,9 +31,7 @@ export function Character() {
   const points = useRef<THREE.Points>(null!)
   const camera = useThree((s) => s.camera)
   const blink = useRef(2)
-  const legL = useRef<THREE.Group>(null!)
-  const legR = useRef<THREE.Group>(null!)
-  const phase = useRef(0)
+
 
   const mats = useMemo(
     () => ({
@@ -87,13 +84,15 @@ export function Character() {
     return { g, dir }
   }, [])
 
-  const gear = useRef({ helmet: true, tablet: false })
+  const gear = useRef({ helmet: true, tablet: false, lab: false })
+  const coat = useRef<THREE.Group>(null!)
+  const glasses = useRef<THREE.Group>(null!)
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime
     const zone = useWorld.getState().active
     // Helmet and tablet follow the place he is in; elsewhere he keeps the last ones.
-    if (zone >= 0) gear.current = { helmet: sections[zone].helmet, tablet: sections[zone].tablet }
+    if (zone >= 0) gear.current = { helmet: sections[zone].helmet, tablet: sections[zone].tablet, lab: Boolean(sections[zone].lab) }
     const s = { ...gear.current, wave: !useWorld.getState().started }
     root.current.position.set(player.x, player.y, player.z)
 
@@ -116,26 +115,19 @@ export function Character() {
     pm.opacity = Math.sin(Math.PI * Math.min(1, d * 1.05)) * 0.95
     points.current.visible = pm.opacity > 0.01
 
-    // Gait: stride phase advances with distance covered, so feet do not slide.
-    const speed = player.speed
-    const run = THREE.MathUtils.smoothstep(speed, 4, 7)
-    const move = THREE.MathUtils.smoothstep(speed, 0.15, 1.2)
-    const before = phase.current
-    phase.current += (speed / THREE.MathUtils.lerp(0.95, 1.7, run)) * Math.PI * dt
-    // A foot lands each half stride.
-    if (move > 0.4 && Math.floor(phase.current / Math.PI) !== Math.floor(before / Math.PI)) sound.step(run > 0.5)
-    const sw = Math.sin(phase.current)
-    const amp = THREE.MathUtils.lerp(0.55, 0.95, run) * move
-    legL.current.rotation.x = sw * amp
-    legR.current.rotation.x = -sw * amp
-    body.current.position.y = move * Math.abs(Math.cos(phase.current)) * (0.04 + run * 0.06) + (1 - move) * Math.sin(t * 2.2) * 0.012
-    body.current.rotation.x = run * 0.22 + move * 0.04
+    body.current.position.y = Math.sin(t * 2.2) * 0.012
+    body.current.rotation.x = 0
+    const move = 0
+    const sw = 0
+    const amp = 0
 
     const local = root.current.worldToLocal(camera.position.clone())
     const yaw = move > 0.3 ? 0 : THREE.MathUtils.clamp(Math.atan2(local.x, local.z) - body.current.rotation.y, -0.8, 0.8)
     head.current.rotation.y = THREE.MathUtils.lerp(head.current.rotation.y, yaw, 1 - Math.pow(0.01, dt))
     head.current.rotation.z = Math.sin(t * 0.9) * 0.04 * (1 - move)
     helmet.current.visible = s.helmet
+    coat.current.visible = s.lab
+    glasses.current.visible = s.lab
     // The helmet sits on the hair: hide the curls it would cover.
     for (const child of head.current.children) if (child.userData.top) child.visible = !s.helmet
     tablet.current.visible = s.tablet && move < 0.5
@@ -161,7 +153,7 @@ export function Character() {
       <group ref={body}>
         {/* Legs and sneakers */}
         {[-1, 1].map((side) => (
-          <group key={side} ref={side < 0 ? legL : legR} position={[side * 0.13, 0.62, 0]}>
+          <group key={side} position={[side * 0.13, 0.62, 0]}>
             <mesh material={mats.trousers} position={[0, -0.29, 0]} castShadow>
               <capsuleGeometry args={[0.095, 0.36, 6, 12]} />
             </mesh>
@@ -189,6 +181,30 @@ export function Character() {
             <capsuleGeometry args={[0.008, 0.12, 4, 6]} />
           </mesh>
         ))}
+
+        {/* Lab coat, worn over the hoodie in the research lab */}
+        <group ref={coat} visible={false}>
+          <mesh material={mats.white} position={[0, 0.8, -0.01]} scale={[1.09, 1.06, 0.9]} castShadow>
+            <capsuleGeometry args={[0.24, 0.3, 8, 16]} />
+          </mesh>
+          <mesh material={mats.white} position={[0, 0.5, -0.01]} scale={[1, 1, 0.82]} castShadow>
+            <cylinderGeometry args={[0.25, 0.3, 0.42, 20, 1, true]} />
+          </mesh>
+          {/* Open front showing the hoodie, with lapels */}
+          <mesh material={mats.hoodie} position={[0, 0.78, 0.208]} scale={[0.34, 1, 0.1]}>
+            <capsuleGeometry args={[0.2, 0.34, 6, 10]} />
+          </mesh>
+          {[-1, 1].map((side) => (
+            <mesh key={side} material={mats.white} position={[side * 0.075, 0.98, 0.215]} rotation={[0, 0, side * -0.35]}>
+              <boxGeometry args={[0.07, 0.2, 0.02]} />
+            </mesh>
+          ))}
+          {[-1, 1].map((side) => (
+            <mesh key={side} material={mats.white} position={[side * 0.29, 0.83, 0]} scale={[1.14, 1.02, 1.14]}>
+              <capsuleGeometry args={[0.075, 0.28, 6, 12]} />
+            </mesh>
+          ))}
+        </group>
 
         {/* Arms */}
         <group ref={armL} position={[-0.29, 1.02, 0]}>
@@ -265,6 +281,22 @@ export function Character() {
               <icosahedronGeometry args={[1, 1]} />
             </mesh>
           ))}
+          {/* Research glasses */}
+          <group ref={glasses} visible={false} position={[0, 0, 0.4]}>
+            {[-1, 1].map((side) => (
+              <mesh key={side} material={mats.black} position={[side * 0.155, 0, 0]}>
+                <torusGeometry args={[0.105, 0.012, 8, 28]} />
+              </mesh>
+            ))}
+            <mesh material={mats.black} position={[0, 0.01, 0]}>
+              <boxGeometry args={[0.1, 0.014, 0.014]} />
+            </mesh>
+            {[-1, 1].map((side) => (
+              <mesh key={side} material={mats.black} position={[side * 0.32, 0, -0.2]} rotation={[0, side * 0.25, 0]}>
+                <boxGeometry args={[0.012, 0.012, 0.42]} />
+              </mesh>
+            ))}
+          </group>
           <group ref={helmet} position={[0, 0.12, 0]} scale={1.04}>
             <mesh material={mats.helmet} scale={[1, 0.72, 1.02]} castShadow>
               <sphereGeometry args={[0.5, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />

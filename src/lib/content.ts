@@ -77,6 +77,22 @@ export const software: SoftwareProject[] = [
     line: "A field-ready tool for configuring blast-hole geometry, validating safety parameters, and exporting production patterns.",
     device: "mobile",
   },
+  {
+    id: "melbourne-mover",
+    action: "Select it to dispatch a job",
+    title: "Melbourne Mover",
+    meta: "Mobile Application | Transport | 2020 - 2024",
+    line: "Customer and field workflows for transport booking, dispatch, and live job tracking.",
+    device: "mobile",
+  },
+  {
+    id: "restaurant",
+    action: "Select it to send an order",
+    title: "Restaurant Management App",
+    meta: "Business Management",
+    line: "An app for managing restaurant operations.",
+    device: "mobile",
+  },
 ]
 
 export const softwareStack = ["Flutter mobile apps", "React web apps", "Business systems", "Cloud applications", "Data platforms", "AI experiments"]
@@ -142,6 +158,15 @@ export const research = {
   detail: "IEEE | 2023 | pp. 368-372",
   url: "https://ieeexplore.ieee.org/document/10355468",
   line: "Four machine learning models trained on three years of monthly quarry reports to predict machine hours and fuel use for dump trucks, excavators and dozers.",
+  /** How the study was done, one step per exhibit in the lab. */
+  steps: [
+    { id: "question", title: "The question", line: "Machine hours drive production, cost and efficiency in a mine. Can they, and the fuel they burn, be predicted ahead of time?" },
+    { id: "data", title: "The data", line: "Monthly reports from Aruwakkalu Limestone Quarry, covering three years of operation. Thirty-six months of records became the training set." },
+    { id: "equipment", title: "The equipment", line: "Three kinds of machine were studied separately, because each works differently: dump trucks, excavators and dozers." },
+    { id: "models", title: "The models", line: "Four machine learning models were trained and compared: Decision Tree, Linear Regression, LGBM Regressor and Random Forest." },
+    { id: "predictions", title: "The predictions", line: "Each model predicted two things for each machine type: machine hours and fuel consumption. The best model was picked per machine." },
+    { id: "paper", title: "The paper", line: "Published by IEEE at the 2023 Moratuwa Engineering Research Conference (MERCon), pages 368-372." },
+  ],
   models: ["Decision Tree", "Linear Regression", "LGBM Regressor", "Random Forest"],
   equipment: ["Dump trucks", "Excavators", "Dozers"],
   targets: ["Machine hours", "Fuel consumption"],

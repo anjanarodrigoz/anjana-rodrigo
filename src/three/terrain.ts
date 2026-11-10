@@ -25,7 +25,7 @@ export const SITES = {
   research: { x: -8, z: -19.5, r: 9.5 },
   experience: { x: 28.5, z: -14.5, r: 10 },
   about: { x: -31.5, z: -9.5, r: 3.2 },
-  contact: { x: 9, z: 22, r: 3.2 },
+  contact: { x: 9, z: 21.5, r: 5.8 },
 } as const
 const SITE_LIST = Object.values(SITES)
 

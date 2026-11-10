@@ -87,11 +87,6 @@ const tone = (freq: number, vol: number, dur: number, delay = 0, type: Oscillato
 }
 
 export const sound = {
-  /** One footstep on gravel. Running steps land harder. */
-  step(run: boolean) {
-    burst(run ? 900 : 700, 0.9, run ? 0.16 : 0.1, run ? 0.09 : 0.12)
-    burst(160, 1.2, run ? 0.14 : 0.08, 0.08, "lowpass")
-  },
   /** Fast travel: a rising shimmer as the character dissolves. */
   teleport() {
     if (!ctx || !master || !noise || muted) return

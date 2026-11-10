@@ -26,6 +26,32 @@ export function Assemble({ world, order = 0, children, ...props }: { world: stri
   )
 }
 
+/**
+ * Shows only the child whose index matches `index`: the others shrink away.
+ * Used wherever a place presents one project, role or step at a time.
+ */
+export function OneAtATime({ index, children }: { index: number; children: ReactNode[] }) {
+  const ref = useRef<THREE.Group>(null!)
+  useFrame((_, dt) => {
+    ref.current.children.forEach((c, i) => {
+      const target = i === index ? 1 : 0
+      const s = c.scale.x + (target - c.scale.x) * Math.min(1, dt * 7)
+      c.scale.setScalar(Math.max(0.0001, s))
+      c.visible = s > 0.01
+      c.rotation.y = (1 - s) * (i < index ? -1.2 : 1.2)
+    })
+  })
+  return (
+    <group ref={ref}>
+      {children.map((child, i) => (
+        <group key={i} scale={i === index ? 1 : 0.0001}>
+          {child}
+        </group>
+      ))}
+    </group>
+  )
+}
+
 /** Was the pointer event aimed at the HTML interface rather than the 3D world? */
 export const overUi = (e: { nativeEvent: Event }) => Boolean((e.nativeEvent.target as HTMLElement | null)?.closest?.("[data-ui]"))
 

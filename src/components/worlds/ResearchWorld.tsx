@@ -4,78 +4,356 @@ import { useFrame } from "@react-three/fiber"
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
 
-import { Assemble, canvasTexture, overUi } from "@/components/scene/helpers"
+import { Assemble, OneAtATime, canvasTexture } from "@/components/scene/helpers"
 import { research } from "@/lib/content"
 import { useWorld } from "@/lib/store"
 
 /**
- * World five: a research lab. The hologram shows the method of the published
- * paper (equipment data -> four models -> two predictions), not its results:
- * no numbers are displayed that the paper did not report.
+ * The research lab. The published study is explained in six steps, one
+ * exhibit at a time: the question, the data, the equipment, the models, the
+ * predictions and the paper. The exhibits show the method only. No result
+ * figures are displayed that are not quoted from the paper.
  */
 
 const SAGE = "#8DAA91"
+const yellow = <meshStandardMaterial color="#f0b000" roughness={0.5} />
+const dark = <meshStandardMaterial color="#2c3632" roughness={0.6} />
+const white = <meshStandardMaterial color="#f6f7f3" roughness={0.6} />
+const rock = <meshStandardMaterial color="#cfc6b3" roughness={1} />
 
-const label = (text: string, w = 512) =>
-  canvasTexture(w, 96, (g) => {
-    g.clearRect(0, 0, w, 96)
-    g.fillStyle = "#e6f3e8"
-    g.font = "500 40px Inter, system-ui, sans-serif"
-    g.textAlign = "center"
-    g.textBaseline = "middle"
-    g.fillText(text, w / 2, 50)
-  })
-
-function Tag({ text, position, width = 1.6 }: { text: string; position: [number, number, number]; width?: number }) {
-  const tex = useMemo(() => label(text), [text])
+/** Small label that always faces the camera. */
+function Tag({ text, position, width = 1.5 }: { text: string; position: [number, number, number]; width?: number }) {
+  const ref = useRef<THREE.Mesh>(null!)
+  const tex = useMemo(
+    () =>
+      canvasTexture(512, 96, (g) => {
+        g.clearRect(0, 0, 512, 96)
+        g.fillStyle = "rgba(24,63,53,0.92)"
+        g.beginPath()
+        g.roundRect(4, 8, 504, 80, 40)
+        g.fill()
+        g.fillStyle = "#F6F7F3"
+        g.font = "600 38px Inter, system-ui, sans-serif"
+        g.textAlign = "center"
+        g.textBaseline = "middle"
+        g.fillText(text, 256, 50)
+      }),
+    [text],
+  )
+  useFrame((state) => ref.current.quaternion.copy(state.camera.quaternion))
   return (
-    <mesh position={position}>
+    <mesh ref={ref} position={position} renderOrder={6}>
       <planeGeometry args={[width, width * 0.1875]} />
       <meshBasicMaterial map={tex} transparent toneMapped={false} depthWrite={false} />
     </mesh>
   )
 }
 
-function Stream({ from, to, offset }: { from: THREE.Vector3; to: THREE.Vector3; offset: number }) {
-  const ref = useRef<THREE.InstancedMesh>(null!)
-  const line = useMemo(
-    () => new THREE.Line(new THREE.BufferGeometry().setFromPoints([from, to]), new THREE.LineBasicMaterial({ color: SAGE, transparent: true, opacity: 0.22 })),
-    [from, to],
-  )
-  const m = useMemo(() => new THREE.Matrix4(), [])
-  const p = useMemo(() => new THREE.Vector3(), [])
-  useFrame((state) => {
-    for (let i = 0; i < 3; i++) {
-      p.copy(from).lerp(to, (state.clock.elapsedTime * 0.35 + offset + i / 3) % 1)
-      m.makeTranslation(p.x, p.y, p.z)
-      ref.current.setMatrixAt(i, m)
-    }
-    ref.current.instanceMatrix.needsUpdate = true
-  })
+const Truck = ({ position }: { position: [number, number, number] }) => (
+  <group position={position}>
+    <mesh position={[0.05, 0.16, 0]} castShadow>
+      <boxGeometry args={[0.42, 0.18, 0.28]} />
+      {yellow}
+    </mesh>
+    <mesh position={[-0.22, 0.14, 0]} castShadow>
+      <boxGeometry args={[0.14, 0.2, 0.26]} />
+      {yellow}
+    </mesh>
+    {[-0.18, 0.16].map((x) => (
+      <mesh key={x} position={[x, 0.06, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.07, 0.07, 0.32, 12]} />
+        {dark}
+      </mesh>
+    ))}
+  </group>
+)
+
+const Excavator = ({ position }: { position: [number, number, number] }) => (
+  <group position={position}>
+    <mesh position={[0, 0.06, 0]}>
+      <boxGeometry args={[0.46, 0.1, 0.36]} />
+      {dark}
+    </mesh>
+    <mesh position={[-0.03, 0.22, 0]} castShadow>
+      <boxGeometry args={[0.34, 0.2, 0.3]} />
+      {yellow}
+    </mesh>
+    <mesh position={[0.28, 0.38, 0]} rotation={[0, 0, 0.6]} castShadow>
+      <boxGeometry args={[0.5, 0.06, 0.07]} />
+      {yellow}
+    </mesh>
+    <mesh position={[0.5, 0.3, 0]} rotation={[0, 0, -0.5]}>
+      <boxGeometry args={[0.06, 0.32, 0.06]} />
+      {yellow}
+    </mesh>
+  </group>
+)
+
+const Dozer = ({ position }: { position: [number, number, number] }) => (
+  <group position={position}>
+    {[-0.13, 0.13].map((z) => (
+      <mesh key={z} position={[0, 0.07, z]}>
+        <boxGeometry args={[0.44, 0.12, 0.09]} />
+        {dark}
+      </mesh>
+    ))}
+    <mesh position={[0, 0.2, 0]} castShadow>
+      <boxGeometry args={[0.34, 0.16, 0.26]} />
+      {yellow}
+    </mesh>
+    <mesh position={[-0.06, 0.34, 0]}>
+      <boxGeometry args={[0.16, 0.14, 0.22]} />
+      {yellow}
+    </mesh>
+    <mesh position={[0.27, 0.12, 0]}>
+      <boxGeometry args={[0.04, 0.2, 0.42]} />
+      {dark}
+    </mesh>
+  </group>
+)
+
+/** 1. The question: machines at work on a quarry bench under a running clock. */
+function Question() {
+  const hand = useRef<THREE.Mesh>(null!)
+  useFrame((_, dt) => (hand.current.rotation.z -= dt * 1.2))
   return (
     <>
-      <primitive object={line} />
-      <instancedMesh ref={ref} args={[undefined, undefined, 3]}>
-        <sphereGeometry args={[0.035, 8, 6]} />
-        <meshBasicMaterial color="#e6f3e8" />
-      </instancedMesh>
+      {[0, 1, 2].map((k) => (
+        <mesh key={k} position={[-0.2 + k * 0.25, 0.1 + k * 0.2, -0.3 - k * 0.22]} castShadow receiveShadow>
+          <boxGeometry args={[1.5 - k * 0.3, 0.2, 0.7]} />
+          {rock}
+        </mesh>
+      ))}
+      <Excavator position={[-0.35, 0.2, -0.2]} />
+      <Truck position={[0.35, 0, 0.35]} />
+      <group position={[0.65, 1.15, -0.4]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.05, 32]} />
+          {white}
+        </mesh>
+        <mesh>
+          <torusGeometry args={[0.3, 0.025, 8, 32]} />
+          {dark}
+        </mesh>
+        <mesh ref={hand} position={[0, 0, 0.03]}>
+          <boxGeometry args={[0.025, 0.42, 0.01]} />
+          <meshBasicMaterial color="#b5483f" />
+        </mesh>
+      </group>
+      <Tag text="Machine hours?" position={[0.65, 1.7, -0.4]} />
     </>
   )
 }
 
-export default function ResearchWorld() {
-  const set = useWorld((s) => s.set)
-  const active = useWorld((s) => s.active === 4)
-  const paper = useRef<THREE.Group>(null!)
-  const ring = useRef<THREE.Mesh>(null!)
+/** 2. The data: thirty-six monthly reports, three years in three rows. */
+function Data() {
+  const sheets = useRef<THREE.Group>(null!)
+  useFrame((state) => {
+    const t = (state.clock.elapsedTime * 6) % 48
+    sheets.current.children.forEach((c, i) => {
+      const k = THREE.MathUtils.clamp(t - i, 0, 1)
+      c.scale.setScalar(Math.max(0.001, k))
+    })
+  })
+  return (
+    <>
+      <mesh position={[0, 0.03, 0]} receiveShadow>
+        <boxGeometry args={[1.8, 0.06, 1.2]} />
+        <meshStandardMaterial color="#b08d64" roughness={0.6} />
+      </mesh>
+      <group ref={sheets}>
+        {Array.from({ length: 36 }, (_, i) => (
+          <group key={i} position={[-0.77 + (i % 12) * 0.14, 0.08 + ((i * 7) % 3) * 0.004, -0.36 + Math.floor(i / 12) * 0.36]}>
+            <mesh rotation={[-Math.PI / 2, 0, ((i * 13) % 5) * 0.03 - 0.06]} castShadow>
+              <planeGeometry args={[0.11, 0.26]} />
+              <meshStandardMaterial color="#fffdf5" roughness={0.9} side={THREE.DoubleSide} />
+            </mesh>
+            <mesh position={[0, 0.002, -0.08]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.08, 0.025]} />
+              <meshBasicMaterial color="#183F35" />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      {["Year 1", "Year 2", "Year 3"].map((y, i) => (
+        <Tag key={y} text={y} position={[-1.25, 0.25, -0.36 + i * 0.36]} width={0.7} />
+      ))}
+      <Tag text="36 monthly reports" position={[0, 1.0, 0]} width={1.7} />
+    </>
+  )
+}
 
-  const cols = useMemo(() => {
-    const eq = research.equipment.map((_, i) => new THREE.Vector3(-3, 3.3 - i * 0.9, 0))
-    const models = research.models.map((_, i) => new THREE.Vector3(0, 3.75 - i * 0.9, 0))
-    const out = research.targets.map((_, i) => new THREE.Vector3(3, 2.85 - i * 0.9, 0))
-    return { eq, models, out }
-  }, [])
+/** 3. The equipment: the three machine types that were studied. */
+function Equipment() {
+  const group = useRef<THREE.Group>(null!)
+  useFrame((state) => group.current.children.forEach((c, i) => (c.position.y = Math.max(0, Math.sin(state.clock.elapsedTime * 2 - i * 1.2)) * 0.06)))
+  return (
+    <>
+      {[-0.7, 0, 0.7].map((x) => (
+        <mesh key={x} position={[x, 0.03, 0]} receiveShadow>
+          <cylinderGeometry args={[0.42, 0.42, 0.06, 28]} />
+          {rock}
+        </mesh>
+      ))}
+      <group ref={group}>
+        <group>
+          <Truck position={[-0.7, 0.06, 0]} />
+        </group>
+        <group>
+          <Excavator position={[-0.05, 0.06, 0]} />
+        </group>
+        <group>
+          <Dozer position={[0.7, 0.06, 0]} />
+        </group>
+      </group>
+      {research.equipment.map((e, i) => (
+        <Tag key={e} text={e} position={[-0.7 + i * 0.7, 0.95, 0]} width={0.95} />
+      ))}
+    </>
+  )
+}
 
+/** 4. The models: four algorithms, each drawn as what it is. */
+function Models() {
+  const stack = useRef<THREE.Group>(null!)
+  useFrame((state) => {
+    const n = Math.floor((state.clock.elapsedTime * 2) % 7)
+    stack.current.children.forEach((c, i) => (c.visible = i <= n))
+  })
+  const xs = [-0.9, -0.3, 0.3, 0.9]
+  return (
+    <>
+      {/* Decision tree: a root that splits and splits again */}
+      <group position={[xs[0], 0, 0]}>
+        {[[0, 0.75, 0], [-0.14, 0.5, 0], [0.14, 0.5, 0], [-0.21, 0.25, 0], [-0.07, 0.25, 0], [0.07, 0.25, 0], [0.21, 0.25, 0]].map((p, i) => (
+          <mesh key={i} position={p as [number, number, number]}>
+            <sphereGeometry args={[0.05, 12, 10]} />
+            <meshStandardMaterial color={i < 3 ? "#183F35" : SAGE} roughness={0.5} />
+          </mesh>
+        ))}
+        {[[-0.07, 0.625, 0.5], [0.07, 0.625, -0.5], [-0.175, 0.375, 0.27], [-0.105, 0.375, -0.27], [0.105, 0.375, 0.27], [0.175, 0.375, -0.27]].map(([x, y, r], i) => (
+          <mesh key={i} position={[x, y, 0]} rotation={[0, 0, r]}>
+            <boxGeometry args={[0.012, 0.27, 0.012]} />
+            {dark}
+          </mesh>
+        ))}
+      </group>
+      {/* Linear regression: one straight line through scattered points */}
+      <group position={[xs[1], 0.15, 0]}>
+        {[[-0.2, 0.12], [-0.12, 0.2], [-0.04, 0.22], [0.03, 0.36], [0.1, 0.38], [0.18, 0.52]].map(([x, y], i) => (
+          <mesh key={i} position={[x, y, 0]}>
+            <sphereGeometry args={[0.03, 10, 8]} />
+            <meshStandardMaterial color={SAGE} roughness={0.5} />
+          </mesh>
+        ))}
+        <mesh position={[0, 0.32, 0]} rotation={[0, 0, -0.8]}>
+          <boxGeometry args={[0.015, 0.62, 0.015]} />
+          <meshBasicMaterial color="#183F35" />
+        </mesh>
+      </group>
+      {/* LGBM: boosting, where each round adds a small correction on top */}
+      <group ref={stack} position={[xs[2], 0.1, 0]}>
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          <mesh key={i} position={[0, i * 0.09, 0]} castShadow>
+            <boxGeometry args={[0.34 - i * 0.035, 0.07, 0.34 - i * 0.035]} />
+            <meshStandardMaterial color={i % 2 ? SAGE : "#183F35"} roughness={0.5} />
+          </mesh>
+        ))}
+      </group>
+      {/* Random forest: many small trees voting together */}
+      <group position={[xs[3], 0.06, 0]}>
+        {[[-0.14, -0.1], [0.12, -0.12], [0, 0.02], [-0.12, 0.14], [0.14, 0.12]].map(([x, z], i) => (
+          <group key={i} position={[x, 0, z]}>
+            <mesh position={[0, 0.1, 0]}>
+              <cylinderGeometry args={[0.015, 0.02, 0.2, 6]} />
+              {dark}
+            </mesh>
+            <mesh position={[0, 0.32 + (i % 2) * 0.05, 0]} castShadow>
+              <coneGeometry args={[0.09, 0.32, 8]} />
+              <meshStandardMaterial color={i % 2 ? "#4f7a4c" : "#183F35"} roughness={0.8} flatShading />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      {research.models.map((m, i) => (
+        <Tag key={m} text={m} position={[xs[i], 1.05 + (i % 2) * 0.22, 0]} width={1.05} />
+      ))}
+    </>
+  )
+}
+
+/** 5. The predictions: data flows through a model into the two outputs. */
+function Predictions() {
+  const dots = useRef<THREE.InstancedMesh>(null!)
+  const hand = useRef<THREE.Mesh>(null!)
+  const fuel = useRef<THREE.Mesh>(null!)
+  const m = useMemo(() => new THREE.Matrix4(), [])
+  const from = useMemo(() => new THREE.Vector3(-0.85, 0.45, 0), [])
+  const mid = useMemo(() => new THREE.Vector3(0, 0.45, 0), [])
+  const outs = useMemo(() => [new THREE.Vector3(0.85, 0.75, 0), new THREE.Vector3(0.85, 0.2, 0)], [])
+  const p = useMemo(() => new THREE.Vector3(), [])
+  useFrame((state, dt) => {
+    const t = state.clock.elapsedTime
+    for (let i = 0; i < 12; i++) {
+      const u = (t * 0.5 + i / 12) % 1
+      if (u < 0.5) p.copy(from).lerp(mid, u * 2)
+      else p.copy(mid).lerp(outs[i % 2], (u - 0.5) * 2)
+      m.makeTranslation(p.x, p.y, p.z)
+      dots.current.setMatrixAt(i, m)
+    }
+    dots.current.instanceMatrix.needsUpdate = true
+    hand.current.rotation.z -= dt * 1.5
+    // The gauge only animates to show "a predicted level". It is not a result.
+    fuel.current.scale.y = 0.55 + Math.sin(t * 0.9) * 0.25
+    fuel.current.position.y = -0.2 + fuel.current.scale.y * 0.2
+  })
+  return (
+    <>
+      <Truck position={[-0.85, 0.3, 0]} />
+      <mesh position={mid}>
+        <boxGeometry args={[0.32, 0.32, 0.32]} />
+        <meshStandardMaterial color="#183F35" emissive={SAGE} emissiveIntensity={0.5} wireframe />
+      </mesh>
+      <instancedMesh ref={dots} args={[undefined, undefined, 12]}>
+        <sphereGeometry args={[0.03, 8, 6]} />
+        <meshBasicMaterial color="#183F35" />
+      </instancedMesh>
+      {/* Machine hours: a clock */}
+      <group position={outs[0]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.04, 28]} />
+          {white}
+        </mesh>
+        <mesh>
+          <torusGeometry args={[0.2, 0.02, 8, 28]} />
+          {dark}
+        </mesh>
+        <mesh ref={hand} position={[0, 0, 0.03]}>
+          <boxGeometry args={[0.02, 0.28, 0.01]} />
+          <meshBasicMaterial color="#b5483f" />
+        </mesh>
+      </group>
+      {/* Fuel consumption: a drum with a level */}
+      <group position={outs[1]}>
+        <mesh>
+          <cylinderGeometry args={[0.16, 0.16, 0.42, 24, 1, true]} />
+          <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.6} transparent opacity={0.45} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh ref={fuel}>
+          <cylinderGeometry args={[0.14, 0.14, 0.4, 24]} />
+          <meshStandardMaterial color="#e0a100" roughness={0.4} />
+        </mesh>
+      </group>
+      <Tag text="Model" position={[0, 0.85, 0]} width={0.7} />
+      <Tag text="Machine hours" position={[0.85, 1.12, 0]} width={1.1} />
+      <Tag text="Fuel consumption" position={[0.85, -0.1, 0.3]} width={1.25} />
+    </>
+  )
+}
+
+/** 6. The paper itself. */
+function Paper() {
+  const ref = useRef<THREE.Group>(null!)
   const cover = useMemo(
     () =>
       canvasTexture(600, 800, (g) => {
@@ -88,10 +366,9 @@ export default function ResearchWorld() {
         g.fillText("IEEE | MERCon 2023", 36, 56)
         g.fillStyle = "#102C25"
         g.font = "600 34px 'Space Grotesk', system-ui, sans-serif"
-        const words = research.title.split(" ")
         let line = ""
         let y = 160
-        for (const w of words) {
+        for (const w of research.title.split(" ")) {
           if (g.measureText(line + w).width > 520) {
             g.fillText(line, 36, y)
             line = ""
@@ -105,105 +382,80 @@ export default function ResearchWorld() {
       }),
     [],
   )
-
   useFrame((state) => {
-    const t = state.clock.elapsedTime
-    paper.current.position.y = 1.5 + Math.sin(t * 1.1) * 0.06
-    paper.current.rotation.y = -0.35 + Math.sin(t * 0.5) * 0.12
-    ring.current.rotation.z = t * 0.3
+    ref.current.position.y = 0.75 + Math.sin(state.clock.elapsedTime * 1.1) * 0.04
+    ref.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.25
   })
+  return (
+    <group ref={ref} position={[0, 0.75, 0]}>
+      <mesh castShadow>
+        <boxGeometry args={[0.9, 1.2, 0.03]} />
+        {white}
+      </mesh>
+      <mesh position={[0, 0, 0.017]}>
+        <planeGeometry args={[0.88, 1.18]} />
+        <meshBasicMaterial map={cover} toneMapped={false} />
+      </mesh>
+    </group>
+  )
+}
 
+export default function ResearchWorld() {
+  const sub = useWorld((s) => s.sub)
+  const active = useWorld((s) => s.active === 4)
+  const index = active ? Math.min(sub, research.steps.length - 1) : 0
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[9, 64]} />
-        <meshStandardMaterial color="#1b2420" roughness={0.4} metalness={0.4} />
+        <meshStandardMaterial color="#e3e8e6" roughness={0.6} />
       </mesh>
-      <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-        <ringGeometry args={[4.4, 4.46, 6]} />
-        <meshBasicMaterial color={SAGE} transparent opacity={0.6} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+        <ringGeometry args={[6.6, 6.65, 6]} />
+        <meshBasicMaterial color="#183F35" transparent opacity={0.4} />
       </mesh>
 
-      {/* Lab benches */}
-      <Assemble world="research" order={0}>
-        {[-5.2, 5.2].map((x) => (
-          <group key={x} position={[x, 0, -1]} rotation={[0, x < 0 ? 0.5 : -0.5, 0]}>
+      {/* Lab benches with instruments either side */}
+      <Assemble world="research" order={1}>
+        {[-6, 4.8].map((x) => (
+          <group key={x} position={[x, 0, -2.2]} rotation={[0, x < 0 ? 0.5 : -0.5, 0]}>
             <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
               <boxGeometry args={[2.4, 0.9, 0.9]} />
-              <meshStandardMaterial color="#2a3531" roughness={0.5} metalness={0.3} />
+              {white}
             </mesh>
-            <mesh position={[0, 1.3, -0.2]}>
-              <boxGeometry args={[1.2, 0.7, 0.05]} />
-              <meshStandardMaterial color="#0c1210" emissive={SAGE} emissiveIntensity={0.25} />
+            <mesh position={[0, 0.92, 0]}>
+              <boxGeometry args={[2.5, 0.05, 1]} />
+              {dark}
             </mesh>
-          </group>
-        ))}
-        <pointLight position={[0, 4, 3]} intensity={14} distance={14} color="#dff5e4" />
-      </Assemble>
-
-      {/* Hologram: the paper's method */}
-      <Assemble world="research" order={2} position={[0, 0.2, -1.6]}>
-        {cols.eq.map((p, i) => (
-          <group key={i}>
-            <mesh position={p}>
-              <octahedronGeometry args={[0.2, 0]} />
-              <meshStandardMaterial color="#e0a100" emissive="#e0a100" emissiveIntensity={0.4} wireframe />
+            <mesh position={[-0.6, 1.3, -0.1]} castShadow>
+              <boxGeometry args={[0.9, 0.6, 0.05]} />
+              {dark}
             </mesh>
-            <Tag text={research.equipment[i]} position={[p.x, p.y - 0.36, p.z]} />
-            {cols.models.map((m, j) => (
-              <Stream key={j} from={p} to={m} offset={(i * 4 + j) * 0.11} />
+            <mesh position={[-0.6, 1.3, -0.07]}>
+              <planeGeometry args={[0.82, 0.52]} />
+              <meshStandardMaterial color="#dfeee2" emissive={SAGE} emissiveIntensity={0.5} />
+            </mesh>
+            {[0.3, 0.6, 0.9].map((bx, i) => (
+              <mesh key={bx} position={[bx, 1.08 + i * 0.03, 0.1]}>
+                <cylinderGeometry args={[0.07, 0.09, 0.26 + i * 0.06, 12]} />
+                <meshStandardMaterial color={["#8DAA91", "#9cc3d6", "#e0c070"][i]} roughness={0.2} transparent opacity={0.75} />
+              </mesh>
             ))}
-          </group>
-        ))}
-        {cols.models.map((p, i) => (
-          <group key={i}>
-            <mesh position={p}>
-              <boxGeometry args={[0.3, 0.3, 0.3]} />
-              <meshStandardMaterial color="#183F35" emissive={SAGE} emissiveIntensity={0.8} wireframe />
-            </mesh>
-            <Tag text={research.models[i]} position={[p.x, p.y - 0.36, p.z]} />
-            {cols.out.map((o, j) => (
-              <Stream key={j} from={p} to={o} offset={(i * 2 + j) * 0.17} />
-            ))}
-          </group>
-        ))}
-        {cols.out.map((p, i) => (
-          <group key={i}>
-            <mesh position={p}>
-              <sphereGeometry args={[0.24, 16, 12]} />
-              <meshStandardMaterial color="#F6F7F3" emissive="#dff5e4" emissiveIntensity={0.7} wireframe />
-            </mesh>
-            <Tag text={research.targets[i]} position={[p.x, p.y - 0.42, p.z]} />
           </group>
         ))}
       </Assemble>
 
-      {/* The publication itself: click to open the record */}
-      <Assemble world="research" order={4} position={[-2.2, 0, 2.6]}>
-        <mesh position={[0, 0.45, 0]} castShadow>
-          <cylinderGeometry args={[0.5, 0.6, 0.9, 24]} />
-          <meshStandardMaterial color="#2a3531" roughness={0.4} metalness={0.4} />
+      {/* The step on show */}
+      <Assemble world="research" order={0} position={[-0.6, 0, -0.8]}>
+        <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[2.3, 2.5, 0.8, 48]} />
+          {white}
         </mesh>
-        <group
-          ref={paper}
-          onClick={(e) => {
-            if (!active || overUi(e)) return
-            e.stopPropagation()
-            set({ panel: { kind: "paper" } })
-          }}
-          onPointerOver={() => active && (document.body.style.cursor = "pointer")}
-          onPointerOut={() => (document.body.style.cursor = "")}
-        >
-          <mesh>
-            <boxGeometry args={[0.9, 1.2, 0.03]} />
-            <meshStandardMaterial color="#F6F7F3" roughness={0.6} />
-          </mesh>
-          <mesh position={[0, 0, 0.017]}>
-            <planeGeometry args={[0.88, 1.18]} />
-            <meshBasicMaterial map={cover} toneMapped={false} />
-          </mesh>
+        <group position={[0, 0.84, 0]} scale={1.9}>
+          <OneAtATime index={index}>
+            {[<Question key="q" />, <Data key="d" />, <Equipment key="e" />, <Models key="m" />, <Predictions key="p" />, <Paper key="x" />]}
+          </OneAtATime>
         </group>
-        <pointLight position={[0, 1.6, 0.8]} intensity={4} distance={5} color="#ffffff" />
       </Assemble>
     </group>
   )

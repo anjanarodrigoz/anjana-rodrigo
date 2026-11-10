@@ -1,17 +1,17 @@
 # Anjana Rodrigo | Interactive 3D Portfolio
 
-One walkable 3D world. The visitor controls a character in a mine valley and explores places that tell the story: MineBook at the site office, a projects studio with the real products on devices, a miniature experience path, a research lab, an About lookout and a Contact kiosk.
+One 3D world. A character guides the visitor around a mine valley, teleporting between places that tell the story: MineBook at the site office, a projects studio with the real products on devices, a miniature experience path, a research lab, an About lookout and a Contact kiosk.
 
 ## Controls
 
+The character does not walk. He teleports from place to place and stands facing the viewer.
+
 | Action | Desktop | Touch |
 |---|---|---|
-| Next / previous place | Scroll: one scroll teleports to the next place (particle dissolve). In Experience, one scroll per role. | Menu |
-| Free walk | W A S D or arrow keys | Joystick |
-| Run | Hold Shift | Push the joystick far |
-| Look around | Drag | Drag |
-| Fast travel | Menu on the right, or keys 1-7 | Menu |
-| Experience stops | Scroll | Previous / Next |
+| Next / previous | Scroll, or arrow keys | Swipe up / down |
+| Step through projects, roles, research steps | Same: these places show one item at a time | Swipe, or Previous / Next |
+| Jump to any place | Menu on the right, or keys 1-7 | Menu |
+| Look around | Drag | Drag sideways |
 
 ## Stack
 
@@ -28,10 +28,10 @@ npm run build && npm start
 | Piece | File |
 |---|---|
 | All text and facts | `src/lib/content.ts` |
-| Places, arrival points, obstacles | `src/lib/sections.ts` |
-| Game loop: movement, camera, collisions, fast travel | `src/components/scene/Rig.tsx` |
-| Character and gait | `src/components/scene/Character.tsx` |
-| Interface: text, menu, joystick, keyboard, sound toggle | `src/components/Experience.tsx` |
+| Places and arrival points | `src/lib/sections.ts` |
+| Camera, teleport, place tracking | `src/components/scene/Rig.tsx` |
+| Character | `src/components/scene/Character.tsx` |
+| Interface: text, menu, scroll/keys/swipe, sound toggle | `src/components/Experience.tsx` |
 | Info panels | `src/components/Panels.tsx` |
 | Sites | `src/components/worlds/*` |
 | Mine terrain and equipment | `src/three/*` |
@@ -42,7 +42,7 @@ npm run build && npm start
 - All 3D is a procedural prototype built from primitives in code. No GLB models are imported yet.
 - Projects are interactive 3D exhibits built in code, not screenshots. MineBook previews in the mine are illustrative.
 - The research hologram shows the paper's method and displays no result numbers.
-- In the experience model, the quarry, crusher plant, tunnel portal and house are scenery. Only the five roles in `content.ts` carry role information.
+- The Restaurant Management App entry has only a generic one-line description until real details are supplied.
 
 ## Accessibility and fallbacks
 

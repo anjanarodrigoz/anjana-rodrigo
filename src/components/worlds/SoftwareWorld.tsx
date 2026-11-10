@@ -4,15 +4,14 @@ import { useFrame } from "@react-three/fiber"
 import { useMemo, useRef, useState, type ReactNode } from "react"
 import * as THREE from "three"
 
-import { Assemble, canvasTexture, overUi } from "@/components/scene/helpers"
-import { software, type SoftwareProject } from "@/lib/content"
-import { PROJECT_SPOTS } from "@/lib/sections"
+import { Assemble, OneAtATime, canvasTexture, overUi } from "@/components/scene/helpers"
+import { software } from "@/lib/content"
 import { sound } from "@/lib/sound"
 import { useWorld } from "@/lib/store"
 
 /**
- * The projects site: every product is an interactive 3D exhibit on a plinth.
- * Selecting one plays its interaction and opens its details.
+ * The projects site: each product is an interactive 3D exhibit, shown one at
+ * a time on a central plinth.
  */
 
 const SAGE = "#8DAA91"
@@ -283,7 +282,151 @@ function BlastExhibit({ n }: { n: number }) {
   )
 }
 
+/** Melbourne Mover: a removal van between two homes. Select to dispatch a job. */
+function MoverExhibit({ n }: { n: number }) {
+  const van = useRef<THREE.Group>(null!)
+  const pin = useRef<THREE.Mesh>(null!)
+  const pos = useRef(0)
+  useFrame((state, dt) => {
+    // Each job sends the van to the other house; a pin tracks it live.
+    const target = n % 2
+    pos.current += (target - pos.current) * Math.min(1, dt * 1.6)
+    const x = -0.62 + pos.current * 1.24
+    van.current.position.x = x
+    van.current.rotation.y = target ? 0 : Math.PI
+    pin.current.position.set(x, 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.04, 0.15)
+  })
+  const house = (x: number, roof: string) => (
+    <group position={[x, 0, -0.45]}>
+      <mesh position={[0, 0.17, 0]} castShadow>
+        <boxGeometry args={[0.42, 0.34, 0.36]} />
+        <meshStandardMaterial color="#ece6da" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.44, 0]} rotation={[0, Math.PI / 4, 0]} scale={[1, 0.6, 0.86]} castShadow>
+        <coneGeometry args={[0.36, 0.34, 4]} />
+        <meshStandardMaterial color={roof} roughness={0.85} />
+      </mesh>
+    </group>
+  )
+  return (
+    <>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[1, 40]} />
+        <meshStandardMaterial color="#b9c7a8" roughness={1} />
+      </mesh>
+      <mesh position={[0, 0.006, 0.15]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[1.7, 0.3]} />
+        <meshStandardMaterial color="#5c5f63" roughness={0.9} />
+      </mesh>
+      {house(-0.62, "#7c4a3a")}
+      {house(0.62, "#3d5a4c")}
+      <group ref={van} position={[0, 0, 0.15]}>
+        <mesh position={[-0.03, 0.14, 0]} castShadow>
+          <boxGeometry args={[0.26, 0.2, 0.16]} />
+          <meshStandardMaterial color="#f4f2ec" roughness={0.6} />
+        </mesh>
+        <mesh position={[0.15, 0.11, 0]} castShadow>
+          <boxGeometry args={[0.1, 0.14, 0.15]} />
+          <meshStandardMaterial color="#183F35" roughness={0.6} />
+        </mesh>
+        {[-0.1, 0.13].map((x) => (
+          <mesh key={x} position={[x, 0.04, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.04, 0.04, 0.18, 12]} />
+            {dark}
+          </mesh>
+        ))}
+      </group>
+      <mesh ref={pin} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.06, 0.16, 12]} />
+        <meshStandardMaterial color="#b5483f" roughness={0.5} />
+      </mesh>
+    </>
+  )
+}
+
+/** Restaurant Management App: a table, a tablet and the order rail. Select to send an order. */
+function RestaurantExhibit({ n }: { n: number }) {
+  const tickets = useRef<THREE.Group>(null!)
+  const plates = useRef<THREE.Group>(null!)
+  useFrame(() => {
+    // Each order adds a ticket to the rail and a plate to the table (up to four).
+    const count = n % 5
+    tickets.current.children.forEach((c, i) => {
+      const s = c.scale.y + ((i < count ? 1 : 0.001) - c.scale.y) * 0.18
+      c.scale.set(1, s, 1)
+    })
+    plates.current.children.forEach((c, i) => c.scale.setScalar(c.scale.x + ((i < count ? 1 : 0.001) - c.scale.x) * 0.18))
+  })
+  return (
+    <>
+      {/* Table */}
+      <mesh position={[0, 0.34, 0.15]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.55, 0.55, 0.05, 32]} />
+        <meshStandardMaterial color="#8a6a4a" roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 0.17, 0.15]}>
+        <cylinderGeometry args={[0.06, 0.1, 0.34, 12]} />
+        {dark}
+      </mesh>
+      <group ref={plates} position={[0, 0.375, 0.15]}>
+        {[0, 1, 2, 3].map((i) => (
+          <group key={i} position={[Math.cos(i * 1.57 + 0.8) * 0.32, 0, Math.sin(i * 1.57 + 0.8) * 0.32]} scale={0.001}>
+            <mesh>
+              <cylinderGeometry args={[0.12, 0.1, 0.02, 20]} />
+              <meshStandardMaterial color="#f6f7f3" roughness={0.4} />
+            </mesh>
+            <mesh position={[0, 0.03, 0]}>
+              <sphereGeometry args={[0.06, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              <meshStandardMaterial color={["#d98a3d", "#6fae7a", "#c4574a", "#e0c070"][i]} roughness={0.7} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      {/* Ordering tablet on the table */}
+      <group position={[0, 0.5, 0.15]} rotation={[-0.5, 0.5, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.26, 0.18, 0.015]} />
+          {dark}
+        </mesh>
+        <mesh position={[0, 0, 0.009]}>
+          <planeGeometry args={[0.23, 0.15]} />
+          <meshStandardMaterial color="#dfeee2" emissive={SAGE} emissiveIntensity={0.6} />
+        </mesh>
+      </group>
+      {/* Kitchen order rail with tickets */}
+      <mesh position={[0, 1.05, -0.55]}>
+        <boxGeometry args={[1.3, 0.04, 0.04]} />
+        <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.7} />
+      </mesh>
+      {[-0.6, 0.6].map((x) => (
+        <mesh key={x} position={[x, 0.52, -0.55]}>
+          <boxGeometry args={[0.04, 1.05, 0.04]} />
+          <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.7} />
+        </mesh>
+      ))}
+      <group ref={tickets} position={[0, 1.03, -0.53]}>
+        {[0, 1, 2, 3].map((i) => (
+          <group key={i} position={[-0.42 + i * 0.28, 0, 0]} scale={[1, 0.001, 1]}>
+            <mesh position={[0, -0.16, 0]}>
+              <planeGeometry args={[0.2, 0.32]} />
+              <meshStandardMaterial color="#fffdf5" roughness={0.9} side={THREE.DoubleSide} />
+            </mesh>
+            {[0, 1, 2].map((k) => (
+              <mesh key={k} position={[0, -0.08 - k * 0.07, 0.002]}>
+                <planeGeometry args={[0.14, 0.02]} />
+                <meshBasicMaterial color="#2c3632" />
+              </mesh>
+            ))}
+          </group>
+        ))}
+      </group>
+    </>
+  )
+}
+
 const EXHIBITS: Record<string, (p: { n: number }) => ReactNode> = {
+  "melbourne-mover": MoverExhibit,
+  restaurant: RestaurantExhibit,
   minebook: MineBookExhibit,
   "fleet-dispatch": FleetExhibit,
   "cycle-time": CycleExhibit,
@@ -291,17 +434,19 @@ const EXHIBITS: Record<string, (p: { n: number }) => ReactNode> = {
   "blast-pattern": BlastExhibit,
 }
 
-/** Plinth, call-to-action label, hover highlight and click handling shared by every exhibit. */
-function Exhibit({ project, index }: { project: SoftwareProject; index: number }) {
-  const [n, setN] = useState(0)
-  const set = useWorld((s) => s.set)
+/**
+ * One plinth, one project at a time. Scrolling steps through the projects;
+ * selecting the exhibit plays its interaction.
+ */
+export default function SoftwareWorld() {
+  const sub = useWorld((s) => s.sub)
   const active = useWorld((s) => s.active === 2)
+  const [clicks, setClicks] = useState<number[]>(() => software.map(() => 0))
+  const index = active ? Math.min(sub, software.length - 1) : 0
   const hover = useRef(false)
   const top = useRef<THREE.Group>(null!)
   const ring = useRef<THREE.Mesh>(null!)
   const tag = useRef<THREE.Mesh>(null!)
-  const [x, z] = PROJECT_SPOTS[index]
-  const Body = EXHIBITS[project.id]
   const cta = useMemo(
     () =>
       canvasTexture(640, 128, (g) => {
@@ -311,81 +456,77 @@ function Exhibit({ project, index }: { project: SoftwareProject; index: number }
         g.roundRect(4, 14, 632, 100, 50)
         g.fill()
         g.fillStyle = "#F6F7F3"
-        g.font = "600 40px 'Space Grotesk', system-ui, sans-serif"
+        g.font = "600 44px 'Space Grotesk', system-ui, sans-serif"
         g.textBaseline = "middle"
         g.textAlign = "center"
-        g.fillText(`${project.title}  |  Select`, 320, 66)
+        g.fillText("Select to try it", 320, 66)
       }),
-    [project],
+    [],
   )
   useFrame((state) => {
     const t = state.clock.elapsedTime
     const k = hover.current && active ? 1 : 0
-    top.current.scale.setScalar(top.current.scale.x + (1 + k * 0.08 - top.current.scale.x) * 0.15)
+    top.current.scale.setScalar(top.current.scale.x + (2.1 + k * 0.12 - top.current.scale.x) * 0.15)
     const m = ring.current.material as THREE.MeshBasicMaterial
-    m.opacity += ((active ? 0.45 + 0.3 * Math.sin(t * 2.4 + index) + k * 0.25 : 0.15) - m.opacity) * 0.15
+    m.opacity += ((active ? 0.45 + 0.3 * Math.sin(t * 2.4) + k * 0.25 : 0.15) - m.opacity) * 0.15
     tag.current.quaternion.copy(state.camera.quaternion)
-    tag.current.scale.setScalar(1 + k * 0.1 + (active ? Math.sin(t * 2.4 + index) * 0.03 : 0))
+    tag.current.scale.setScalar(1 + k * 0.1 + Math.sin(t * 2.4) * 0.03)
   })
-  return (
-    <Assemble world="software" order={index + 1} position={[x, 0, z]}>
-      <group
-        onClick={(e) => {
-          if (!active || overUi(e)) return
-          e.stopPropagation()
-          setN((v) => v + 1)
-          sound.click()
-          set({ panel: { kind: "project", project } })
-        }}
-        onPointerOver={() => {
-          hover.current = true
-          if (active) document.body.style.cursor = "pointer"
-        }}
-        onPointerOut={() => {
-          hover.current = false
-          document.body.style.cursor = ""
-        }}
-      >
-        <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[1.05, 1.15, 0.9, 40]} />
-          <meshStandardMaterial color="#f1efe8" roughness={0.7} />
-        </mesh>
-        <mesh ref={ring} position={[0, 0.905, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[1.0, 1.08, 48]} />
-          <meshBasicMaterial color="#183F35" transparent opacity={0.2} />
-        </mesh>
-        <group ref={top} position={[0, 0.92, 0]}>
-          <Body n={n} />
-        </group>
-        {/* Invisible volume so the whole exhibit is easy to hit */}
-        <mesh position={[0, 1.5, 0]} visible={false}>
-          <cylinderGeometry args={[1.1, 1.1, 2.2, 12]} />
-        </mesh>
-      </group>
-      <mesh ref={tag} position={[0, 3.05, 0]} renderOrder={6}>
-        <planeGeometry args={[1.9, 0.38]} />
-        <meshBasicMaterial map={cta} transparent toneMapped={false} depthWrite={false} />
-      </mesh>
-    </Assemble>
-  )
-}
-
-export default function SoftwareWorld() {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[9, 64]} />
         <meshStandardMaterial color="#e9eadf" roughness={0.9} />
       </mesh>
-      {[3, 6.6].map((r) => (
+      {[3.4, 6.6].map((r) => (
         <mesh key={r} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
           <ringGeometry args={[r, r + 0.05, 96]} />
           <meshBasicMaterial color="#183F35" transparent opacity={0.35} />
         </mesh>
       ))}
-      {software.map((p, i) => (
-        <Exhibit key={p.id} project={p} index={i} />
-      ))}
+      <Assemble world="software" order={0} position={[-0.6, 0, -0.8]}>
+        <group
+          onClick={(e) => {
+            if (!active || overUi(e)) return
+            e.stopPropagation()
+            sound.click()
+            setClicks((c) => c.map((v, i) => (i === index ? v + 1 : v)))
+          }}
+          onPointerOver={() => {
+            hover.current = true
+            if (active) document.body.style.cursor = "pointer"
+          }}
+          onPointerOut={() => {
+            hover.current = false
+            document.body.style.cursor = ""
+          }}
+        >
+          <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[2.3, 2.5, 0.8, 48]} />
+            <meshStandardMaterial color="#f1efe8" roughness={0.7} />
+          </mesh>
+          <mesh ref={ring} position={[0, 0.805, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[2.18, 2.3, 64]} />
+            <meshBasicMaterial color="#183F35" transparent opacity={0.2} />
+          </mesh>
+          <group ref={top} position={[0, 0.84, 0]} scale={2.1}>
+            <OneAtATime index={index}>
+              {software.map((p, i) => {
+                const Body = EXHIBITS[p.id]
+                return <Body key={p.id} n={clicks[i]} />
+              })}
+            </OneAtATime>
+          </group>
+          {/* Invisible volume so the whole exhibit is easy to hit */}
+          <mesh position={[0, 2.2, 0]} visible={false}>
+            <cylinderGeometry args={[2.3, 2.3, 3.6, 12]} />
+          </mesh>
+        </group>
+        <mesh ref={tag} position={[0, 4.7, 0]} renderOrder={6}>
+          <planeGeometry args={[2.1, 0.42]} />
+          <meshBasicMaterial map={cta} transparent toneMapped={false} depthWrite={false} />
+        </mesh>
+      </Assemble>
     </group>
   )
 }

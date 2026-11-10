@@ -7,10 +7,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { about, experience, minebook, profile, research, software, softwareStack } from "@/lib/content"
 import { sections } from "@/lib/sections"
 import { setMuted, sound, unlock } from "@/lib/sound"
-import { input, tour, useWorld } from "@/lib/store"
+import { tour, useWorld } from "@/lib/store"
 
 import { Panels } from "./Panels"
-import { stepRole, travelTo } from "./scene/Rig"
+import { stepItem, travelTo } from "./scene/Rig"
 
 const Scene = dynamic(() => import("./scene/Scene"), { ssr: false })
 
@@ -55,52 +55,44 @@ const solid = `${pill} bg-forest text-paper hover:bg-deep`
 const ghost = `${pill} border border-forest/25 bg-white/50 backdrop-blur hover:bg-white/80`
 const Key = ({ children }: { children: ReactNode }) => <kbd className="rounded-md border border-forest/20 bg-white/70 px-1.5 py-0.5 font-sans text-[11px] font-semibold">{children}</kbd>
 
-/** On-screen joystick for touch devices. Push far to run. */
-function Joystick() {
-  const knob = useRef<HTMLDivElement>(null)
-  const origin = useRef<{ x: number; y: number } | null>(null)
-  const move = (e: React.PointerEvent) => {
-    if (!origin.current) return
-    const dx = e.clientX - origin.current.x
-    const dy = e.clientY - origin.current.y
-    const m = Math.hypot(dx, dy)
-    const k = m > 44 ? 44 / m : 1
-    input.x = (dx * k) / 44
-    input.y = (-dy * k) / 44
-    input.run = m > 40
-    if (knob.current) knob.current.style.transform = `translate(${dx * k}px, ${dy * k}px)`
-  }
-  const end = () => {
-    origin.current = null
-    input.x = input.y = 0
-    input.run = false
-    if (knob.current) knob.current.style.transform = ""
-  }
+/** Previous / Next and progress dots for a place that shows one thing at a time. */
+function Stepper({ count, index }: { count: number; index: number }) {
+  const set = useWorld((s) => s.set)
   return (
-    <div
-      data-ui
-      role="application"
-      aria-label="Joystick: drag to walk, push far to run"
-      className="fixed bottom-6 left-6 z-30 hidden h-28 w-28 touch-none place-items-center rounded-full border border-white/70 bg-white/35 backdrop-blur [@media(pointer:coarse)]:grid"
-      onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId)
-        const r = e.currentTarget.getBoundingClientRect()
-        origin.current = { x: r.left + r.width / 2, y: r.top + r.height / 2 }
-        useWorld.getState().set({ started: true })
-        move(e)
-      }}
-      onPointerMove={move}
-      onPointerUp={end}
-      onPointerCancel={end}
-    >
-      <div ref={knob} className="h-12 w-12 rounded-full bg-forest shadow-lg" />
+    <div className="mt-5 flex items-center gap-3">
+      <button type="button" onClick={() => set({ sub: Math.max(0, index - 1) })} disabled={index === 0} className={ghost + " h-9 px-4 text-xs disabled:opacity-40"}>
+        Previous
+      </button>
+      <div className="flex gap-1.5">
+        {Array.from({ length: count }, (_, i) => (
+          <button key={i} type="button" aria-label={`Show item ${i + 1}`} onClick={() => set({ sub: i })} className={`h-1.5 rounded-full transition-all ${i === index ? "w-8 bg-forest" : "w-3 bg-forest/25"}`} />
+        ))}
+      </div>
+      <button type="button" onClick={() => set({ sub: Math.min(count - 1, index + 1) })} disabled={index === count - 1} className={solid + " h-9 px-4 text-xs disabled:opacity-40"}>
+        Next
+      </button>
     </div>
   )
 }
 
+/**
+ * Move one step through the story: the next item where a place shows several
+ * (projects, roles, research steps), otherwise a teleport to the next place.
+ */
+function step(dir: 1 | -1) {
+  const state = useWorld.getState()
+  const here = state.active >= 0 ? state.active : tour.place
+  if (state.active === here && stepItem(dir)) return 550
+  const next = here + dir
+  if (next < 0 || next >= sections.length) return 0
+  // Going backward into a place with several items lands on its last one.
+  travelTo(next, dir < 0 ? (sections[next].items ?? 1) - 1 : 0)
+  return 1250
+}
+
 export default function Experience() {
   const root = useRef<HTMLDivElement>(null)
-  const { active, ready, webgl, started, roleIndex, panel, set } = useWorld()
+  const { active, ready, webgl, started, sub, panel, set } = useWorld()
   const [mute, setMute] = useState(false)
 
   // Sound: unlock on the first gesture, click on every button, chime on panels.
@@ -128,65 +120,64 @@ export default function Experience() {
       set({ webgl: false, ready: true })
       return
     }
-    // Keyboard: WASD or arrows to walk, Shift to run, 1-7 to fast travel.
-    const keys = new Set<string>()
-    const sync = () => {
-      input.x = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0)
-      input.y = (keys.has("w") || keys.has("arrowup") ? 1 : 0) - (keys.has("s") || keys.has("arrowdown") ? 1 : 0)
-      input.run = keys.has("shift")
+    // One scroll, key press or swipe = one teleport. A short lock stops a single
+    // gesture from skipping several places.
+    let lock = 0
+    const go = (dir: 1 | -1) => {
+      const now = performance.now()
+      if (now < lock) return
+      const wait = step(dir)
+      if (wait) lock = now + wait
+    }
+    const wheel = (e: WheelEvent) => {
+      if ((e.target as HTMLElement).closest?.("aside")) return
+      e.preventDefault()
+      const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY
+      if (Math.abs(dy) >= 8) go(dy > 0 ? 1 : -1)
     }
     const down = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const k = e.key.toLowerCase()
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) e.preventDefault()
-      if (/^[1-7]$/.test(k) && !e.repeat) travelTo(Number(k) - 1)
-      if (k === "escape") set({ panel: null })
-      keys.add(k)
-      sync()
+      if (["arrowdown", "arrowright", "pagedown", " "].includes(k)) {
+        e.preventDefault()
+        go(1)
+      } else if (["arrowup", "arrowleft", "pageup"].includes(k)) {
+        e.preventDefault()
+        go(-1)
+      } else if (/^[1-7]$/.test(k) && !e.repeat) travelTo(Number(k) - 1)
+      else if (k === "escape") set({ panel: null })
     }
-    const up = (e: KeyboardEvent) => {
-      keys.delete(e.key.toLowerCase())
-      sync()
+    // Touch: swipe up for the next place, down for the previous one.
+    let touch: { x: number; y: number } | null = null
+    const touchStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      touch = (e.target as HTMLElement).closest?.("[data-ui]") ? null : { x: t.clientX, y: t.clientY }
     }
-    const blur = () => {
-      keys.clear()
-      sync()
-    }
-    // Scroll teleports: one scroll, one jump to the next (or previous) place.
-    // Inside Experience, each scroll jumps one role along the path first.
-    let lock = 0
-    const wheel = (e: WheelEvent) => {
-      if ((e.target as HTMLElement).closest?.("aside")) return
-      e.preventDefault()
-      const now = performance.now()
-      const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY
-      if (now < lock || Math.abs(dy) < 8) return
-      const dir = dy > 0 ? 1 : -1
-      const state = useWorld.getState()
-      const here = state.active >= 0 ? state.active : tour.place
-      if (sections[here].id === "experience" && state.active === here) {
-        lock = now + 800
-        if (stepRole(dir)) return
-      }
-      const next = here + dir
-      if (next < 0 || next >= sections.length) return
-      lock = now + 1250
-      // Coming back into Experience from the place after it lands on the last role.
-      travelTo(next, dir < 0 && sections[next].id === "experience" ? experience.length - 1 : 0)
+    const touchEnd = (e: TouchEvent) => {
+      if (!touch) return
+      const t = e.changedTouches[0]
+      const dx = t.clientX - touch.x
+      const dy = t.clientY - touch.y
+      touch = null
+      if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx) * 1.5) go(dy < 0 ? 1 : -1)
     }
     window.addEventListener("wheel", wheel, { passive: false })
     window.addEventListener("keydown", down)
-    window.addEventListener("keyup", up)
-    window.addEventListener("blur", blur)
+    window.addEventListener("touchstart", touchStart, { passive: true })
+    window.addEventListener("touchend", touchEnd, { passive: true })
     return () => {
       window.removeEventListener("wheel", wheel)
       window.removeEventListener("keydown", down)
-      window.removeEventListener("keyup", up)
-      window.removeEventListener("blur", blur)
+      window.removeEventListener("touchstart", touchStart)
+      window.removeEventListener("touchend", touchEnd)
     }
   }, [set])
 
-  const role = experience[roleIndex]
+  // The item on show in the place we are in (clamped: each place has its own count).
+  const at = (n: number) => Math.min(sub, n - 1)
+  const role = experience[at(experience.length)]
+  const project = software[at(software.length)]
+  const stepInfo = research.steps[at(research.steps.length)]
   const reading = active > 0 || (active === 0 && !started)
 
   return (
@@ -276,74 +267,98 @@ export default function Experience() {
         </Block>
 
         <Block index={2}>
-          <Kicker>Projects</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Software Engineering</h2>
-          <Lead>Web platforms and mobile apps for mining and construction: MineBook, Fleet Dispatch, Mining Cycle-Time, Crack Survey and Blast Pattern Design.</Lead>
+          <Kicker>Projects | {String(software.indexOf(project) + 1).padStart(2, "0")} of {String(software.length).padStart(2, "0")}</Kicker>
+          {webgl ? (
+            <div aria-live="polite" className="min-h-[150px]">
+              <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{project.title}</h2>
+              <p className="mt-2 text-sm font-medium text-forest">{project.meta}</p>
+              <Lead>{project.line}</Lead>
+              {project.url ? (
+                <a className={solid + " mt-4 h-9 px-4 text-xs"} href={project.url} target="_blank" rel="noreferrer">
+                  Open the live site <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              <h2 className="font-display text-4xl font-semibold tracking-tight">Software Engineering</h2>
+              <ul className="mt-5 space-y-4">
+                {software.map((p) => (
+                  <li key={p.id}>
+                    <p className="font-semibold">{p.title}</p>
+                    <p className="text-sm text-forest">{p.meta}</p>
+                    <p className="text-sm opacity-80">{p.line}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {webgl ? (
+            <>
+              <Stepper count={software.length} index={software.indexOf(project)} />
+              <Hint>{project.action}. Scroll for the next project.</Hint>
+            </>
+          ) : null}
           <Meta items={softwareStack} />
-          {/* Every project is also a button here, so nobody has to guess. */}
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {software.map((p) => (
-              <li key={p.id}>
-                <button type="button" onClick={() => set({ panel: { kind: "project", project: p } })} className="inline-flex items-center gap-1.5 rounded-full border border-forest/25 bg-white/70 px-3.5 py-2 text-xs font-semibold text-forest backdrop-blur transition hover:bg-forest hover:text-paper">
-                  {p.title} <ArrowUpRight className="h-3.5 w-3.5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-          {webgl ? <Hint>Each project is a 3D exhibit. Select one to play with it.</Hint> : null}
         </Block>
 
         <Block index={3}>
-          <Kicker>Career</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Professional Experience</h2>
+          <Kicker>Career | {String(experience.indexOf(role) + 1).padStart(2, "0")} of {String(experience.length).padStart(2, "0")}</Kicker>
           {webgl ? (
-            <div className="mt-5 min-h-[120px]" aria-live="polite">
-              <p className="font-display text-xl font-semibold">{role.role}</p>
-              <p className="mt-1 text-sm font-medium text-forest">
+            <div className="min-h-[150px]" aria-live="polite">
+              <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{role.role}</h2>
+              <p className="mt-2 text-sm font-medium text-forest">
                 {role.org} | {role.period}
               </p>
               <Lead>{role.line}</Lead>
             </div>
           ) : (
-            <ul className="mt-5 space-y-4">
-              {experience.map((r) => (
-                <li key={r.id}>
-                  <p className="font-semibold">{r.role}</p>
-                  <p className="text-sm text-forest">
-                    {r.org} | {r.period}
-                  </p>
-                  <p className="text-sm opacity-80">{r.line}</p>
-                </li>
-              ))}
-            </ul>
+            <>
+              <h2 className="font-display text-4xl font-semibold tracking-tight">Professional Experience</h2>
+              <ul className="mt-5 space-y-4">
+                {experience.map((r) => (
+                  <li key={r.id}>
+                    <p className="font-semibold">{r.role}</p>
+                    <p className="text-sm text-forest">
+                      {r.org} | {r.period}
+                    </p>
+                    <p className="text-sm opacity-80">{r.line}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
           {webgl ? (
             <>
-              <div className="mt-4 flex items-center gap-3">
-                <button type="button" onClick={() => stepRole(-1)} disabled={roleIndex === 0} className={ghost + " h-9 px-4 text-xs disabled:opacity-40"}>
-                  Previous
-                </button>
-                <div className="flex gap-1.5">
-                  {experience.map((r, i) => (
-                    <span key={r.id} className={`h-1.5 rounded-full transition-all ${i === roleIndex ? "w-8 bg-forest" : "w-3 bg-forest/25"}`} />
-                  ))}
-                </div>
-                <button type="button" onClick={() => stepRole(1)} disabled={roleIndex === experience.length - 1} className={solid + " h-9 px-4 text-xs disabled:opacity-40"}>
-                  Next
-                </button>
-              </div>
-              <Hint>Scroll to jump from one role to the next.</Hint>
+              <Stepper count={experience.length} index={experience.indexOf(role)} />
+              <Hint>Scroll for the next role.</Hint>
             </>
           ) : null}
         </Block>
 
         <Block index={4} wide>
-          <Kicker>Published research</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Research and Innovation</h2>
-          <p className="mt-5 font-display text-lg font-medium leading-snug">{research.title}</p>
-          <Meta items={[research.venue, research.detail]} />
-          <Lead>{research.line}</Lead>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <Kicker>Published research | Step {research.steps.indexOf(stepInfo) + 1} of {research.steps.length}</Kicker>
+          {webgl ? (
+            <div className="min-h-[150px]" aria-live="polite">
+              <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{stepInfo.title}</h2>
+              <Lead>{stepInfo.line}</Lead>
+            </div>
+          ) : (
+            <>
+              <h2 className="font-display text-4xl font-semibold tracking-tight">Research and Innovation</h2>
+              <ol className="mt-5 space-y-3">
+                {research.steps.map((st) => (
+                  <li key={st.id}>
+                    <p className="font-semibold">{st.title}</p>
+                    <p className="text-sm opacity-80">{st.line}</p>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+          {webgl ? <Stepper count={research.steps.length} index={research.steps.indexOf(stepInfo)} /> : null}
+          <p className="mt-5 text-xs font-medium leading-snug opacity-80">{research.title}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
             <a className={solid} href={research.url} target="_blank" rel="noreferrer">
               Read on IEEE Xplore <ArrowUpRight className="h-4 w-4" />
             </a>
@@ -401,14 +416,13 @@ export default function Experience() {
 
       {webgl ? (
         <>
-          <Joystick />
           <p
             data-ui
             className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:fine)]:flex ${started && active > 0 ? "opacity-0" : "opacity-100"}`}
           >
-            Scroll to teleport to the next place | drag to look | <Key>1</Key>-<Key>7</Key> jump to a place
+            Scroll or press <Key>↓</Key> for the next place | drag to look around | <Key>1</Key>-<Key>7</Key> jump to a place
           </p>
-          <p className="pointer-events-none fixed bottom-8 right-6 z-20 hidden text-[11px] font-medium text-charcoal/70 [@media(pointer:coarse)]:block">Drag to look | push far to run</p>
+          <p className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:coarse)]:block ${started && active > 0 ? "opacity-0" : "opacity-100"}`}>Swipe up for the next place | drag sideways to look</p>
         </>
       ) : null}
       <Panels />
