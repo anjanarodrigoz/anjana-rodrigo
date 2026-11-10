@@ -1,10 +1,10 @@
 "use client"
 
-import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Code2, Cpu, Github, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Check, Code2, Cpu, Github, Globe, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
-import { about, experience, minebook, profile, research, software, softwareStack } from "@/lib/content"
+import { about, experience, profile, research, software, softwareStack } from "@/lib/content"
 import { sections } from "@/lib/sections"
 import { setMuted, sound, unlock } from "@/lib/sound"
 import { tour, useWorld } from "@/lib/store"
@@ -170,7 +170,7 @@ export default function Experience() {
       } else if (["arrowup", "arrowleft", "pageup"].includes(k)) {
         e.preventDefault()
         go(-1)
-      } else if (/^[1-7]$/.test(k) && !e.repeat) travelTo(Number(k) - 1)
+      } else if (/^[1-6]$/.test(k) && !e.repeat) travelTo(Number(k) - 1)
       else if (k === "escape") set({ panel: null })
     }
     // Touch: swipe up for the next place, down for the previous one.
@@ -266,32 +266,39 @@ export default function Experience() {
             <button type="button" className={solid} onClick={() => step(1)}>
               Explore My World <ArrowDown className="h-4 w-4" />
             </button>
-            <button type="button" className={ghost} onClick={() => travelTo(2)}>
+            <button type="button" className={ghost} onClick={() => travelTo(1)}>
               View Projects
             </button>
           </div>
         </Block>
 
         <Block index={1}>
-          <Kicker>Founder</Kicker>
-          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">MineBook</h2>
-          <Lead>{minebook.line}</Lead>
-          <Meta items={minebook.manages} />
-          {webgl ? <Hint>Select the haul truck, the site office or the staked bench in the pit.</Hint> : null}
-          <div className="mt-6">
-            <a className={solid} href={minebook.url} target="_blank" rel="noreferrer">
-              minebook.lk <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </div>
-        </Block>
-
-        <Block index={2}>
           <Kicker>Projects | {String(software.indexOf(project) + 1).padStart(2, "0")} of {String(software.length).padStart(2, "0")}</Kicker>
           {webgl ? (
-            <div aria-live="polite" className="min-h-[150px]">
-              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">{project.title}</h2>
-              <p className="mt-2 text-sm font-medium text-forest">{project.meta}</p>
+            <div aria-live="polite" className="min-h-[230px]">
+              {/* What kind of product it is, at a glance */}
+              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-forest px-2.5 py-1 text-[11px] font-semibold text-paper">
+                {project.device === "web" ? <Globe className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
+                {project.device === "web" ? "Web platform" : "Mobile app"}
+              </p>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-4xl">{project.title}</h2>
               <Lead>{project.line}</Lead>
+              <p className="mt-3 text-xs sm:text-sm">
+                <span className="font-semibold text-forest">Made for: </span>
+                {project.who}
+              </p>
+              {project.does.length ? (
+                <ul className="mt-2 space-y-1.5">
+                  {project.does.map((d) => (
+                    <li key={d} className="flex items-start gap-2 text-xs sm:text-sm">
+                      <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-forest/15 text-forest">
+                        <Check className="h-3 w-3" />
+                      </span>
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               {project.url ? (
                 <a className={solid + " mt-4 h-9 px-4 text-xs"} href={project.url} target="_blank" rel="noreferrer">
                   Open the live site <ArrowUpRight className="h-3.5 w-3.5" />
@@ -315,13 +322,13 @@ export default function Experience() {
           {webgl ? (
             <>
               <Stepper count={software.length} index={software.indexOf(project)} />
-              <Hint>{project.action}. Scroll for the next project.</Hint>
+              <Hint>Try the 3D model: {project.action.charAt(0).toLowerCase() + project.action.slice(1)}.</Hint>
             </>
           ) : null}
           <Meta items={softwareStack} />
         </Block>
 
-        <Block index={3}>
+        <Block index={2}>
           <Kicker>Career | {String(experience.indexOf(role) + 1).padStart(2, "0")} of {String(experience.length).padStart(2, "0")}</Kicker>
           {webgl ? (
             <div className="min-h-[190px]" aria-live="polite">
@@ -370,7 +377,7 @@ export default function Experience() {
           ) : null}
         </Block>
 
-        <Block index={4} wide>
+        <Block index={3} wide>
           <Kicker>Published research | Step {research.steps.indexOf(stepInfo) + 1} of {research.steps.length}</Kicker>
           {webgl ? (
             <div className="min-h-[150px]" aria-live="polite">
@@ -404,7 +411,7 @@ export default function Experience() {
           </div>
         </Block>
 
-        <Block index={5}>
+        <Block index={4}>
           <Kicker>About</Kicker>
           <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">An engineer who builds.</h2>
           <Lead>{about.line}</Lead>
@@ -446,7 +453,7 @@ export default function Experience() {
           </ul>
         </Block>
 
-        <Block index={6}>
+        <Block index={5}>
           <Kicker>Contact</Kicker>
           <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">Let&apos;s build something useful.</h2>
           <div className="mt-6 flex flex-wrap gap-3">

@@ -7,7 +7,10 @@ import * as THREE from "three"
 import { Assemble, OneAtATime, canvasTexture, overUi } from "@/components/scene/helpers"
 import { software } from "@/lib/content"
 import { sound } from "@/lib/sound"
+import { zoneIndex } from "@/lib/sections"
 import { useWorld } from "@/lib/store"
+
+const HERE = zoneIndex("software")
 
 /**
  * The projects site: each product is an interactive 3D exhibit, shown one at
@@ -440,27 +443,33 @@ const EXHIBITS: Record<string, (p: { n: number }) => ReactNode> = {
  */
 export default function SoftwareWorld() {
   const sub = useWorld((s) => s.sub)
-  const active = useWorld((s) => s.active === 2)
+  const active = useWorld((s) => s.active === HERE)
   const [clicks, setClicks] = useState<number[]>(() => software.map(() => 0))
   const index = active ? Math.min(sub, software.length - 1) : 0
   const hover = useRef(false)
   const top = useRef<THREE.Group>(null!)
   const ring = useRef<THREE.Mesh>(null!)
   const tag = useRef<THREE.Mesh>(null!)
-  const cta = useMemo(
+  // A name sign for each project, shown above the exhibit on the plinth.
+  const signs = useMemo(
     () =>
-      canvasTexture(640, 128, (g) => {
-        g.clearRect(0, 0, 640, 128)
-        g.fillStyle = "#183F35"
-        g.beginPath()
-        g.roundRect(4, 14, 632, 100, 50)
-        g.fill()
-        g.fillStyle = "#F6F7F3"
-        g.font = "600 44px 'Space Grotesk', system-ui, sans-serif"
-        g.textBaseline = "middle"
-        g.textAlign = "center"
-        g.fillText("Select to try it", 320, 66)
-      }),
+      software.map((p) =>
+        canvasTexture(1024, 256, (g) => {
+          g.clearRect(0, 0, 1024, 256)
+          g.fillStyle = "#183F35"
+          g.beginPath()
+          g.roundRect(8, 8, 1008, 240, 60)
+          g.fill()
+          g.textAlign = "center"
+          g.textBaseline = "middle"
+          g.fillStyle = "#F6F7F3"
+          g.font = "600 84px 'Space Grotesk', system-ui, sans-serif"
+          g.fillText(p.title.replace(" Management App", ""), 512, 100)
+          g.fillStyle = "#8DAA91"
+          g.font = "500 44px Inter, system-ui, sans-serif"
+          g.fillText(`${p.device === "web" ? "Web platform" : "Mobile app"}  |  Select to try`, 512, 190)
+        }),
+      ),
     [],
   )
   useFrame((state) => {
@@ -470,6 +479,7 @@ export default function SoftwareWorld() {
     const m = ring.current.material as THREE.MeshBasicMaterial
     m.opacity += ((active ? 0.45 + 0.3 * Math.sin(t * 2.4) + k * 0.25 : 0.15) - m.opacity) * 0.15
     tag.current.quaternion.copy(state.camera.quaternion)
+    ;(tag.current.material as THREE.MeshBasicMaterial).map = signs[index]
     tag.current.scale.setScalar(1 + k * 0.1 + Math.sin(t * 2.4) * 0.03)
   })
   return (
@@ -523,8 +533,8 @@ export default function SoftwareWorld() {
           </mesh>
         </group>
         <mesh ref={tag} position={[0, 4.7, 0]} renderOrder={6}>
-          <planeGeometry args={[2.1, 0.42]} />
-          <meshBasicMaterial map={cta} transparent toneMapped={false} depthWrite={false} />
+          <planeGeometry args={[3, 0.75]} />
+          <meshBasicMaterial map={signs[0]} transparent toneMapped={false} depthWrite={false} />
         </mesh>
       </Assemble>
     </group>

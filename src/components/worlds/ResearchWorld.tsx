@@ -6,7 +6,10 @@ import * as THREE from "three"
 
 import { Assemble, OneAtATime, canvasTexture } from "@/components/scene/helpers"
 import { research } from "@/lib/content"
+import { zoneIndex } from "@/lib/sections"
 import { useWorld } from "@/lib/store"
+
+const HERE = zoneIndex("research")
 
 /**
  * The research lab. The published study is explained in six steps, one
@@ -402,7 +405,7 @@ function Paper() {
 
 export default function ResearchWorld() {
   const sub = useWorld((s) => s.sub)
-  const active = useWorld((s) => s.active === 4)
+  const active = useWorld((s) => s.active === HERE)
   const index = active ? Math.min(sub, research.steps.length - 1) : 0
   return (
     <group>

@@ -38,7 +38,6 @@ export interface Zone {
 const S = SITES
 export const sections: Zone[] = [
   { id: "intro", nav: "Start", world: "mine", at: [WASTE.x - 0.6, WASTE.z + 0.9], radius: 4.5, arrive: { x: WASTE.x - 0.6, z: WASTE.z + 0.9, heading: 2.2 }, helmet: true, tablet: false, items: 2 },
-  { id: "minebook", nav: "MineBook", world: "mine", at: [OFFICE.x, OFFICE.z + 1], radius: 7.5, arrive: { x: OFFICE.x - 1.6, z: OFFICE.z + 4.2, heading: 2.6 }, helmet: true, tablet: true },
   { id: "software", nav: "Projects", world: "software", at: [S.software.x, S.software.z], radius: 10, arrive: { x: S.software.x + 2.5, z: S.software.z + 1.4, heading: Math.PI }, helmet: false, tablet: false, items: software.length },
   { id: "experience", nav: "Experience", world: "experience", at: [S.experience.x, S.experience.z], radius: 10, arrive: { x: S.experience.x + 2.5, z: S.experience.z + 1.4, heading: Math.PI }, helmet: false, tablet: false, items: experience.length },
   { id: "research", nav: "Research", world: "research", at: [S.research.x, S.research.z], radius: 10, arrive: { x: S.research.x + 2.5, z: S.research.z + 1.4, heading: Math.PI }, helmet: false, tablet: true, lab: true, items: research.steps.length },

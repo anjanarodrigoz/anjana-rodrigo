@@ -6,7 +6,10 @@ import * as THREE from "three"
 
 import { Assemble, OneAtATime, canvasTexture } from "@/components/scene/helpers"
 import { experience, type Role } from "@/lib/content"
+import { zoneIndex } from "@/lib/sections"
 import { useWorld } from "@/lib/store"
+
+const HERE = zoneIndex("experience")
 
 /** The experience site: a career told one role at a time. */
 
@@ -121,7 +124,7 @@ function Place({ kind }: { kind: Role["place"] }) {
 /** A career stage: one role at a time, as a building on the central plinth. */
 export default function ExperienceWorld() {
   const sub = useWorld((s) => s.sub)
-  const active = useWorld((s) => s.active === 3)
+  const active = useWorld((s) => s.active === HERE)
   const index = active ? Math.min(sub, experience.length - 1) : 0
   const years = useMemo(
     () =>

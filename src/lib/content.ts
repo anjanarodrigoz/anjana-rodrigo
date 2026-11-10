@@ -32,12 +32,18 @@ export type SoftwareProject = {
   /** What happens when you select its 3D exhibit. */
   action: string
   device: "web" | "mobile"
+  /** Who uses it. */
+  who: string
+  /** What it does, as short plain points. */
+  does: string[]
   url?: string
 }
 
 export const software: SoftwareProject[] = [
   {
     id: "minebook",
+    who: "Mine managers and site supervisors",
+    does: ["Keeps workforce, shifts and equipment in one place", "Records downtime and why it happened", "Turns the shift log into daily reports and plans"],
     action: "Select it to change shift",
     title: "MineBook",
     meta: "Founder | Mining Data Platform | 2024 - Present",
@@ -47,6 +53,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "fleet-dispatch",
+    who: "Dispatchers running the haul fleet",
+    does: ["Assigns trucks to shovels and dump points", "Shows routes and truck status live", "Coordinates jobs across the shift"],
     action: "Select it to rebalance the fleet",
     title: "Fleet Dispatch",
     meta: "Mining Systems | Software | 2023",
@@ -55,6 +63,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "cycle-time",
+    who: "Production engineers",
+    does: ["Splits each haul cycle into load, haul, dump and return", "Shows where time is lost to queuing and delays", "Points to the change that lifts productivity most"],
     action: "Select it to step through the cycle",
     title: "Mining Cycle-Time",
     meta: "Analytics | Decision Support | 2023",
@@ -63,6 +73,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "crack-survey",
+    who: "Surveyors and builders",
+    does: ["Photographs cracks in neighbouring buildings before work starts", "Marks each crack on the floor plan", "Compares before and after, and produces the report"],
     action: "Select it to compare before and after",
     title: "Crack Survey",
     meta: "Mobile | Construction Survey | 2024",
@@ -71,6 +83,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "blast-pattern",
+    who: "Drill and blast engineers",
+    does: ["Sets burden, spacing and hole geometry", "Checks the design against safety parameters", "Exports the pattern for production"],
     action: "Select it to fire the pattern",
     title: "Blast Pattern Design",
     meta: "Mobile | Mining Design | 2024",
@@ -79,6 +93,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "melbourne-mover",
+    who: "Customers and drivers of a moving company",
+    does: ["Customers book a move from their phone", "Jobs are dispatched to drivers", "Everyone tracks the job live"],
     action: "Select it to dispatch a job",
     title: "Melbourne Mover",
     meta: "Mobile Application | Transport | 2020 - 2024",
@@ -87,6 +103,8 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "restaurant",
+    who: "Restaurant owners and staff",
+    does: [],
     action: "Select it to send an order",
     title: "Restaurant Management App",
     meta: "Business Management",

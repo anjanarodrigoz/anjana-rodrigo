@@ -10,7 +10,7 @@ The character does not walk. He teleports from place to place and stands facing 
 |---|---|---|
 | Next / previous | Scroll, or arrow keys | Swipe up / down |
 | Step through projects, roles, research steps | Same: these places show one item at a time | Swipe, or Previous / Next |
-| Jump to any place | Keys 1-7 | - |
+| Jump to any place | Keys 1-6 | - |
 | Look around | Drag | Drag sideways |
 
 The site opens on a wide view while the mine assembles itself, then pushes in to the character before the first teleport. Each place announces its name on arrival, then shows its content. On phones the text sits in a white panel at the bottom.
