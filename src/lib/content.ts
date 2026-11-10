@@ -113,7 +113,8 @@ export const software: SoftwareProject[] = [
   },
 ]
 
-export const softwareStack = ["Flutter mobile apps", "React web apps", "Business systems", "Cloud applications", "Data platforms", "AI experiments"]
+/** Software technology stack. */
+export const softwareStack = ["AWS", "Docker", "Flutter", "React", "Android", "iOS", "Firebase", "SQL databases", "NoSQL databases", "Data lake experiments"]
 
 export type Role = {
   id: string
@@ -121,6 +122,8 @@ export type Role = {
   org: string
   period: string
   line: string
+  /** Specific things done in the role, shown as short points. */
+  points?: string[]
   place: "studio" | "university" | "office" | "mine" | "tower"
 }
 
@@ -136,10 +139,17 @@ export const experience: Role[] = [
   },
   {
     id: "uom",
-    role: "Team Leader, MIS Development",
+    role: "Team Leader, Lead Developer and Teaching Assistant",
     org: "University of Moratuwa",
     period: "2024 - Apr 2026",
-    line: "Led practical information systems that improved university workflows and visibility.",
+    line: "Led the team and the development of a large-scale Management Information System for the university, and taught as a teaching assistant.",
+    points: [
+      "Team leader and lead developer of the university's large-scale MIS",
+      "Taught Fundamentals of Programming",
+      "Taught Object-Oriented Programming",
+      "Taught Object-Oriented Analysis and Design",
+      "Taught Database Management",
+    ],
     place: "university",
   },
   {
@@ -163,7 +173,15 @@ export const experience: Role[] = [
     role: "Chief Technology Officer",
     org: "Starloge (Pvt) Ltd",
     period: "Apr 2026 - Present",
-    line: "Leading technology, product engineering and the technical team.",
+    line: "Designing, developing and adding features to business digitalisation products.",
+    points: [
+      "Laundry management",
+      "Salon management",
+      "School management",
+      "Physiotherapy clinics",
+      "Ayurveda clinics",
+      "Many other B2B products",
+    ],
     place: "tower",
   },
 ]

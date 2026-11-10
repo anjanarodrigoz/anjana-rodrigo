@@ -131,6 +131,9 @@ export default function Experience() {
 
   // Arriving at a place: show its name first, then reveal the content.
   const titling = useWorld((s) => s.titling)
+  // Remember the last title so the card does not change text while fading out.
+  const lastTitle = useRef(1)
+  if (titling > 0) lastTitle.current = titling
   useEffect(() => {
     if (active <= 0) return
     set({ titling: active })
@@ -226,7 +229,7 @@ export default function Experience() {
         <div aria-hidden="true" className={`pointer-events-none fixed inset-0 z-20 grid place-items-center px-6 transition-all duration-500 ${titling > 0 && titling === active ? "opacity-100" : "scale-95 opacity-0"}`}>
           <div className="rounded-3xl bg-deep/85 px-8 py-6 text-center text-paper shadow-2xl backdrop-blur sm:px-14 sm:py-9">
             <p className="text-xs font-medium uppercase tracking-[0.25em] text-sage sm:text-sm">Now let&apos;s look at</p>
-            <p className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-7xl">{sections[Math.max(0, titling)]?.nav}</p>
+            <p className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-7xl">{sections[lastTitle.current]?.nav}</p>
           </div>
         </div>
       ) : null}
@@ -352,6 +355,18 @@ export default function Experience() {
                 </div>
               </div>
               <Lead>{role.line}</Lead>
+              {role.points ? (
+                <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
+                  {role.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2 text-xs sm:text-[13px]">
+                      <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-forest/15 text-forest">
+                        <Check className="h-3 w-3" />
+                      </span>
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           ) : (
             <>
@@ -364,6 +379,7 @@ export default function Experience() {
                       {r.org} | {r.period}
                     </p>
                     <p className="text-sm opacity-80">{r.line}</p>
+                    {r.points ? <p className="text-sm opacity-70">{r.points.join(" | ")}</p> : null}
                   </li>
                 ))}
               </ul>
@@ -432,6 +448,15 @@ export default function Experience() {
                 </li>
               )
             })}
+          </ul>
+          {/* Technology stack */}
+          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-forest/70">Technology stack</p>
+          <ul className="mt-2 flex flex-wrap gap-1.5">
+            {softwareStack.map((t) => (
+              <li key={t} className="rounded-full border border-forest/20 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-charcoal backdrop-blur">
+                {t}
+              </li>
+            ))}
           </ul>
           {/* Credentials, each with its own icon */}
           <ul className="mt-5 space-y-2.5">
