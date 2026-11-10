@@ -374,10 +374,10 @@ export function buildMine() {
     add(plant, geo.cyl, mat.steel, -2.3, 1.0, 0.6, 0.85, 2.0, 0.85)
     add(plant, geo.cyl, mat.white, 3.2, 1.1, 1.4, 0.9, 2.2, 0.9)
     add(plant, geo.cyl, mat.white, 3.4, 0.25, -2.4, 1.6, 0.5, 1.6)
-    add(plant, geo.cyl, track(new THREE.MeshStandardMaterial({ color: 0x4aa9d6, roughness: 0.1, metalness: 0.2 })), 3.4, 0.46, -2.4, 1.5, 0.05, 1.5)
+    add(plant, geo.cyl, track(new THREE.MeshStandardMaterial({ color: 0x5bb4dc, roughness: 0.35, metalness: 0 })), 3.4, 0.46, -2.4, 1.5, 0.05, 1.5)
     rake = add(plant, geo.box, mat.yellow, 3.4, 0.62, -2.4, 3.1, 0.08, 0.12)
     group.add(plant)
-    const pond = new THREE.Mesh(track(new THREE.CircleGeometry(1, 40)), track(new THREE.MeshStandardMaterial({ color: 0x6f9aa3, roughness: 0.12, metalness: 0.25 })))
+    const pond = new THREE.Mesh(track(new THREE.CircleGeometry(1, 40)), track(new THREE.MeshStandardMaterial({ color: 0x7fb0bb, roughness: 0.35, metalness: 0 })))
     pond.rotation.x = -Math.PI / 2
     pond.scale.set(TSF.rx * 0.78, TSF.rz * 0.72, 1)
     pond.position.set(TSF.x + 0.3, 0.47, TSF.z - 0.2)

@@ -45,7 +45,7 @@ const S = SITES
 export const sections: Zone[] = [
   { id: "intro", nav: "Start", world: "mine", at: [WASTE.x - 0.6, WASTE.z + 0.9], radius: 4.5, arrive: { x: WASTE.x - 0.6, z: WASTE.z + 0.9, heading: 2.2 }, helmet: true, tablet: false },
   { id: "minebook", nav: "MineBook", world: "mine", at: [OFFICE.x, OFFICE.z + 1], radius: 7.5, arrive: { x: OFFICE.x - 1.6, z: OFFICE.z + 4.2, heading: 2.6 }, helmet: true, tablet: true },
-  { id: "software", nav: "Projects", world: "software", at: [S.software.x, S.software.z], radius: 10, arrive: { x: S.software.x, z: S.software.z + 7.5, heading: Math.PI }, helmet: false, tablet: false },
+  { id: "software", nav: "Projects", world: "software", at: [S.software.x, S.software.z], radius: 10, arrive: { x: S.software.x, z: S.software.z + 1.6, heading: Math.PI }, helmet: false, tablet: false },
   { id: "experience", nav: "Experience", world: "experience", at: [S.experience.x, S.experience.z], radius: 10, arrive: { x: S.experience.x - 9 * 0.62, z: S.experience.z + 5.9 * 0.62, heading: Math.PI }, helmet: false, tablet: false },
   { id: "research", nav: "Research", world: "research", at: [S.research.x, S.research.z], radius: 10, arrive: { x: S.research.x, z: S.research.z + 7.5, heading: Math.PI }, helmet: false, tablet: false },
   { id: "about", nav: "About", world: "mine", at: [S.about.x, S.about.z], radius: 4, arrive: { x: S.about.x + 1.6, z: S.about.z - 1.2, heading: 0.6 }, helmet: true, tablet: false },
@@ -74,11 +74,14 @@ export const OBSTACLES: [number, number, number, number][] = [
   [7.6, 2.8, 1.5, 0],
   [11.2, -2.4, 2.3, 0],
   [GATE.x - 1, GATE.z, 0.7, 0],
-  [S.software.x, S.software.z - 0.6, 1.6, 0],
   [S.research.x - 2.2, S.research.z + 2.6, 0.8, 0],
   [S.research.x - 5.2, S.research.z - 1, 1.5, 0],
   [S.research.x + 5.2, S.research.z - 1, 1.5, 0],
 ]
+
+/** Where each project's exhibit stands in the projects site (site coordinates), in content order. */
+export const PROJECT_SPOTS: [number, number][] = [[0, -4.6], [-5, -0.4], [-2.9, -3.5], [2.9, -3.5], [5, -0.4]]
+for (const [x, z] of PROJECT_SPOTS) OBSTACLES.push([S.software.x + x, S.software.z + z, 1.15, 0])
 
 /** Zone index by id, so code never depends on the order of the list. */
 export const zoneIndex = (id: string) => sections.findIndex((s) => s.id === id)

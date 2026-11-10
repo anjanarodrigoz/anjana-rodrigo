@@ -29,10 +29,8 @@ export type SoftwareProject = {
   title: string
   meta: string
   line: string
-  /** Real product screenshot. */
-  image: string
-  /** Width / height of the screenshot. */
-  aspect: number
+  /** What happens when you select its 3D exhibit. */
+  action: string
   device: "web" | "mobile"
   url?: string
 }
@@ -40,48 +38,43 @@ export type SoftwareProject = {
 export const software: SoftwareProject[] = [
   {
     id: "minebook",
+    action: "Select it to change shift",
     title: "MineBook",
     meta: "Founder | Mining Data Platform | 2024 - Present",
     line: "A connected operations platform for production, equipment, alerts and reporting.",
-    image: "/assets/projects/minebook.webp",
-    aspect: 1400 / 961,
     device: "web",
     url: "https://minebook.lk/",
   },
   {
     id: "fleet-dispatch",
+    action: "Select it to rebalance the fleet",
     title: "Fleet Dispatch",
     meta: "Mining Systems | Software | 2023",
     line: "Live fleet allocation, route intelligence, and operational job coordination.",
-    image: "/assets/projects/fleet-dispatch.webp",
-    aspect: 1400 / 850,
     device: "web",
   },
   {
     id: "cycle-time",
+    action: "Select it to step through the cycle",
     title: "Mining Cycle-Time",
     meta: "Analytics | Decision Support | 2023",
     line: "Cycle analysis that exposes delay where it happens and lifts equipment productivity.",
-    image: "/assets/projects/cycle-time.webp",
-    aspect: 1.5,
     device: "web",
   },
   {
     id: "crack-survey",
+    action: "Select it to compare before and after",
     title: "Crack Survey",
     meta: "Mobile | Construction Survey | 2024",
     line: "Documents cracks in neighbouring properties before construction begins, then compares their condition after. Photos, floor-plan locations and reports.",
-    image: "/assets/projects/crack-survey.webp",
-    aspect: 1.5,
     device: "mobile",
   },
   {
     id: "blast-pattern",
+    action: "Select it to fire the pattern",
     title: "Blast Pattern Design",
     meta: "Mobile | Mining Design | 2024",
     line: "A field-ready tool for configuring blast-hole geometry, validating safety parameters, and exporting production patterns.",
-    image: "/assets/projects/blast-pattern.webp",
-    aspect: 1.5,
     device: "mobile",
   },
 ]

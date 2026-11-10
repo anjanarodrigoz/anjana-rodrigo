@@ -39,7 +39,7 @@ npm run build && npm start
 ## Honest notes
 
 - All 3D is a procedural prototype built from primitives in code. No GLB models are imported yet.
-- Project screens are real product screenshots (`public/assets/projects`). MineBook previews in the mine are illustrative.
+- Projects are interactive 3D exhibits built in code, not screenshots. MineBook previews in the mine are illustrative.
 - The research hologram shows the paper's method and displays no result numbers.
 - In the experience model, the quarry, crusher plant, tunnel portal and house are scenery. Only the five roles in `content.ts` carry role information.
 

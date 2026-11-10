@@ -74,20 +74,8 @@ export function Panels() {
     title = panel.project.title
     body = (
       <div className="space-y-3">
-        {/* The real product, in a device frame */}
-        <div className="overflow-hidden rounded-xl border border-charcoal/15 bg-white shadow-sm">
-          {panel.project.device === "web" ? (
-            <div className="flex items-center gap-1.5 border-b border-charcoal/10 bg-charcoal/5 px-3 py-1.5">
-              <i className="h-2 w-2 rounded-full bg-charcoal/20" />
-              <i className="h-2 w-2 rounded-full bg-charcoal/20" />
-              <i className="h-2 w-2 rounded-full bg-charcoal/20" />
-              <span className="ml-2 truncate rounded-full bg-white px-2 py-0.5 text-[10px] text-charcoal/60">{panel.project.url?.replace(/^https?:\/\/|\/$/g, "") ?? panel.project.title}</span>
-            </div>
-          ) : null}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={panel.project.image} alt={`${panel.project.title} screens`} className="block w-full" />
-        </div>
         <p>{panel.project.line}</p>
+        <p className="text-xs font-medium text-forest">{panel.project.action} in the world.</p>
         {panel.project.url ? (
           <a href={panel.project.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-forest px-4 py-2 text-xs font-semibold text-paper">
             Open the live site <ArrowUpRight className="h-3.5 w-3.5" />
@@ -122,7 +110,7 @@ export function Panels() {
     <aside
       data-ui
       aria-live="polite"
-      className="fixed bottom-36 left-4 right-4 z-40 max-h-[50vh] overflow-auto rounded-2xl border border-white/60 bg-paper/90 p-5 text-sm text-charcoal/80 shadow-2xl backdrop-blur-md sm:bottom-auto sm:left-auto sm:right-36 sm:top-20 sm:w-[440px]"
+      className="fixed bottom-36 left-4 right-4 z-40 max-h-[50vh] overflow-auto rounded-2xl border border-white/60 bg-paper/90 p-5 text-sm text-charcoal/80 shadow-2xl backdrop-blur-md sm:bottom-auto sm:left-auto sm:right-36 sm:top-24 sm:w-[340px]"
     >
       <button type="button" onClick={() => set({ panel: null })} className="absolute right-3 top-3 rounded-full p-1.5 text-charcoal/60 hover:bg-forest/10" aria-label="Close">
         <X className="h-4 w-4" />

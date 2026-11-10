@@ -279,7 +279,7 @@ export default function Experience() {
               </li>
             ))}
           </ul>
-          {webgl ? <Hint>Select a project here, or click any device in the world.</Hint> : null}
+          {webgl ? <Hint>Each project is a 3D exhibit. Select one to play with it.</Hint> : null}
         </Block>
 
         <Block index={3}>

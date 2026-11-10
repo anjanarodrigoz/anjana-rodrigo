@@ -54,6 +54,7 @@ export function travelTo(index: number) {
       player.vx = player.vz = 0
       player.heading = a.heading
       player.camYaw = a.heading + Math.PI
+      player.camPitch = 0.4
       player.y = standHeight(a.x, a.z)
     })
     .to(rig, { dissolve: 0, duration: 0.6, ease: "power2.out" })
