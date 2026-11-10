@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background: #f6f7f3;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: #202824;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  color: #f6f7f3;
+  background: #183f35;
+}
+
+:focus-visible {
+  outline: 2px solid #8daa91;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Soft reading gradient behind the text column; the world stays visible. */
+.scrim-light {
+  background: linear-gradient(90deg, rgba(246, 247, 243, 0.8) 0%, rgba(246, 247, 243, 0.45) 26%, rgba(246, 247, 243, 0) 46%);
+}
+
+.scrim-dark {
+  background: linear-gradient(90deg, rgba(16, 44, 37, 0.8) 0%, rgba(16, 44, 37, 0.4) 26%, rgba(16, 44, 37, 0) 46%);
+}
+
+@media (max-width: 639px) {
+  .scrim-light {
+    background: linear-gradient(0deg, rgba(246, 247, 243, 0.94) 0%, rgba(246, 247, 243, 0.75) 38%, rgba(246, 247, 243, 0) 62%);
+  }
+
+  .scrim-dark {
+    background: linear-gradient(0deg, rgba(16, 44, 37, 0.94) 0%, rgba(16, 44, 37, 0.7) 38%, rgba(16, 44, 37, 0) 62%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

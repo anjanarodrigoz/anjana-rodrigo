@@ -1,44 +1,51 @@
-# Anjana Rodrigo — Portfolio
+# Anjana Rodrigo | Interactive 3D Portfolio
 
-A portfolio told as a guided tour of a floating-island open-pit mine. A small 3D version of Anjana walks you from stop to stop as you scroll, and each of his products is shown as a working prototype at the place in the mine where it is used.
+A scroll-driven 3D world. Visitors travel through five environments in one connected universe, guided by a 3D character who teleports between them.
 
-## Technology
+Intro → MineBook → Software Engineering → Crack Survey → Professional Experience → Research → About → Contact
 
-- Vite, React 18, TypeScript
-- three.js (the island scene, loaded on demand)
-- Tailwind base + hand-written CSS
-- Lucide icons
+## Stack
 
-## Run locally
+Next.js 14 (App Router, TypeScript) | React Three Fiber | Three.js | drei | GSAP ScrollTrigger | Tailwind CSS | Zustand
 
 ```bash
 npm install
-npm run dev
-```
-
-## Production build
-
-```bash
-npm run build
-npm run preview
+npm run dev      # http://localhost:3000
+npm run build && npm start
 ```
 
 ## How it works
 
-- **Full-screen mine tour** (`src/pages/TourPage.tsx`). The 3D floating-island mine always fills the screen. Scrolling walks a 3D Anjana between tour stops (`src/journey.ts`).
-- **The mine** (`src/three/`):
-  - `terrain.ts` — island shape, a 7-bench open pit with spiral haul ramp, surface roads, a terraced waste dump and a tailings dam, as pure height functions shared by rendering, physics and walking.
-  - `islandScene.ts` — shadows, tone mapping and textured ground; ore trucks cycle pit → crusher and waste trucks pit → dump; excavator dig/swing/dump cycle; drill rig and timed blasts; crusher, conveyor, stockpile, processing plant, tailings pond and pipeline; workshop, fuel farm, explosives magazine, lighting towers, power line, comms tower, site office, gate and weighbridge; water truck, grader and dozer; dust and spray.
-  - `physics.ts` — cannon-es rigid bodies on a heightfield of the island: blasted rock, rock dumped into the truck, and ore falling off the conveyor onto the stockpile.
-  - `character.ts` — Anjana as a jointed rig (curly hair, beard, navy suit, white shirt, tie, watch, tablet) with a speed-driven walk/run gait; he moves with acceleration, turn-rate limits and gravity (dropping off ledges, climbing bench faces).
-  - `vehicles.ts` — haul truck, excavator and drill rig models.
-- **MineBook stop:** the whole mine lights up as one connected system — every asset links to a MineBook hub, with live tags (`ConnectedTags.tsx`).
-- **Cards inside the mine** (`StopCards.tsx`): one small see-through card per stop, pinned to its object with a leader line; docked at the bottom on phones.
-- **Detail pages** (hash routes in `src/router.ts`): `#/project/<id>` with the working prototype, `#/about` with experience and credentials; "Back" returns to the same stop.
-- Prototypes and live tags use simulated data — demos, not engineering tools.
+| Piece | File | What it does |
+|---|---|---|
+| Content | `src/lib/content.ts` | Every fact shown on the site. Edit text here. |
+| Journey | `src/lib/sections.ts` | The eight sections: world, camera poses, character spot, lighting. |
+| Scroll timeline | `src/components/Experience.tsx` | One GSAP ScrollTrigger timeline drives the camera, the character dissolve, the veil between worlds and each world's assembly. Also the HTML text, nav and fallback. |
+| Shared state | `src/lib/store.ts` | Zustand store for UI state; a plain `rig` object for per-frame animation values. |
+| Canvas | `src/components/scene/Scene.tsx` | One canvas. Worlds are code-split, built one section ahead, hidden when far. Adaptive resolution. |
+| Camera and light | `src/components/scene/Rig.tsx` | Applies the timeline to the camera; blends sky, fog and sun per world. |
+| Character | `src/components/scene/Character.tsx` | The guide: cartoon boy, curly hair, green hoodie, helmet on site. Dissolves into particles to travel. |
+| Worlds | `src/components/worlds/*` | Mine, Software, Crack Survey, Experience, Research. |
+| Mine | `src/three/mine.ts`, `terrain.ts`, `vehicles.ts` | Procedural valley, benched pit, haul fleet, excavator cycle, plant, office, workshop. |
 
-## Design
+## Interactions
 
-- White and blue (`#0b5fe0`) only.
-- One typeface, Inter, upright everywhere.
-- Content is copied from `src/content.tsx`.
+- MineBook: select the haul truck, the site office or the staked bench.
+- Software: select a screen.
+- Crack Survey: switch before/after construction, lift the roof, select a crack to open its record.
+- Experience: scroll along the path or select a location.
+- Research: open the publication record and the IEEE Xplore link.
+
+## Honest notes
+
+- All 3D is a **procedural prototype** built from primitives in code. There are no imported GLB models yet. Components are structured so `createKit()` vehicles, the character and buildings can be swapped for Blender/GLB assets.
+- Preview panels and crack records are illustrative samples, labelled as such.
+- The research hologram shows the paper's method (equipment data, four models, two targets). It displays no result numbers.
+- In the Experience world, the quarry, crusher plant, tunnel portal and survey house are scenery. Only the five roles in `content.ts` carry role information.
+
+## Accessibility and fallbacks
+
+- All text is real HTML in semantic sections (server-rendered, indexable).
+- No WebGL, or `?lite` in the URL: the site becomes a plain readable page.
+- `prefers-reduced-motion`: camera sway and UI animation are reduced.
+- Phones: wider field of view, camera pulled back, text docked at the bottom.

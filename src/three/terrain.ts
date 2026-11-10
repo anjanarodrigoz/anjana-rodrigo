@@ -123,7 +123,11 @@ export function topHeight(x: number, z: number) {
   const theta = Math.atan2(z, x)
   const rr = Math.hypot(x, z) / rimR(theta)
   let y = 0.25 + (noise(x * 0.18, z * 0.18) - 0.5) * 0.7 + (noise(x * 0.6, z * 0.6) - 0.5) * 0.15
-  y -= smoothstep(0.9, 1.0, rr) * 0.35
+  // Beyond the mine lease the ground climbs into a ring of mountains.
+  if (rr > 1.9) {
+    const m = smoothstep(1.9, 3.7, rr)
+    y += m * (4 + 17 * noise(x * 0.045 + 7, z * 0.045 + 3) + 5 * noise(x * 0.14, z * 0.14)) + m * m * 6
+  }
 
   // Flat pads for the plant and the office.
   const pads = Math.max(
