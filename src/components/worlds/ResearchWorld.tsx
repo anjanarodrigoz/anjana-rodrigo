@@ -65,7 +65,7 @@ function Stream({ from, to, offset }: { from: THREE.Vector3; to: THREE.Vector3; 
 
 export default function ResearchWorld() {
   const set = useWorld((s) => s.set)
-  const active = useWorld((s) => s.active === 5)
+  const active = useWorld((s) => s.active === 4)
   const paper = useRef<THREE.Group>(null!)
   const ring = useRef<THREE.Mesh>(null!)
 

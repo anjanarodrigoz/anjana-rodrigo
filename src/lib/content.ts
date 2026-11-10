@@ -29,61 +29,64 @@ export type SoftwareProject = {
   title: string
   meta: string
   line: string
-  screen: "dispatch" | "cycle" | "blast" | "mobile" | "mis"
+  /** Real product screenshot. */
+  image: string
+  /** Width / height of the screenshot. */
+  aspect: number
+  device: "web" | "mobile"
+  url?: string
 }
 
 export const software: SoftwareProject[] = [
+  {
+    id: "minebook",
+    title: "MineBook",
+    meta: "Founder | Mining Data Platform | 2024 - Present",
+    line: "A connected operations platform for production, equipment, alerts and reporting.",
+    image: "/assets/projects/minebook.webp",
+    aspect: 1400 / 961,
+    device: "web",
+    url: "https://minebook.lk/",
+  },
   {
     id: "fleet-dispatch",
     title: "Fleet Dispatch",
     meta: "Mining Systems | Software | 2023",
     line: "Live fleet allocation, route intelligence, and operational job coordination.",
-    screen: "dispatch",
+    image: "/assets/projects/fleet-dispatch.webp",
+    aspect: 1400 / 850,
+    device: "web",
   },
   {
     id: "cycle-time",
     title: "Mining Cycle-Time",
     meta: "Analytics | Decision Support | 2023",
     line: "Cycle analysis that exposes delay where it happens and lifts equipment productivity.",
-    screen: "cycle",
+    image: "/assets/projects/cycle-time.webp",
+    aspect: 1.5,
+    device: "web",
+  },
+  {
+    id: "crack-survey",
+    title: "Crack Survey",
+    meta: "Mobile | Construction Survey | 2024",
+    line: "Documents cracks in neighbouring properties before construction begins, then compares their condition after. Photos, floor-plan locations and reports.",
+    image: "/assets/projects/crack-survey.webp",
+    aspect: 1.5,
+    device: "mobile",
   },
   {
     id: "blast-pattern",
     title: "Blast Pattern Design",
     meta: "Mobile | Mining Design | 2024",
     line: "A field-ready tool for configuring blast-hole geometry, validating safety parameters, and exporting production patterns.",
-    screen: "blast",
-  },
-  {
-    id: "melbourne-mover",
-    title: "Melbourne Mover",
-    meta: "Mobile Application | 2020 - 2024",
-    line: "Customer and field workflows for transport booking, dispatch, and live job tracking.",
-    screen: "mobile",
-  },
-  {
-    id: "uom-mis",
-    title: "University MIS",
-    meta: "Information Systems | 2024 - 2026",
-    line: "Practical information systems that improved university workflows and visibility.",
-    screen: "mis",
+    image: "/assets/projects/blast-pattern.webp",
+    aspect: 1.5,
+    device: "mobile",
   },
 ]
 
 export const softwareStack = ["Flutter mobile apps", "React web apps", "Business systems", "Cloud applications", "Data platforms", "AI experiments"]
-
-export const crackSurvey = {
-  line: "Documents the condition of neighbouring properties before construction begins, then compares it after.",
-  supports: ["Pre-construction documentation", "Post-construction inspections", "Crack photography", "Floor-plan locations", "Condition comparisons", "Report generation"],
-  /** Sample records for the interactive demo house. Illustrative, not survey data. */
-  records: [
-    { id: "C-001", wall: "Front wall | Exterior", room: "Living room", before: 0.4, after: 0.6, plan: [0.22, 0.86] as [number, number] },
-    { id: "C-002", wall: "East wall | Exterior", room: "Bedroom 1", before: 0.8, after: 2.1, plan: [0.96, 0.36] as [number, number] },
-    { id: "C-003", wall: "Front wall | Exterior", room: "Kitchen", before: 0.3, after: 0.3, plan: [0.72, 0.86] as [number, number] },
-    { id: "C-004", wall: "Partition wall | Interior", room: "Hallway", before: 0.5, after: 1.2, plan: [0.5, 0.48] as [number, number] },
-    { id: "C-005", wall: "Rear wall | Interior", room: "Bedroom 2", before: 0.2, after: 0.5, plan: [0.3, 0.14] as [number, number] },
-  ],
-}
 
 export type Role = {
   id: string

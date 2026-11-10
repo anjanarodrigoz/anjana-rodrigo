@@ -1,5 +1,6 @@
 "use client"
 
+import { useTexture } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
@@ -8,119 +9,89 @@ import { Assemble, canvasTexture, overUi } from "@/components/scene/helpers"
 import { software, type SoftwareProject } from "@/lib/content"
 import { useWorld } from "@/lib/store"
 
-/** World two: a digital workspace of floating, readable application screens. */
+/** The projects site: an open-air studio where each product runs on a real device. */
 
 const INK = "#102C25"
 const SAGE = "#8DAA91"
 
-function drawScreen(g: CanvasRenderingContext2D, p: SoftwareProject, w: number, h: number) {
-  g.fillStyle = "#F6F7F3"
-  g.fillRect(0, 0, w, h)
-  g.fillStyle = INK
-  g.fillRect(0, 0, w, h * 0.13)
-  g.fillStyle = "#F6F7F3"
-  g.font = `600 ${Math.round(h * 0.065)}px 'Space Grotesk', system-ui, sans-serif`
-  g.textBaseline = "middle"
-  g.fillText(p.title, w * 0.05, h * 0.068)
-  const x0 = w * 0.06
-  const y0 = h * 0.2
-  const cw = w * 0.88
-  const ch = h * 0.72
-  g.strokeStyle = "rgba(16,44,37,.12)"
-  g.lineWidth = 2
-  if (p.screen === "dispatch") {
-    // Haul network with trucks along routes.
-    g.strokeStyle = "rgba(16,44,37,.25)"
-    g.lineWidth = 10
-    g.beginPath()
-    g.moveTo(x0, y0 + ch * 0.3)
-    g.bezierCurveTo(x0 + cw * 0.3, y0, x0 + cw * 0.5, y0 + ch * 0.6, x0 + cw, y0 + ch * 0.2)
-    g.moveTo(x0, y0 + ch * 0.85)
-    g.bezierCurveTo(x0 + cw * 0.35, y0 + ch * 0.9, x0 + cw * 0.5, y0 + ch * 0.6, x0 + cw, y0 + ch * 0.9)
-    g.stroke()
-    for (let i = 0; i < 9; i++) {
-      g.fillStyle = i % 3 ? "#183F35" : "#e0a100"
-      g.beginPath()
-      g.arc(x0 + cw * (0.08 + i * 0.105), y0 + ch * (0.25 + 0.3 * Math.sin(i * 1.7) + (i % 2) * 0.3), 12, 0, 7)
-      g.fill()
-    }
-  } else if (p.screen === "cycle") {
-    const parts = [0.15, 0.06, 0.08, 0.39, 0.04, 0.28]
-    const cols = ["#b5483f", "#c9d6cb", SAGE, "#183F35", "#5d8a6c", "#a9c2ac"]
-    let x = x0
-    parts.forEach((f, i) => {
-      g.fillStyle = cols[i]
-      g.fillRect(x, y0, cw * f - 6, ch * 0.22)
-      x += cw * f
-    })
-    for (let i = 0; i < 5; i++) {
-      g.fillStyle = "rgba(16,44,37,.1)"
-      g.fillRect(x0, y0 + ch * (0.36 + i * 0.13), cw, ch * 0.08)
-      g.fillStyle = "#183F35"
-      g.fillRect(x0, y0 + ch * (0.36 + i * 0.13), cw * (0.35 + 0.12 * ((i * 3) % 5)), ch * 0.08)
-    }
-  } else if (p.screen === "blast") {
-    g.strokeStyle = INK
-    g.lineWidth = 6
-    g.beginPath()
-    g.moveTo(x0, y0 + 10)
-    g.lineTo(x0 + cw, y0 + 10)
-    g.stroke()
-    for (let r = 0; r < 4; r++)
-      for (let c = 0; c < 9; c++) {
-        g.beginPath()
-        g.arc(x0 + cw * (0.07 + c * 0.105 + (r % 2) * 0.05), y0 + ch * (0.2 + r * 0.22), 13, 0, 7)
-        g.fillStyle = r === 0 ? "#183F35" : "#fff"
-        g.fill()
-        g.strokeStyle = "#183F35"
-        g.lineWidth = 4
-        g.stroke()
-      }
-  } else if (p.screen === "mobile") {
-    for (let i = 0; i < 4; i++) {
-      g.fillStyle = "#fff"
-      g.strokeStyle = "rgba(16,44,37,.15)"
-      g.beginPath()
-      g.roundRect(x0, y0 + i * ch * 0.24, cw, ch * 0.2, 18)
-      g.fill()
-      g.stroke()
-      g.fillStyle = i === 0 ? "#183F35" : SAGE
-      g.beginPath()
-      g.arc(x0 + 44, y0 + i * ch * 0.24 + ch * 0.1, 20, 0, 7)
-      g.fill()
-      g.fillStyle = "rgba(16,44,37,.75)"
-      g.fillRect(x0 + 84, y0 + i * ch * 0.24 + ch * 0.06, cw * 0.5, 12)
-      g.fillStyle = "rgba(16,44,37,.25)"
-      g.fillRect(x0 + 84, y0 + i * ch * 0.24 + ch * 0.12, cw * 0.32, 10)
-    }
-  } else {
-    for (let r = 0; r < 7; r++) {
-      g.fillStyle = r === 0 ? "rgba(141,170,145,.45)" : r % 2 ? "#fff" : "rgba(16,44,37,.04)"
-      g.fillRect(x0, y0 + r * ch * 0.13, cw, ch * 0.12)
-      for (let c = 0; c < 4; c++) {
-        g.fillStyle = r === 0 ? INK : "rgba(16,44,37,.4)"
-        g.fillRect(x0 + 16 + c * cw * 0.25, y0 + r * ch * 0.13 + ch * 0.045, cw * (0.1 + 0.03 * ((r + c) % 3)), 10)
-      }
-    }
-  }
-}
-
-const LAYOUT: { pos: [number, number, number]; rotY: number; size: [number, number] }[] = [
-  { pos: [-3.6, 2.5, -1.2], rotY: 0.45, size: [2.6, 1.6] },
-  { pos: [0, 3.1, -2.4], rotY: 0, size: [3, 1.85] },
-  { pos: [3.7, 2.5, -1.2], rotY: -0.45, size: [2.6, 1.6] },
-  { pos: [-1.5, 1.35, 0.6], rotY: 0.25, size: [0.8, 1.55] },
-  { pos: [1.9, 1.3, 0.3], rotY: -0.25, size: [1.9, 1.2] },
+/** Where each device stands on the stage, and how wide it is. */
+const LAYOUT: { pos: [number, number, number]; rotY: number; width: number }[] = [
+  { pos: [0, 3.25, -2.6], rotY: 0, width: 3.5 },
+  { pos: [-4.1, 2.55, -1.1], rotY: 0.5, width: 2.9 },
+  { pos: [4.1, 2.55, -1.1], rotY: -0.5, width: 2.9 },
+  { pos: [-2.9, 1.25, 1.7], rotY: 0.35, width: 2.3 },
+  { pos: [2.9, 1.25, 1.7], rotY: -0.35, width: 2.3 },
 ]
 
-function Screen({ project, index }: { project: SoftwareProject; index: number }) {
+/**
+ * A project shown as the real product: its actual screenshot inside a device.
+ * Web products sit in a monitor with a browser bar; the mobile apps (whose
+ * screenshots already show the phones) sit on a slim display panel.
+ */
+function Device({ project, index }: { project: SoftwareProject; index: number }) {
   const ref = useRef<THREE.Group>(null!)
   const set = useWorld((s) => s.set)
   const active = useWorld((s) => s.active === 2)
   const L = LAYOUT[index]
-  const tex = useMemo(() => canvasTexture(Math.round(512 * (L.size[0] / L.size[1])), 512, (g) => drawScreen(g, project, Math.round(512 * (L.size[0] / L.size[1])), 512)), [project, L])
+  const w = L.width
+  const h = w / project.aspect
+  const tex = useTexture(project.image)
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.anisotropy = 8
+  const web = project.device === "web"
+  const bar = useMemo(
+    () =>
+      canvasTexture(1024, 56, (g) => {
+        g.fillStyle = "#e7e9e4"
+        g.fillRect(0, 0, 1024, 56)
+        ;["#d9695f", "#e0b04a", "#6fae7a"].forEach((c, i) => {
+          g.fillStyle = c
+          g.beginPath()
+          g.arc(30 + i * 30, 28, 9, 0, 7)
+          g.fill()
+        })
+        g.fillStyle = "#ffffff"
+        g.beginPath()
+        g.roundRect(150, 10, 724, 36, 18)
+        g.fill()
+        g.fillStyle = "#4f5b55"
+        g.font = "500 22px Inter, system-ui, sans-serif"
+        g.textBaseline = "middle"
+        g.fillText(project.url ? project.url.replace(/^https?:\/\/|\/$/g, "") : project.title, 172, 29)
+      }),
+    [project],
+  )
+  const barH = web ? w * (56 / 1024) : 0
+  // A clear call to action under every device.
+  const cta = useMemo(
+    () =>
+      canvasTexture(640, 128, (g) => {
+        g.clearRect(0, 0, 640, 128)
+        g.fillStyle = "#183F35"
+        g.beginPath()
+        g.roundRect(4, 14, 632, 100, 50)
+        g.fill()
+        g.fillStyle = "#F6F7F3"
+        g.font = "600 40px 'Space Grotesk', system-ui, sans-serif"
+        g.textBaseline = "middle"
+        g.textAlign = "center"
+        g.fillText(`${project.title}  |  View  \u2192`, 320, 66)
+      }),
+    [project],
+  )
+  const hover = useRef(false)
+  const glow = useRef<THREE.Mesh>(null!)
+  const tag = useRef<THREE.Mesh>(null!)
   useFrame((state) => {
-    ref.current.position.y = Math.sin(state.clock.elapsedTime * 0.8 + index * 1.3) * 0.06
+    const t = state.clock.elapsedTime
+    ref.current.position.y = Math.sin(t * 0.8 + index * 1.3) * 0.04
+    // Hover: the device lifts toward you and its outline lights up.
+    const k = hover.current && active ? 1 : 0
+    const sc = ref.current.scale.x + (1 + k * 0.06 - ref.current.scale.x) * 0.15
+    ref.current.scale.setScalar(sc)
+    const m = glow.current.material as THREE.MeshBasicMaterial
+    m.opacity += ((active ? 0.35 + 0.25 * Math.sin(t * 2.4 + index) + k * 0.4 : 0) - m.opacity) * 0.15
+    tag.current.scale.setScalar(1 + (active ? Math.sin(t * 2.4 + index) * 0.03 : 0) + k * 0.08)
   })
   return (
     <Assemble world="software" order={index + 1} position={L.pos} rotation={[0, L.rotY, 0]}>
@@ -131,17 +102,55 @@ function Screen({ project, index }: { project: SoftwareProject; index: number })
           e.stopPropagation()
           set({ panel: { kind: "project", project } })
         }}
-        onPointerOver={() => active && (document.body.style.cursor = "pointer")}
-        onPointerOut={() => (document.body.style.cursor = "")}
+        onPointerOver={() => {
+          hover.current = true
+          if (active) document.body.style.cursor = "pointer"
+        }}
+        onPointerOut={() => {
+          hover.current = false
+          document.body.style.cursor = ""
+        }}
       >
-        <mesh position={[0, 0, -0.03]}>
-          <boxGeometry args={[L.size[0] + 0.1, L.size[1] + 0.1, 0.04]} />
-          <meshStandardMaterial color="#0d231d" roughness={0.3} metalness={0.5} />
+        {/* Pulsing outline that says "this is selectable" */}
+        <mesh ref={glow} position={[0, barH / 2, -0.07]}>
+          <planeGeometry args={[w + 0.34, h + barH + 0.34]} />
+          <meshBasicMaterial color="#8DAA91" transparent opacity={0} toneMapped={false} />
+        </mesh>
+        <mesh ref={tag} position={[0, -h / 2 - 0.08, 0.12]} renderOrder={6}>
+          <planeGeometry args={[Math.min(w * 0.72, 1.9), Math.min(w * 0.72, 1.9) * 0.2]} />
+          <meshBasicMaterial map={cta} transparent toneMapped={false} depthWrite={false} />
+        </mesh>
+        {/* Bezel */}
+        <mesh position={[0, barH / 2, -0.035]} castShadow>
+          <boxGeometry args={[w + 0.14, h + barH + 0.14, 0.06]} />
+          <meshStandardMaterial color="#1b1f1d" roughness={0.35} metalness={0.6} />
         </mesh>
         <mesh>
-          <planeGeometry args={L.size} />
+          <planeGeometry args={[w, h]} />
           <meshBasicMaterial map={tex} toneMapped={false} />
         </mesh>
+        {web ? (
+          <>
+            <mesh position={[0, h / 2 + barH / 2, 0]}>
+              <planeGeometry args={[w, barH]} />
+              <meshBasicMaterial map={bar} toneMapped={false} />
+            </mesh>
+            {/* Monitor neck and foot */}
+            <mesh position={[0, -h / 2 - 0.28, -0.06]} castShadow>
+              <boxGeometry args={[0.16, 0.5, 0.06]} />
+              <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.8} />
+            </mesh>
+            <mesh position={[0, -h / 2 - 0.54, 0]} castShadow>
+              <boxGeometry args={[w * 0.34, 0.04, 0.5]} />
+              <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.8} />
+            </mesh>
+          </>
+        ) : (
+          <mesh position={[0, -h / 2 - 0.42, -0.2]} rotation={[0.25, 0, 0]} castShadow>
+            <boxGeometry args={[0.1, 0.8, 0.06]} />
+            <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.8} />
+          </mesh>
+        )}
       </group>
     </Assemble>
   )
@@ -244,16 +253,16 @@ export default function SoftwareWorld() {
       </Assemble>
 
       {software.map((p, i) => (
-        <Screen key={p.id} project={p} index={i} />
+        <Device key={p.id} project={p} index={i} />
       ))}
 
       {/* Data flowing between every screen and the core */}
       <Assemble world="software" order={6}>
         {LAYOUT.map((L, i) => (
-          <Flow key={i} from={hub} to={new THREE.Vector3(L.pos[0], L.pos[1] - L.size[1] / 2, L.pos[2])} speed={0.2 + i * 0.03} />
+          <Flow key={i} from={hub} to={new THREE.Vector3(L.pos[0], L.pos[1] - 0.6, L.pos[2])} speed={0.2 + i * 0.03} />
         ))}
         {/* Architecture strip above the stage */}
-        <mesh position={[0, 4.75, -2.6]}>
+        <mesh position={[0, 5.6, -2.6]}>
           <planeGeometry args={[6.4, 1.6]} />
           <meshBasicMaterial map={arch} transparent toneMapped={false} />
         </mesh>

@@ -19,6 +19,16 @@ export const STOCKPILE = { x: 11.2, z: -2.4 }
 export const WORKSHOP = { x: 12.6, z: 9.4 }
 export const FUEL = { x: 2.2, z: 12.2 }
 export const MAGAZINE = { x: -19, z: -7.5 }
+/** Levelled sites in the valley where the other parts of the story live. */
+export const SITES = {
+  software: { x: 28.5, z: 12.9, r: 10.5 },
+  research: { x: 26.7, z: -14.5, r: 10.5 },
+  experience: { x: -31.5, z: -9.5, r: 10 },
+  about: { x: -12, z: -14, r: 3.2 },
+  contact: { x: 9, z: 22, r: 3.2 },
+} as const
+const SITE_LIST = Object.values(SITES)
+
 /** Terraced waste-rock dump (three lifts). */
 export const WASTE = { x: -17, z: 6.5, rx: 5.2, rz: 3.6, lifts: 3, liftH: 0.85 }
 /** Tailings storage facility: an embanked pond south-east of the plant. */
@@ -137,6 +147,7 @@ export function topHeight(x: number, z: number) {
     padWeight(x, z, WORKSHOP.x, WORKSHOP.z, 3, 2.2),
     padWeight(x, z, FUEL.x, FUEL.z, 1.6, 1.3),
     padWeight(x, z, MAGAZINE.x, MAGAZINE.z, 1.4, 1.4),
+    ...SITE_LIST.map((p) => padWeight(x, z, p.x, p.z, p.r, p.r)),
   )
   y = y * (1 - pads) + 0.1 * pads
 
@@ -214,6 +225,7 @@ export const onPad = (x: number, z: number, margin = 1) =>
   padWeight(x, z, WORKSHOP.x, WORKSHOP.z, 3 * margin, 2.2 * margin) > 0.05 ||
   padWeight(x, z, FUEL.x, FUEL.z, 1.6 * margin, 1.3 * margin) > 0.05 ||
   padWeight(x, z, MAGAZINE.x, MAGAZINE.z, 1.4 * margin, 1.4 * margin) > 0.05 ||
+  SITE_LIST.some((p) => Math.hypot(x - p.x, z - p.z) < p.r * 1.12 * margin) ||
   Math.hypot((x - WASTE.x) / (WASTE.rx * margin), (z - WASTE.z) / (WASTE.rz * margin)) < 1.08 ||
   Math.hypot((x - TSF.x) / (TSF.rx * margin), (z - TSF.z) / (TSF.rz * margin)) < 1.25
 

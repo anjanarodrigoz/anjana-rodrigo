@@ -6,6 +6,7 @@ import * as THREE from "three"
 
 import { Assemble, canvasTexture, overUi } from "@/components/scene/helpers"
 import { experience, type Role } from "@/lib/content"
+import { EXPERIENCE_PATH as PATH, EXPERIENCE_SCALE } from "@/lib/sections"
 import { useWorld } from "@/lib/store"
 
 /**
@@ -15,7 +16,6 @@ import { useWorld } from "@/lib/store"
  * touches; they carry no role claims of their own.
  */
 
-const PATH: [number, number][] = [[-9, 5], [-5.5, 0.5], [-1, 3.2], [3.4, -0.6], [8, 2.6]]
 
 function Place({ kind }: { kind: Role["place"] }) {
   const glass = <meshStandardMaterial color="#8fb0bd" roughness={0.15} metalness={0.5} />
@@ -126,7 +126,7 @@ function Place({ kind }: { kind: Role["place"] }) {
 
 function Stop({ role, index }: { role: Role; index: number }) {
   const set = useWorld((s) => s.set)
-  const active = useWorld((s) => s.active === 4)
+  const active = useWorld((s) => s.active === 3)
   const current = useWorld((s) => s.roleIndex === index)
   const beacon = useRef<THREE.Mesh>(null!)
   const [x, z] = PATH[index]
@@ -179,14 +179,14 @@ export default function ExperienceWorld() {
   }, [])
 
   return (
-    <group>
+    <group scale={EXPERIENCE_SCALE}>
       {/* The model board */}
       <mesh position={[0, 0.15, 0]} receiveShadow castShadow>
         <cylinderGeometry args={[13.5, 13.8, 0.3, 64]} />
         <meshStandardMaterial color="#e9eadf" roughness={0.9} />
       </mesh>
-      <mesh position={[0, -0.3, 0]}>
-        <cylinderGeometry args={[13.8, 13.2, 0.6, 64]} />
+      <mesh position={[0, -0.1, 0]}>
+        <cylinderGeometry args={[13.8, 13.8, 0.25, 64]} />
         <meshStandardMaterial color="#183F35" roughness={0.7} />
       </mesh>
       <Assemble world="experience" order={0}>
