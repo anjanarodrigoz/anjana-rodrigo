@@ -56,7 +56,6 @@ export function Character() {
   const armR = useRef<THREE.Group>(null!)
   const foreL = useRef<THREE.Group>(null!)
   const foreR = useRef<THREE.Group>(null!)
-  const lids = useRef<THREE.Group>(null!)
   const helmet = useRef<THREE.Group>(null!)
   const tablet = useRef<THREE.Group>(null!)
   const coat = useRef<THREE.Group>(null!)
@@ -74,24 +73,22 @@ export function Character() {
 
   const m = useMemo(() => {
     const std = (color: number, roughness: number, extra: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra })
+    const cloth = (color: number, sheen: number) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.92, sheen: 1, sheenRoughness: 0.6, sheenColor: new THREE.Color(sheen) })
     return {
-      skin: std(0xb98258, 0.62),
-      skinDark: std(0xa06f49, 0.66),
-      hoodie: std(0x1d4a3e, 0.9),
-      hoodieDark: std(0x15382f, 0.9),
+      skin: std(0xb07a52, 0.6),
+      skinDark: std(0x98673f, 0.65),
+      hoodie: cloth(0x1d4a3e, 0x4f8a76),
+      hoodieDark: cloth(0x15382f, 0x3b6e5d),
       rib: std(0x122f28, 0.85),
-      trousers: std(0x33383f, 0.9),
-      trouserDark: std(0x272b31, 0.9),
+      trousers: cloth(0x2f343b, 0x59606b),
+      trouserDark: std(0x24282e, 0.9),
       shoe: std(0xf2f2ee, 0.5),
       shoeTrim: std(0x1d4a3e, 0.6),
       sole: std(0xe3e0d6, 0.7),
-      hair: std(0x120e0c, 0.8),
+      hair: std(0x120e0c, 0.85),
       white: std(0xffffff, 0.25),
-      coat: std(0xfafbfc, 0.75),
-      iris: std(0x4a2c18, 0.25),
+      coat: cloth(0xfafbfc, 0xffffff),
       black: std(0x0a0807, 0.25),
-      lip: std(0xb46a5a, 0.5),
-      tooth: std(0xfbfaf6, 0.3),
       helmet: std(0xf2c200, 0.3),
       helmetBand: std(0x2c3632, 0.6),
       tablet: std(0x1b1f1d, 0.3, { metalness: 0.4 }),
@@ -100,20 +97,194 @@ export function Character() {
     }
   }, [])
 
+  // -- Sculpted head: a sphere pushed into a skull, jaw, nose, lips and chin --
+  const headGeo = useMemo(() => {
+    const g = new THREE.SphereGeometry(1, 96, 72)
+    const p = g.attributes.position as THREE.BufferAttribute
+    const ss = THREE.MathUtils.smoothstep
+    for (let i = 0; i < p.count; i++) {
+      const x0 = p.getX(i)
+      const y0 = p.getY(i)
+      const z0 = p.getZ(i)
+      let x = x0 * 0.8
+      let z = z0 * (z0 < 0 ? 0.96 : 0.9)
+      // The face narrows from the cheekbones down to the chin.
+      if (y0 < 0.1) {
+        const t = (0.1 - y0) / 1.1
+        x *= 1 - 0.4 * Math.pow(t, 1.4)
+        z *= 1 - 0.1 * t
+      }
+      const front = ss(z0, 0.05, 0.55)
+      const bump = (cx: number, cy: number, rx: number, ry: number) => Math.exp(-(((x0 - cx) * (x0 - cx)) / (rx * rx) + ((y0 - cy) * (y0 - cy)) / (ry * ry)))
+      const both = (cx: number, cy: number, rx: number, ry: number) => bump(cx, cy, rx, ry) + bump(-cx, cy, rx, ry)
+      z +=
+        front *
+        (0.17 * bump(0, -0.1, 0.1, 0.2) + // nose bridge
+          0.11 * bump(0, -0.24, 0.13, 0.08) + // nose tip
+          0.05 * bump(0, 0.24, 0.5, 0.07) - // brow ridge
+          0.06 * both(0.33, 0.1, 0.15, 0.09) + // eye sockets
+          0.05 * bump(0, -0.46, 0.22, 0.08) + // lips
+          0.07 * bump(0, -0.78, 0.26, 0.16) + // chin
+          0.035 * both(0.42, -0.18, 0.2, 0.2)) // cheekbones
+      p.setXYZ(i, x, y0, z)
+    }
+    g.computeVertexNormals()
+    return g
+  }, [])
+
+  // -- Painted face: skin, eyes, brows, lips, short beard and hairline -----
+  const faces = useMemo(() => {
+    const paint = (open: boolean) => {
+      const c = document.createElement("canvas")
+      c.width = c.height = 2048
+      const g = c.getContext("2d")!
+      const S = 2
+      const X = 256 * S // centre of the face in texture space
+      g.fillStyle = "#b07a52"
+      g.fillRect(0, 0, 2048, 2048)
+      // Soft shading: warmer cheeks, darker under the brow and jaw.
+      const blob = (x: number, y: number, r: number, color: string) => {
+        const gr = g.createRadialGradient(x, y, 0, x, y, r)
+        gr.addColorStop(0, color)
+        gr.addColorStop(1, "rgba(0,0,0,0)")
+        g.fillStyle = gr
+        g.fillRect(x - r, y - r, r * 2, r * 2)
+      }
+      for (const sx of [-1, 1]) {
+        blob(X + sx * 78 * S, 560 * S, 60 * S, "rgba(190,110,90,0.28)")
+        blob(X + sx * 55 * S, 470 * S, 40 * S, "rgba(70,40,25,0.22)")
+      }
+      blob(X, 600 * S, 26 * S, "rgba(70,40,25,0.2)")
+      // Short beard and moustache.
+      g.save()
+      g.beginPath()
+      g.moveTo(X - 175 * S, 520 * S)
+      g.bezierCurveTo(X - 170 * S, 760 * S, X - 60 * S, 850 * S, X, 850 * S)
+      g.bezierCurveTo(X + 60 * S, 850 * S, X + 170 * S, 760 * S, X + 175 * S, 520 * S)
+      g.bezierCurveTo(X + 120 * S, 640 * S, X + 70 * S, 630 * S, X + 48 * S, 640 * S)
+      g.bezierCurveTo(X + 20 * S, 615 * S, X - 20 * S, 615 * S, X - 48 * S, 640 * S)
+      g.bezierCurveTo(X - 70 * S, 630 * S, X - 120 * S, 640 * S, X - 175 * S, 520 * S)
+      g.fillStyle = "rgba(22,16,13,0.82)"
+      g.filter = `blur(${5 * S}px)`
+      g.fill()
+      g.restore()
+      // Skin window around the mouth, then the lips.
+      g.save()
+      g.filter = `blur(${4 * S}px)`
+      g.fillStyle = "#a9744d"
+      g.beginPath()
+      g.ellipse(X, 682 * S, 34 * S, 15 * S, 0, 0, 7)
+      g.fill()
+      g.restore()
+      g.fillStyle = "#8c4f44"
+      g.beginPath()
+      g.ellipse(X, 676 * S, 30 * S, 7 * S, 0, Math.PI, 0)
+      g.fill()
+      g.fillStyle = "#9c5a4c"
+      g.beginPath()
+      g.ellipse(X, 678 * S, 27 * S, 10 * S, 0, 0, Math.PI)
+      g.fill()
+      g.strokeStyle = "#4a2a22"
+      g.lineWidth = 2 * S
+      g.beginPath()
+      g.moveTo(X - 31 * S, 675 * S)
+      g.quadraticCurveTo(X, 683 * S, X + 31 * S, 675 * S)
+      g.stroke()
+      // Eyes and brows.
+      for (const sx of [-1, 1]) {
+        const ex = X + sx * 56 * S
+        const ey = 480 * S
+        if (open) {
+          g.save()
+          g.beginPath()
+          g.ellipse(ex, ey, 22 * S, 10 * S, 0, 0, 7)
+          g.clip()
+          g.fillStyle = "#f4efe9"
+          g.fillRect(ex - 30 * S, ey - 20 * S, 60 * S, 40 * S)
+          const ir = g.createRadialGradient(ex, ey, 2 * S, ex, ey, 10 * S)
+          ir.addColorStop(0, "#2a160c")
+          ir.addColorStop(0.45, "#4a2a14")
+          ir.addColorStop(1, "#1c0f08")
+          g.fillStyle = ir
+          g.beginPath()
+          g.arc(ex, ey, 10 * S, 0, 7)
+          g.fill()
+          g.fillStyle = "#050302"
+          g.beginPath()
+          g.arc(ex, ey, 4.5 * S, 0, 7)
+          g.fill()
+          g.fillStyle = "rgba(255,255,255,0.9)"
+          g.beginPath()
+          g.arc(ex + 3.5 * S, ey - 3.5 * S, 2 * S, 0, 7)
+          g.fill()
+          // Shadow cast by the upper lid.
+          g.fillStyle = "rgba(40,20,10,0.35)"
+          g.fillRect(ex - 30 * S, ey - 12 * S, 60 * S, 5 * S)
+          g.restore()
+        }
+        // Lash line (also the closed eye).
+        g.strokeStyle = "#140c08"
+        g.lineWidth = (open ? 3 : 3.5) * S
+        g.lineCap = "round"
+        g.beginPath()
+        g.moveTo(ex - 23 * S, ey + (open ? 1 : 3) * S)
+        g.quadraticCurveTo(ex, ey - (open ? 13 : -4) * S, ex + 23 * S, ey + (open ? 1 : 3) * S)
+        g.stroke()
+        // Brow: thick, slightly arched, tapering outward.
+        g.save()
+        g.filter = `blur(${1.2 * S}px)`
+        g.strokeStyle = "#16100d"
+        g.lineWidth = 10 * S
+        g.beginPath()
+        g.moveTo(ex - sx * 26 * S, 444 * S)
+        g.quadraticCurveTo(ex + sx * 4 * S, 428 * S, ex + sx * 32 * S, 440 * S)
+        g.stroke()
+        g.restore()
+      }
+      // Hair: the scalp is dark under the curls, with a soft hairline.
+      g.save()
+      g.filter = `blur(${8 * S}px)`
+      g.fillStyle = "#120e0c"
+      g.fillRect(0, 0, 2048, 345 * S)
+      g.fillRect(X + 205 * S, 0, 2048, 600 * S)
+      g.fillRect(0, 0, X - 205 * S, 600 * S)
+      g.fillRect(X + 300 * S, 0, 2048, 2048)
+      g.restore()
+      const t = new THREE.CanvasTexture(c)
+      t.colorSpace = THREE.SRGBColorSpace
+      t.anisotropy = 8
+      return t
+    }
+    const open = paint(true)
+    return { open, closed: paint(false), mat: new THREE.MeshStandardMaterial({ map: open, roughness: 0.6 }) }
+  }, [])
+
+  // -- Smooth, tapered body parts turned on a lathe ----------------------------
+  const shapes = useMemo(() => {
+    const lathe = (pts: [number, number][]) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 28)
+    return {
+      torso: lathe([[0.001, 0.93], [0.17, 0.94], [0.182, 1.0], [0.174, 1.1], [0.178, 1.2], [0.192, 1.32], [0.196, 1.4], [0.17, 1.455], [0.105, 1.5], [0.072, 1.535], [0.001, 1.54]]),
+      upperArm: lathe([[0.001, 0.02], [0.052, 0], [0.058, -0.08], [0.054, -0.2], [0.05, -0.29], [0.001, -0.3]]),
+      foreArm: lathe([[0.001, 0.01], [0.055, 0], [0.058, -0.06], [0.047, -0.19], [0.042, -0.25], [0.001, -0.255]]),
+      thigh: lathe([[0.001, 0.02], [0.098, 0], [0.1, -0.08], [0.088, -0.25], [0.075, -0.4], [0.001, -0.41]]),
+      shin: lathe([[0.001, 0.01], [0.074, 0], [0.078, -0.1], [0.062, -0.28], [0.058, -0.38], [0.001, -0.385]]),
+    }
+  }, [])
+
   // Curls: tight spheres over the top, sides and back of the head.
   const curls = useMemo(() => {
     const out: { p: [number, number, number]; s: number }[] = []
-    for (let i = 0; i < 420; i++) {
-      const y = 1 - (i / 419) * 1.3
+    for (let i = 0; i < 520; i++) {
+      const y = 1 - (i / 519) * 1.25
       const r = Math.sqrt(Math.max(0, 1 - y * y))
       const phi = i * 2.399963
       const x = Math.cos(phi) * r
       const z = Math.sin(phi) * r
-      if (z > 0.3 && y < 0.5) continue // forehead and face stay clear
-      if (y < -0.3) continue
-      if (y < 0 && Math.abs(x) > 0.75 && z > -0.1) continue // sideburns stop at the ears
-      const lift = 1.08 + 0.08 * Math.sin(i * 1.7)
-      out.push({ p: [x * 0.27 * lift, 0.03 + y * 0.29 * lift, z * 0.28 * lift - 0.02], s: 0.05 + ((i * 37) % 7) * 0.004 })
+      if (z > 0.38 && y < 0.56) continue // forehead and face stay clear
+      if (y < -0.25) continue
+      if (y < 0.05 && z > -0.15) continue // stop above the ears at the sides
+      const lift = 1.1 + 0.09 * Math.sin(i * 1.7)
+      out.push({ p: [x * 0.118 * lift, y * 0.142 * lift, z * 0.132 * lift - 0.006], s: 0.024 + ((i * 37) % 7) * 0.0022 })
     }
     return out
   }, [])
@@ -164,8 +335,10 @@ export function Character() {
     body.current.position.y = breath * 0.006
     body.current.rotation.z = Math.sin(t * 0.45) * 0.015
     const local = root.current.worldToLocal(camera.position.clone())
-    const yaw = THREE.MathUtils.clamp(Math.atan2(local.x, local.z) - body.current.rotation.y, -0.7, 0.7)
-    const pitch = THREE.MathUtils.clamp(-Math.atan2(local.y - 1.6, Math.hypot(local.x, local.z)) * 0.6, -0.35, 0.2)
+    // Wrap the difference so a heading past a full turn does not twist his neck.
+    const rawYaw = Math.atan2(local.x, local.z) - body.current.rotation.y
+    const yaw = THREE.MathUtils.clamp(((rawYaw + Math.PI * 9) % (Math.PI * 2)) - Math.PI, -0.7, 0.7)
+    const pitch = THREE.MathUtils.clamp(-Math.atan2(local.y - 1.7, Math.hypot(local.x, local.z)) * 0.6, -0.35, 0.2)
     const k = 1 - Math.pow(0.01, dt)
     head.current.rotation.y = THREE.MathUtils.lerp(head.current.rotation.y, yaw, k)
     head.current.rotation.x = THREE.MathUtils.lerp(head.current.rotation.x, pitch, k)
@@ -190,7 +363,7 @@ export function Character() {
 
     blink.current -= dt
     if (blink.current < -0.13) blink.current = 2 + Math.random() * 3.5
-    lids.current.scale.y = blink.current < 0 ? 1 : 0.12
+    faces.mat.map = blink.current < 0 ? faces.closed : faces.open
   })
 
   /** A hand: palm, thumb and four fingers, slightly curled. */
@@ -223,33 +396,26 @@ export function Character() {
           </Suspense>
         ) : null}
         <group visible={!hasModel}>
-        {/* Legs: thigh, knee, shin, and sneakers with soles, toe caps and laces */}
+        {/* Legs: tapered thigh and calf, and sneakers with soles, toe caps and laces */}
         {[-1, 1].map((side) => (
-          <group key={side} position={[side * 0.105, 0.86, 0]} rotation={[0, 0, side * -0.02]}>
-            <mesh material={m.trousers} position={[0, -0.2, 0]} castShadow>
-              <capsuleGeometry args={[0.09, 0.26, 6, 14]} />
+          <group key={side} position={[side * 0.1, 0.88, 0]} rotation={[0, 0, side * -0.025]}>
+            <mesh material={m.trousers} geometry={shapes.thigh} castShadow />
+            <mesh material={m.trousers} geometry={shapes.shin} position={[0, -0.4, 0.004]} castShadow />
+            <mesh material={m.trouserDark} position={[0, -0.79, 0.004]}>
+              <cylinderGeometry args={[0.064, 0.064, 0.03, 16]} />
             </mesh>
-            <mesh material={m.trousers} position={[0, -0.4, 0.006]} castShadow>
-              <sphereGeometry args={[0.082, 14, 10]} />
-            </mesh>
-            <mesh material={m.trousers} position={[0, -0.6, 0]} castShadow>
-              <capsuleGeometry args={[0.072, 0.28, 6, 14]} />
-            </mesh>
-            <mesh material={m.trouserDark} position={[0, -0.775, 0]}>
-              <cylinderGeometry args={[0.078, 0.078, 0.03, 16]} />
-            </mesh>
-            <group position={[0, -0.82, 0.045]}>
+            <group position={[0, -0.835, 0.05]}>
               <mesh material={m.shoe} rotation={[Math.PI / 2, 0, 0]} scale={[1, 1, 0.8]} castShadow>
-                <capsuleGeometry args={[0.07, 0.15, 6, 14]} />
+                <capsuleGeometry args={[0.066, 0.15, 6, 14]} />
               </mesh>
-              <mesh material={m.sole} position={[0, -0.045, 0]}>
-                <boxGeometry args={[0.145, 0.03, 0.3]} />
+              <mesh material={m.sole} position={[0, -0.042, 0]}>
+                <boxGeometry args={[0.138, 0.028, 0.29]} />
               </mesh>
               <mesh material={m.shoeTrim} position={[0, 0.0, -0.1]} scale={[1, 0.9, 0.5]}>
-                <sphereGeometry args={[0.072, 12, 10]} />
+                <sphereGeometry args={[0.068, 12, 10]} />
               </mesh>
               {[0, 1, 2].map((l) => (
-                <mesh key={l} material={m.shoeTrim} position={[0, 0.047, 0.01 + l * 0.035]} rotation={[0, 0, Math.PI / 2]}>
+                <mesh key={l} material={m.shoeTrim} position={[0, 0.044, 0.01 + l * 0.035]} rotation={[0, 0, Math.PI / 2]}>
                   <capsuleGeometry args={[0.006, 0.05, 3, 6]} />
                 </mesh>
               ))}
@@ -264,12 +430,10 @@ export function Character() {
 
         {/* Torso: hoodie with ribbed hem, pocket, hood and drawstrings */}
         <group ref={chest}>
-          <mesh material={m.hoodie} position={[0, 1.2, 0]} scale={[1, 1, 0.74]} castShadow>
-            <capsuleGeometry args={[0.215, 0.26, 8, 18]} />
-          </mesh>
+          <mesh material={m.hoodie} geometry={shapes.torso} scale={[1.04, 1, 0.68]} castShadow />
           {[-1, 1].map((side) => (
-            <mesh key={side} material={m.hoodie} position={[side * 0.215, 1.4, 0]} scale={[1, 0.85, 0.95]} castShadow>
-              <sphereGeometry args={[0.095, 14, 10]} />
+            <mesh key={side} material={m.hoodie} position={[side * 0.195, 1.42, 0]} scale={[1.05, 0.8, 0.95]} castShadow>
+              <sphereGeometry args={[0.07, 16, 12]} />
             </mesh>
           ))}
           <mesh material={m.rib} position={[0, 0.975, 0]} scale={[1, 1, 0.76]}>
@@ -326,17 +490,10 @@ export function Character() {
 
         {/* Arms: shoulder, elbow, cuff and a hand with fingers */}
         {[-1, 1].map((side) => (
-          <group key={side} ref={side < 0 ? armL : armR} position={[side * 0.275, 1.41, 0]}>
-            <mesh material={m.hoodie} position={[0, -0.14, 0]} castShadow>
-              <capsuleGeometry args={[0.068, 0.18, 6, 14]} />
-            </mesh>
+          <group key={side} ref={side < 0 ? armL : armR} position={[side * 0.24, 1.415, 0]}>
+            <mesh material={m.hoodie} geometry={shapes.upperArm} castShadow />
             <group ref={side < 0 ? foreL : foreR} position={[0, -0.28, 0]}>
-              <mesh material={m.hoodie} castShadow>
-                <sphereGeometry args={[0.066, 12, 10]} />
-              </mesh>
-              <mesh material={m.hoodie} position={[0, -0.13, 0]} castShadow>
-                <capsuleGeometry args={[0.058, 0.17, 6, 14]} />
-              </mesh>
+              <mesh material={m.hoodie} geometry={shapes.foreArm} castShadow />
               <mesh material={m.rib} position={[0, -0.245, 0]}>
                 <cylinderGeometry args={[0.056, 0.052, 0.045, 14]} />
               </mesh>
@@ -356,101 +513,30 @@ export function Character() {
         ))}
 
         {/* Neck */}
-        <mesh material={m.skinDark} position={[0, 1.53, 0]}>
-          <cylinderGeometry args={[0.062, 0.07, 0.12, 14]} />
+        <mesh material={m.skin} position={[0, 1.56, 0.005]}>
+          <cylinderGeometry args={[0.05, 0.058, 0.12, 16]} />
         </mesh>
 
-        {/* Head */}
-        <group ref={head} position={[0, 1.735, 0]} scale={0.7}>
-          <mesh material={m.skin} scale={[0.92, 1.04, 0.98]} castShadow>
-            <sphereGeometry args={[0.26, 36, 28]} />
-          </mesh>
-          {/* Jaw and chin give the face a shape instead of a ball */}
-          <mesh material={m.skin} position={[0, -0.12, 0.03]} scale={[0.82, 0.7, 0.86]}>
-            <sphereGeometry args={[0.22, 24, 18]} />
-          </mesh>
-          {/* Ears */}
+        {/* Head: sculpted skull with a painted face */}
+        <group ref={head} position={[0, 1.725, 0.01]} scale={1.16}>
+          <mesh geometry={headGeo} material={faces.mat} scale={0.142} rotation={[0, -Math.PI / 2 + Math.PI / 2, 0]} castShadow />
           {[-1, 1].map((side) => (
-            <group key={side} position={[side * 0.238, -0.02, -0.01]}>
-              <mesh material={m.skin} scale={[0.45, 1, 0.75]}>
-                <sphereGeometry args={[0.06, 12, 10]} />
+            <group key={side} position={[side * 0.111, -0.008, -0.004]}>
+              <mesh material={m.skin} scale={[0.4, 1, 0.7]}>
+                <sphereGeometry args={[0.03, 12, 10]} />
               </mesh>
-              <mesh material={m.skinDark} position={[side * 0.012, 0, 0.012]} scale={[0.3, 0.6, 0.45]}>
-                <sphereGeometry args={[0.05, 10, 8]} />
+              <mesh material={m.skinDark} position={[side * 0.005, 0, 0.006]} scale={[0.25, 0.6, 0.4]}>
+                <sphereGeometry args={[0.026, 10, 8]} />
               </mesh>
             </group>
           ))}
-          {/* Eyes: sclera, iris, pupil, highlight, and lids that blink */}
-          {[-1, 1].map((side) => (
-            <group key={side} position={[side * 0.095, 0.02, 0.212]}>
-              <mesh material={m.white} scale={[1.15, 0.95, 0.5]}>
-                <sphereGeometry args={[0.048, 20, 16]} />
-              </mesh>
-              <mesh material={m.iris} position={[0, -0.002, 0.018]} scale={[1, 1, 0.4]}>
-                <sphereGeometry args={[0.029, 16, 12]} />
-              </mesh>
-              <mesh material={m.black} position={[0, -0.002, 0.026]} scale={[1, 1, 0.4]}>
-                <sphereGeometry args={[0.015, 12, 10]} />
-              </mesh>
-              <mesh material={m.white} position={[0.011, 0.012, 0.031]}>
-                <sphereGeometry args={[0.006, 8, 6]} />
-              </mesh>
-              {/* Upper lash line */}
-              <mesh material={m.black} position={[0, 0.036, 0.012]} rotation={[0, 0, Math.PI / 2 + side * 0.08]}>
-                <capsuleGeometry args={[0.005, 0.085, 3, 8]} />
-              </mesh>
-            </group>
-          ))}
-          <group ref={lids} scale={[1, 0.12, 1]} position={[0, 0.068, 0]}>
-            {[-1, 1].map((side) => (
-              <mesh key={side} material={m.skin} position={[side * 0.095, -0.048, 0.222]} scale={[1.2, 1, 0.5]}>
-                <sphereGeometry args={[0.05, 16, 10]} />
-              </mesh>
-            ))}
-          </group>
-          {/* Brows */}
-          {[-1, 1].map((side) => (
-            <mesh key={side} material={m.hair} position={[side * 0.097, 0.095, 0.228]} rotation={[0, side * 0.25, Math.PI / 2 + side * -0.14]}>
-              <capsuleGeometry args={[0.011, 0.075, 4, 8]} />
-            </mesh>
-          ))}
-          {/* Nose: bridge, tip and nostril shadow */}
-          <mesh material={m.skin} position={[0, -0.02, 0.245]} rotation={[0.25, 0, 0]} scale={[0.5, 1, 0.6]}>
-            <capsuleGeometry args={[0.03, 0.05, 6, 10]} />
-          </mesh>
-          <mesh material={m.skin} position={[0, -0.062, 0.262]} scale={[1, 0.8, 0.9]}>
-            <sphereGeometry args={[0.033, 14, 10]} />
-          </mesh>
-          {[-1, 1].map((side) => (
-            <mesh key={side} material={m.skinDark} position={[side * 0.026, -0.07, 0.25]} scale={[1, 0.7, 0.8]}>
-              <sphereGeometry args={[0.018, 10, 8]} />
-            </mesh>
-          ))}
-          {/* Mouth: a gentle smile with lips and a hint of teeth */}
-          <mesh material={m.lip} position={[0, -0.135, 0.222]} rotation={[0.2, 0, Math.PI]}>
-            <torusGeometry args={[0.052, 0.011, 8, 18, Math.PI]} />
-          </mesh>
-          <mesh material={m.tooth} position={[0, -0.146, 0.226]} scale={[1, 0.45, 0.3]}>
-            <sphereGeometry args={[0.036, 12, 8]} />
-          </mesh>
-          <mesh material={m.lip} position={[0, -0.166, 0.224]} rotation={[0, 0, Math.PI / 2]} scale={[0.8, 1, 0.8]}>
-            <capsuleGeometry args={[0.011, 0.05, 4, 8]} />
-          </mesh>
-          {/* Stubble shadow along the jaw, and collarbone-level detail */}
-          <mesh material={m.skinDark} position={[0, -0.15, 0.04]} scale={[0.8, 0.5, 0.82]}>
-            <sphereGeometry args={[0.222, 20, 12, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.4]} />
-          </mesh>
-          {/* Hair */}
-          <mesh material={m.hair} position={[0, 0.05, -0.03]} scale={[0.97, 1, 0.98]}>
-            <sphereGeometry args={[0.262, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-          </mesh>
           {curls.map((c, i) => (
-            <mesh key={i} material={m.hair} position={c.p} scale={c.s} castShadow={i % 8 === 0} userData={{ top: c.p[1] > 0.06 }}>
+            <mesh key={i} material={m.hair} position={c.p} scale={c.s} castShadow={i % 8 === 0} userData={{ top: c.p[1] > 0.045 }}>
               <icosahedronGeometry args={[1, 1]} />
             </mesh>
           ))}
           {/* Research glasses */}
-          <group ref={glasses} visible={false} position={[0, 0.02, 0.245]}>
+          <group ref={glasses} visible={false} position={[0, 0.012, 0.128]} scale={0.56}>
             {[-1, 1].map((side) => (
               <group key={side} position={[side * 0.095, 0, 0]}>
                 <mesh material={m.black}>
@@ -471,7 +557,7 @@ export function Character() {
             ))}
           </group>
           {/* Safety helmet: shell, brim, ridge and band */}
-          <group ref={helmet} position={[0, 0.07, 0]}>
+          <group ref={helmet} position={[0, 0.045, -0.004]} scale={0.5}>
             <mesh material={m.helmet} scale={[1, 0.74, 1.04]} castShadow>
               <sphereGeometry args={[0.32, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
             </mesh>
