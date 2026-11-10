@@ -54,7 +54,10 @@ M = dict(
     trousers=mat("Trousers", 0x3A4046, 0.9),
     shoe=mat("Shoe", 0xF2F2EE, 0.5),
     sole=mat("Sole", 0x8DAA91, 0.6),
-    hair=mat("Hair", 0x14100E, 0.8),
+    hair=mat("Hair", 0x17110E, 0.85),
+    curl=mat("Curl", 0x2E231D, 0.45),
+    fade_low=mat("FadeLow", 0xA47E60, 0.75),
+    fade_high=mat("FadeHigh", 0x4A3A30, 0.8),
     white=mat("White", 0xFFFFFF, 0.3),
     iris=mat("Iris", 0x4A2C18, 0.25),
     black=mat("Black", 0x0A0807, 0.25),
@@ -273,8 +276,26 @@ for side in (-1, 1):
     arc(head, M["hair"], (side * 0.16, 0.07, 0.385), 0.1, 0.014, math.pi * 0.36, math.pi * 0.64)  # brow
 sphere(head, M["skin"], (0, -0.09, 0.41), 0.042, (1, 0.9, 1), seg=16)  # nose
 arc(head, M["mouth"], (0, -0.14, 0.375), 0.085, 0.016, math.pi * 1.22, math.pi * 1.78)  # smile
-# Base hair: a low soft cap that stays on under the helmet.
-blob(head, M["hair"], [((math.cos(a) * 0.3 * math.cos(e), 0.06 + math.sin(e) * 0.28, -0.08 + math.sin(a) * 0.3 * math.cos(e)), 0.3) for e in (0.2, 0.7) for a in [i * math.pi / 5 for i in range(10)] if math.sin(a) < 0.55])
+# Faded sides and back: two thin bands hugging the skull, lighter near the
+# ears and darker toward the curls, like a skin fade. They stay on under the helmet.
+def fade_band(material, y0, y1, r):
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=56, v_segments=40, radius=r)
+    # Blender space here: z is up, -y is the face. Keep a band off the face.
+    drop = [v for v in bm.verts if not (y0 <= v.co.z / r <= y1) or (-v.co.y / r > 0.42 and v.co.z / r < 0.62)]
+    bmesh.ops.delete(bm, geom=drop, context="VERTS")
+    me = bpy.data.meshes.new("fade")
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new("fade", me)
+    col.objects.link(o)
+    o.location = P(0, 0, 0)
+    o.scale = S(1, 0.96, 0.95)
+    return finish(o, material, head)
+
+
+fade_band(M["fade_low"], -0.12, 0.2, 0.423)
+fade_band(M["fade_high"], 0.16, 0.5, 0.426)
 join("HeadMesh", head)
 
 eyes = pivot("Eyes", head, (0, 0, 0))
@@ -286,20 +307,46 @@ for side in (-1, 1):
     sphere(eyes, M["white"], (ex + 0.02, 0.025, 0.407), 0.013, seg=10)
 join("EyesMesh", eyes)
 
-# Curly hair: many small balls fused into one fluffy mass.
+# Curly top: tight curls piled high on the crown and tipping over the forehead.
 top = pivot("HairTop", head, (0, 0, 0))
 pts = []
-for i in range(420):
-    y = 1 - (i / 419) * 1.2
+n = 520
+for i in range(n):
+    y = 1 - (i / (n - 1)) * 0.62  # crown only: the sides are faded
     r = math.sqrt(max(0, 1 - y * y))
     phi = i * 2.399963
     x, z = math.cos(phi) * r, math.sin(phi) * r
-    if (z > 0.38 and y < 0.45) or y < -0.2:
+    if z > 0.5 and y < 0.62:
+        continue  # keep the forehead clear below the fringe
+    # Two layers of curls give the top its height and volume.
+    for layer in (0, 1):
+        lift = 1.06 + layer * 0.13 + 0.05 * math.sin(i * 1.7 + layer)
+        if layer and y < 0.55:
+            continue
+        pts.append(((x * 0.4 * lift, 0.02 + y * 0.42 * lift, z * 0.42 * lift + 0.015), 0.098 + ((i * 37 + layer) % 7) * 0.007))
+blob(top, M["hair"], pts, resolution=0.014)
+# Individual curls sitting proud of the mass, slightly glossier so each one
+# catches the light and the texture reads as tight curls.
+import mathutils  # noqa: E402
+
+bm = bmesh.new()
+k = 0
+for (x, y, z), _ in pts:
+    k += 1
+    if k % 2:
         continue
-    lift = 1.1 + 0.08 * math.sin(i * 1.7)
-    pts.append(((x * 0.45 * lift, 0.03 + y * 0.44 * lift, z * 0.44 * lift - 0.02), 0.135 + (i * 37 % 7) * 0.009))
-# Small, barely-touching balls keep each curl visible as its own bump.
-blob(top, M["hair"], pts, resolution=0.018)
+    d = mathutils.Vector(P(x, y - 0.02, z - 0.015))
+    centre = mathutils.Vector(P(0, 0.02, 0.015))
+    out_dir = (d - centre + mathutils.Vector(P(0, 0.02, 0))).normalized()
+    pos = mathutils.Vector(P(x, y, z)) + out_dir * 0.045
+    r = 0.04 + (k * 13 % 5) * 0.004
+    bmesh.ops.create_icosphere(bm, subdivisions=2, radius=r, matrix=mathutils.Matrix.Translation(pos))
+me = bpy.data.meshes.new("curls")
+bm.to_mesh(me)
+bm.free()
+curl_obj = bpy.data.objects.new("curls", me)
+col.objects.link(curl_obj)
+finish(curl_obj, M["curl"], top)
 join("HairTopMesh", top)
 
 helmet = pivot("Helmet", head, (0, 0.13, 0))
