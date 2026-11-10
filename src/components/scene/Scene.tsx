@@ -64,7 +64,9 @@ export default function Scene({ eventSource }: { eventSource: MutableRefObject<H
       <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />
       <AdaptiveDpr pixelated={false} />
       <Rig />
-      <Character />
+      <Suspense fallback={null}>
+        <Character />
+      </Suspense>
       <Landmarks />
       {(Object.keys(worlds) as WorldId[]).map((id) => {
         if (!built.has(id)) return null
