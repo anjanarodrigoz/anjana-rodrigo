@@ -276,6 +276,8 @@ export function buildMine() {
       speed: 0,
       tip: 0,
       dust: 0,
+      yaw: 0,
+      beep: 0,
     }
   })
 
@@ -527,7 +529,11 @@ export function buildMine() {
         }
       } else {
         tr.tip = Math.max(0, tr.tip - dt * 0.8)
-        const target = tr.dir === 1 ? 1.0 : 2.0
+        // The last stretch at either end is reversed in slowly, as on a real site:
+        // back under the excavator to load, back up to the hopper to tip.
+        const left = (tr.dir === 1 ? 1 - tr.u : tr.u) * tr.len
+        tr.beep = left < 3.2 ? 1 : 0
+        const target = tr.beep ? 0.55 : tr.dir === 1 ? 1.0 : 2.0
         tr.speed += (target - tr.speed) * Math.min(1, dt * 0.8)
         tr.u += (tr.dir * tr.speed * dt) / tr.len
         if (tr.u >= 1) {
@@ -546,11 +552,20 @@ export function buildMine() {
       const side = v(fwd.z, 0, -fwd.x).normalize().multiplyScalar(0.3)
       tr.root.position.copy(p).add(side)
       tr.root.position.y = topHeight(tr.root.position.x, tr.root.position.z) + 0.02
-      tr.root.rotation.y = Math.atan2(-fwd.z, fwd.x) + Math.PI
-      tr.root.rotation.z = -Math.asin(THREE.MathUtils.clamp(fwd.y, -1, 1))
+      // When reversing, the cab points away from the direction of travel.
+      const reversing = tr.beep === 1 || tr.wait > 0
+      const face = reversing ? fwd.clone().negate() : fwd
+      const want = Math.atan2(-face.z, face.x) + Math.PI
+      const diff = ((want - tr.yaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI
+      // A limited turn rate makes the turn-around a visible manoeuvre.
+      tr.yaw += THREE.MathUtils.clamp(diff, -1.6 * dt, 1.6 * dt)
+      tr.root.rotation.y = tr.yaw
+      tr.root.rotation.z = -Math.asin(THREE.MathUtils.clamp(face.y, -1, 1))
+      // Flashing beacon while backing up.
+      tr.beacon.visible = reversing && Math.sin(t * 14) > 0
       tr.tray.rotation.z = -tr.tip * 0.75
       tr.body.rotation.x = Math.sin(t * 6 + tr.u * 40) * 0.01 * Math.min(1, tr.speed)
-      for (const w of tr.wheels) w.rotation.z += (tr.speed * dt) / 0.3
+      for (const w of tr.wheels) w.rotation.z += ((reversing ? -1 : 1) * tr.speed * dt) / 0.3
       tr.dust -= dt
       if (tr.speed > 0.6 && tr.dust <= 0) {
         tr.dust = 0.22

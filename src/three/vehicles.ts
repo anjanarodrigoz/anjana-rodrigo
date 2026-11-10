@@ -103,7 +103,7 @@ export function createKit() {
     for (const z of [-0.3, 0.3]) add(body, geo.box, mat.red, 0.74, 0.4, z, 0.02, 0.05, 0.08)
     for (const z of [-0.44, 0.44]) add(body, geo.box, mat.black, 0.72, 0.22, z, 0.02, 0.2, 0.2)
     // Rock ejector bars between the dual rear wheels, and a cab roof beacon.
-    add(body, geo.box, mat.light, -0.6, 0.92, -0.24, 0.05, 0.035, 0.05)
+    const beacon = add(body, geo.box, track(new THREE.MeshStandardMaterial({ color: 0xff9a00, emissive: 0xff8a00, emissiveIntensity: 2 })), -0.6, 0.93, -0.24, 0.07, 0.05, 0.07)
     // Wheels: single front, dual rear.
     const wheels = [
       wheel(body, -0.55, 0.26, 0.42, 0.26, 0.11),
@@ -113,7 +113,7 @@ export function createKit() {
       wheel(body, 0.45, 0.26, -0.38, 0.26, 0.11),
       wheel(body, 0.45, 0.26, -0.5, 0.26, 0.11),
     ]
-    return { root, body, tray, load, wheels, length: 1.7 }
+    return { root, body, tray, load, wheels, beacon, length: 1.7 }
   }
 
   // -- Hydraulic excavator with articulated boom, stick and bucket -------------

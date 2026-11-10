@@ -1,7 +1,8 @@
 "use client"
 
+import { useAnimations, useGLTF } from "@react-three/drei"
 import { useFrame, useThree } from "@react-three/fiber"
-import { useMemo, useRef } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three"
 
 import { sections } from "@/lib/sections"
@@ -12,10 +13,10 @@ import { player, rig, useWorld } from "@/lib/store"
  * sneakers. He wears a safety helmet at the mine, and a lab coat and glasses
  * in the research lab.
  *
- * Built from smooth primitives with jointed limbs (shoulder, elbow, hip,
- * knee), hands with fingers and a detailed face. It is a procedural stand-in
- * for a sculpted GLB character: closer to natural proportions than a toy, but
- * still stylised.
+ * Built from smooth primitives with natural proportions (about seven heads
+ * tall), jointed limbs, hands with fingers and a detailed face. A fully
+ * lifelike human needs a sculpted, textured and rigged GLB model; this is the
+ * closest procedural stand-in.
  *
  * He stands facing the viewer and travels by dissolving into green particles.
  */
@@ -24,6 +25,27 @@ import { player, rig, useWorld } from "@/lib/store"
 export const CHARACTER_SCALE = 1.5
 
 const PARTICLES = 160
+
+/** Optional sculpted model. If this file exists it replaces the built-in figure. */
+const MODEL_URL = "/models/character.glb"
+
+function Model() {
+  const { scene, animations } = useGLTF(MODEL_URL)
+  const { actions, names } = useAnimations(animations, scene)
+  // Fit any model to the same standing height as the built-in figure.
+  const fit = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(scene)
+    const h = Math.max(0.001, box.max.y - box.min.y)
+    scene.traverse((o) => {
+      o.castShadow = true
+    })
+    return { scale: 1.95 / h, y: -box.min.y * (1.95 / h) }
+  }, [scene])
+  useEffect(() => {
+    if (names[0]) actions[names[0]]?.reset().fadeIn(0.3).play()
+  }, [actions, names])
+  return <primitive object={scene} scale={fit.scale} position={[0, fit.y, 0]} />
+}
 
 export function Character() {
   const root = useRef<THREE.Group>(null!)
@@ -43,12 +65,18 @@ export function Character() {
   const camera = useThree((s) => s.camera)
   const blink = useRef(2)
   const gear = useRef({ helmet: true, tablet: false, lab: false })
+  const [hasModel, setHasModel] = useState(false)
+  useEffect(() => {
+    fetch(MODEL_URL, { method: "HEAD" })
+      .then((r) => setHasModel(r.ok && !(r.headers.get("content-type") ?? "").includes("text/html")))
+      .catch(() => {})
+  }, [])
 
   const m = useMemo(() => {
     const std = (color: number, roughness: number, extra: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra })
     return {
-      skin: std(0xd9a274, 0.55),
-      skinDark: std(0xc48d62, 0.6),
+      skin: std(0xb98258, 0.62),
+      skinDark: std(0xa06f49, 0.66),
       hoodie: std(0x1d4a3e, 0.9),
       hoodieDark: std(0x15382f, 0.9),
       rib: std(0x122f28, 0.85),
@@ -189,6 +217,12 @@ export function Character() {
       </points>
 
       <group ref={body}>
+        {hasModel ? (
+          <Suspense fallback={null}>
+            <Model />
+          </Suspense>
+        ) : null}
+        <group visible={!hasModel}>
         {/* Legs: thigh, knee, shin, and sneakers with soles, toe caps and laces */}
         {[-1, 1].map((side) => (
           <group key={side} position={[side * 0.105, 0.86, 0]} rotation={[0, 0, side * -0.02]}>
@@ -327,7 +361,7 @@ export function Character() {
         </mesh>
 
         {/* Head */}
-        <group ref={head} position={[0, 1.78, 0]}>
+        <group ref={head} position={[0, 1.735, 0]} scale={0.7}>
           <mesh material={m.skin} scale={[0.92, 1.04, 0.98]} castShadow>
             <sphereGeometry args={[0.26, 36, 28]} />
           </mesh>
@@ -402,6 +436,10 @@ export function Character() {
           <mesh material={m.lip} position={[0, -0.166, 0.224]} rotation={[0, 0, Math.PI / 2]} scale={[0.8, 1, 0.8]}>
             <capsuleGeometry args={[0.011, 0.05, 4, 8]} />
           </mesh>
+          {/* Stubble shadow along the jaw, and collarbone-level detail */}
+          <mesh material={m.skinDark} position={[0, -0.15, 0.04]} scale={[0.8, 0.5, 0.82]}>
+            <sphereGeometry args={[0.222, 20, 12, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.4]} />
+          </mesh>
           {/* Hair */}
           <mesh material={m.hair} position={[0, 0.05, -0.03]} scale={[0.97, 1, 0.98]}>
             <sphereGeometry args={[0.262, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
@@ -447,6 +485,7 @@ export function Character() {
               <cylinderGeometry args={[0.322, 0.322, 0.03, 28, 1, true]} />
             </mesh>
           </group>
+        </group>
         </group>
       </group>
     </group>
