@@ -6,12 +6,12 @@ One walkable 3D world. The visitor controls a character in a mine valley and exp
 
 | Action | Desktop | Touch |
 |---|---|---|
-| Walk the tour | Scroll: the character follows a route through every place in order. Small scroll walks, big scroll runs. | Menu |
+| Next / previous place | Scroll: one scroll teleports to the next place (particle dissolve). In Experience, one scroll per role. | Menu |
 | Free walk | W A S D or arrow keys | Joystick |
 | Run | Hold Shift | Push the joystick far |
 | Look around | Drag | Drag |
 | Fast travel | Menu on the right, or keys 1-7 | Menu |
-| Experience stops | Scroll: one stop per scroll | Previous / Next |
+| Experience stops | Scroll | Previous / Next |
 
 ## Stack
 
@@ -29,7 +29,6 @@ npm run build && npm start
 |---|---|
 | All text and facts | `src/lib/content.ts` |
 | Places, arrival points, obstacles | `src/lib/sections.ts` |
-| Scroll tour route | `src/lib/tour.ts` |
 | Game loop: movement, camera, collisions, fast travel | `src/components/scene/Rig.tsx` |
 | Character and gait | `src/components/scene/Character.tsx` |
 | Interface: text, menu, joystick, keyboard, sound toggle | `src/components/Experience.tsx` |

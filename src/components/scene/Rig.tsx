@@ -9,7 +9,6 @@ import { experience } from "@/lib/content"
 import { EXPERIENCE_PATH, EXPERIENCE_SCALE, OBSTACLES, WORLD_ORIGIN, experienceStop, sections, zoneAt, zoneIndex } from "@/lib/sections"
 import { sound } from "@/lib/sound"
 import { input, player, rig, tour, useWorld } from "@/lib/store"
-import { pointAt, sOfRole, sOfZone } from "@/lib/tour"
 import { SITES, pitCoords, rimR, topHeight } from "@/three/terrain"
 
 const EXP = zoneIndex("experience")
@@ -26,8 +25,28 @@ export const standHeight = (x: number, z: number) => {
   return topHeight(x, z) + (onBoard ? 0.1 + 0.3 * EXPERIENCE_SCALE : onFloor ? 0.1 : 0)
 }
 
+/** Dissolve, jump to a point, reappear. Used for every scroll teleport. */
+function jump(x: number, z: number, heading: number, fast = false) {
+  gsap.killTweensOf(rig)
+  sound.teleport()
+  gsap
+    .timeline()
+    .to(rig, { dissolve: 1, duration: fast ? 0.3 : 0.5, ease: "power2.in" })
+    .add(() => {
+      player.goal = null
+      player.x = x
+      player.z = z
+      player.vx = player.vz = 0
+      player.heading = heading
+      player.camYaw = heading + Math.PI
+      player.camPitch = 0.4
+      player.y = standHeight(x, z)
+    })
+    .to(rig, { dissolve: 0, duration: fast ? 0.35 : 0.55, ease: "power2.out" })
+}
+
 /**
- * Experience: step to the next or previous role and stop dead on it.
+ * Experience: teleport to the next or previous role.
  * One scroll, one stop. Returns false at either end of the path.
  */
 export function stepRole(dir: 1 | -1) {
@@ -35,34 +54,24 @@ export function stepRole(dir: 1 | -1) {
   const next = store.roleIndex + dir
   if (next < 0 || next >= EXPERIENCE_PATH.length) return false
   store.set({ roleIndex: next, started: true, panel: null })
-  player.goal = experienceStop(next)
-  tour.s = tour.at = sOfRole(next)
-  tour.active = false
+  const stop = experienceStop(next)
+  jump(stop.x, stop.z, Math.PI, true)
   return true
 }
 
-/** Fast travel: dissolve, move, reappear. */
-export function travelTo(index: number) {
-  const a = sections[index].arrive
-  if (sections[index].id === "experience") useWorld.getState().set({ roleIndex: 0 })
-  gsap.killTweensOf(rig)
-  sound.teleport()
-  gsap
-    .timeline()
-    .to(rig, { dissolve: 1, duration: 0.55, ease: "power2.in" })
-    .add(() => {
-      player.goal = null
-      tour.s = tour.at = sOfZone(index)
-      tour.active = false
-      player.x = a.x
-      player.z = a.z
-      player.vx = player.vz = 0
-      player.heading = a.heading
-      player.camYaw = a.heading + Math.PI
-      player.camPitch = 0.4
-      player.y = standHeight(a.x, a.z)
-    })
-    .to(rig, { dissolve: 0, duration: 0.6, ease: "power2.out" })
+/** Teleport to a place. For Experience, `role` picks which stop to land on. */
+export function travelTo(index: number, role = 0) {
+  const i = Math.max(0, Math.min(sections.length - 1, index))
+  tour.place = i
+  useWorld.getState().set({ started: i !== 0 || useWorld.getState().started })
+  if (sections[i].id === "experience") {
+    useWorld.getState().set({ roleIndex: role })
+    const stop = experienceStop(role)
+    jump(stop.x, stop.z, Math.PI)
+    return
+  }
+  const a = sections[i].arrive
+  jump(a.x, a.z, a.heading)
 }
 
 /**
@@ -130,18 +139,7 @@ export function Rig() {
     const top = (input.run ? RUN : WALK) * mag
     let wx = 0
     let wz = 0
-    if (moving) {
-      p.goal = null
-      tour.active = false
-    } else if (tour.active) {
-      // Scrolling drives: a guide point runs along the route toward the scrolled-to
-      // distance, and the character follows it, so he never cuts across the map.
-      const gap = tour.s - tour.at
-      const pace = Math.min(RUN, Math.max(1.5, Math.abs(gap) * 1.2))
-      tour.at += Math.sign(gap) * Math.min(Math.abs(gap), pace * dt)
-      const g = pointAt(tour.at)
-      if (Math.hypot(g.x - p.x, g.z - p.z) > 0.12) p.goal = g
-    }
+    if (moving) p.goal = null
     if (p.goal) {
       // Walk straight to the stop and halt on it exactly: no drift, no overshoot.
       const gx = p.goal.x - p.x
