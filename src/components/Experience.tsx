@@ -1,11 +1,12 @@
 "use client"
 
-import { ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone, Volume2, VolumeX } from "lucide-react"
 import dynamic from "next/dynamic"
-import { useEffect, useRef, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { about, experience, minebook, profile, research, software, softwareStack } from "@/lib/content"
 import { sections } from "@/lib/sections"
+import { setMuted, sound, unlock } from "@/lib/sound"
 import { input, useWorld } from "@/lib/store"
 
 import { Panels } from "./Panels"
@@ -99,7 +100,25 @@ function Joystick() {
 
 export default function Experience() {
   const root = useRef<HTMLDivElement>(null)
-  const { active, ready, webgl, started, roleIndex, set } = useWorld()
+  const { active, ready, webgl, started, roleIndex, panel, set } = useWorld()
+  const [mute, setMute] = useState(false)
+
+  // Sound: unlock on the first gesture, click on every button, chime on panels.
+  useEffect(() => {
+    const gesture = (e: Event) => {
+      unlock()
+      if (e.type === "pointerdown" && (e.target as HTMLElement).closest?.("button, a")) sound.click()
+    }
+    window.addEventListener("pointerdown", gesture)
+    window.addEventListener("keydown", gesture)
+    return () => {
+      window.removeEventListener("pointerdown", gesture)
+      window.removeEventListener("keydown", gesture)
+    }
+  }, [])
+  useEffect(() => {
+    if (panel) sound.open()
+  }, [panel])
 
   useEffect(() => {
     // No WebGL (or ?lite): fall back to a plain, fully readable page.
@@ -178,9 +197,25 @@ export default function Experience() {
         <button type="button" onClick={() => (webgl ? travelTo(0) : window.scrollTo({ top: 0 }))} className="font-display text-base font-semibold tracking-tight text-charcoal">
           Anjana Rodrigo
         </button>
-        <button type="button" onClick={() => (webgl ? travelTo(sections.length - 1) : document.getElementById("contact")?.scrollIntoView())} className={solid + " h-9 px-4 text-xs"}>
-          Let&apos;s talk
-        </button>
+        <div className="flex items-center gap-2">
+          {webgl ? (
+            <button
+              type="button"
+              aria-pressed={mute}
+              aria-label={mute ? "Turn sound on" : "Turn sound off"}
+              onClick={() => {
+                setMuted(!mute)
+                setMute(!mute)
+              }}
+              className="grid h-9 w-9 place-items-center rounded-full border border-forest/20 bg-white/60 text-forest backdrop-blur hover:bg-white/90"
+            >
+              {mute ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+          ) : null}
+          <button type="button" onClick={() => (webgl ? travelTo(sections.length - 1) : document.getElementById("contact")?.scrollIntoView())} className={solid + " h-9 px-4 text-xs"}>
+            Let&apos;s talk
+          </button>
+        </div>
       </header>
 
       {webgl ? (

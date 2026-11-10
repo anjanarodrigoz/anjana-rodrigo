@@ -7,6 +7,7 @@ import * as THREE from "three"
 
 import { experience } from "@/lib/content"
 import { EXPERIENCE_PATH, EXPERIENCE_SCALE, OBSTACLES, WORLD_ORIGIN, experienceStop, sections, zoneAt, zoneIndex } from "@/lib/sections"
+import { sound } from "@/lib/sound"
 import { input, player, rig, useWorld } from "@/lib/store"
 import { SITES, pitCoords, rimR, topHeight } from "@/three/terrain"
 
@@ -42,6 +43,7 @@ export function travelTo(index: number) {
   const a = sections[index].arrive
   if (sections[index].id === "experience") useWorld.getState().set({ roleIndex: 0 })
   gsap.killTweensOf(rig)
+  sound.teleport()
   gsap
     .timeline()
     .to(rig, { dissolve: 1, duration: 0.55, ease: "power2.in" })
@@ -240,7 +242,10 @@ export function Rig() {
 
     // Tell the interface where we are (only when it changes).
     const store = useWorld.getState()
-    if (zone !== store.active) store.set({ active: zone, panel: null })
+    if (zone !== store.active) {
+      store.set({ active: zone, panel: null })
+      if (zone > 0 && store.started) sound.arrive()
+    }
     if (!store.started && (moving || zone !== 0)) store.set({ started: true })
     if (zone === EXP) {
       // When walking freely, show the role whose stop is nearest.

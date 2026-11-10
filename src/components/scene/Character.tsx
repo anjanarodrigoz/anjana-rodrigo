@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react"
 import * as THREE from "three"
 
 import { sections } from "@/lib/sections"
+import { sound } from "@/lib/sound"
 import { player, rig, useWorld } from "@/lib/store"
 
 /**
@@ -119,7 +120,10 @@ export function Character() {
     const speed = player.speed
     const run = THREE.MathUtils.smoothstep(speed, 4, 7)
     const move = THREE.MathUtils.smoothstep(speed, 0.15, 1.2)
+    const before = phase.current
     phase.current += (speed / THREE.MathUtils.lerp(0.95, 1.7, run)) * Math.PI * dt
+    // A foot lands each half stride.
+    if (move > 0.4 && Math.floor(phase.current / Math.PI) !== Math.floor(before / Math.PI)) sound.step(run > 0.5)
     const sw = Math.sin(phase.current)
     const amp = THREE.MathUtils.lerp(0.55, 0.95, run) * move
     legL.current.rotation.x = sw * amp
