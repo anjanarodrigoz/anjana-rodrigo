@@ -8,7 +8,7 @@ import { sections } from "@/lib/sections"
 import { player, rig, useWorld } from "@/lib/store"
 
 /**
- * The guide: a stylised cartoon boy with an oversized head, short black hair,
+ * The guide: a stylised cartoon boy with an oversized head, curly black hair,
  * a dark-green hoodie, trousers and sneakers. He wears a safety helmet only
  * in the mining and construction scenes. Built procedurally from smooth
  * primitives (a prototype stand-in for a sculpted GLB character).
@@ -53,6 +53,23 @@ export function Character() {
     }),
     [],
   )
+
+  // Curls: instanced spheres over the top and back of the head.
+  const curls = useMemo(() => {
+    const out: { p: [number, number, number]; s: number }[] = []
+    for (let i = 0; i < 300; i++) {
+      const y = 1 - (i / 299) * 1.25
+      const r = Math.sqrt(Math.max(0, 1 - y * y))
+      const phi = i * 2.399963
+      const x = Math.cos(phi) * r
+      const z = Math.sin(phi) * r
+      if (z > 0.35 && y < 0.42) continue // keep the face clear
+      if (y < -0.25) continue
+      const lift = 1.06 + 0.07 * Math.sin(i * 1.7)
+      out.push({ p: [x * 0.44 * lift, 0.02 + y * 0.43 * lift, z * 0.43 * lift - 0.02], s: 0.085 + ((i * 37) % 7) * 0.006 })
+    }
+    return out
+  }, [])
 
   const particles = useMemo(() => {
     const dir = new Float32Array(PARTICLES * 3)
@@ -113,6 +130,8 @@ export function Character() {
     helmet.current.visible = s.helmet
     coat.current.visible = s.lab
     glasses.current.visible = s.lab
+    // The helmet sits on the hair: hide the curls it would cover.
+    for (const child of head.current.children) if (child.userData.top) child.visible = !s.helmet
     tablet.current.visible = s.tablet && move < 0.5
     const waving = s.wave && Math.sin(t * 0.6) > -0.2
     const ease = 1 - Math.pow(0.002, dt)
@@ -259,18 +278,9 @@ export function Character() {
               <sphereGeometry args={[0.06, 10, 8]} />
             </mesh>
           ))}
-          {/* Hair: short and smooth, swept to one side, with a soft fringe */}
-          <mesh material={mats.hair} position={[0, 0.03, -0.035]} rotation={[-0.28, 0, 0]} scale={[1.03, 1, 1.04]} castShadow>
-            <sphereGeometry args={[0.432, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-          </mesh>
-          {[-0.2, -0.07, 0.07, 0.2].map((x, i) => (
-            <mesh key={x} material={mats.hair} position={[x, 0.3 - Math.abs(x) * 0.25, 0.27 - Math.abs(x) * 0.2]} rotation={[0.5, 0, -0.5 + i * 0.12]} scale={[1.25, 0.5, 0.75]}>
-              <sphereGeometry args={[0.12, 14, 10]} />
-            </mesh>
-          ))}
-          {[-1, 1].map((side) => (
-            <mesh key={side} material={mats.hair} position={[side * 0.36, 0.08, -0.02]} scale={[0.4, 1, 0.9]}>
-              <sphereGeometry args={[0.13, 12, 10]} />
+          {curls.map((c, i) => (
+            <mesh key={i} material={mats.hair} position={c.p} scale={c.s} castShadow={i % 6 === 0} userData={{ top: c.p[1] > 0.1 }}>
+              <icosahedronGeometry args={[1, 1]} />
             </mesh>
           ))}
           {/* Research glasses */}
