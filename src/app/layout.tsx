@@ -5,7 +5,7 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.anjanarodrigo.com"),
-  title: "Anjana Rodrigo | Founder of MineBook | Software Engineer | Mining Engineer",
+  title: "Anjana Rodrigo | Founder of MineBook | CTO @ Starloge | Mining Engineer",
   description:
     "Explore the work of Anjana Rodrigo as an interactive 3D world: MineBook, software engineering projects, the Crack Survey application, professional experience and published IEEE research.",
   openGraph: {

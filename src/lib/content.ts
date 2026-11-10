@@ -7,7 +7,7 @@
 export const profile = {
   name: "Anjana Rodrigo",
   tagline: "Engineering Ideas Into Digital Reality.",
-  roles: "Founder of MineBook | Software Engineer | Mining Engineer",
+  roles: "Founder of MineBook | CTO @ Starloge | Mining Engineer",
   intro:
     "I build intelligent software solutions that transform manual processes into streamlined digital platforms, combining engineering knowledge, software development, and emerging AI technologies.",
   email: "anjanarodrigoz@gmail.com",

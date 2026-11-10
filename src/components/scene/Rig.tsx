@@ -19,7 +19,9 @@ const ACCEL = 16
 export const standHeight = (x: number, z: number) => {
   const e = SITES.experience
   const onBoard = Math.hypot(x - e.x, z - e.z) < 13.5 * EXPERIENCE_SCALE
-  return topHeight(x, z) + (onBoard ? 0.3 * EXPERIENCE_SCALE : 0)
+  // The projects and research floors sit just above the ground.
+  const onFloor = [SITES.software, SITES.research].some((s) => Math.hypot(x - s.x, z - s.z) < 9)
+  return topHeight(x, z) + (onBoard ? 0.1 + 0.3 * EXPERIENCE_SCALE : onFloor ? 0.1 : 0)
 }
 
 /**

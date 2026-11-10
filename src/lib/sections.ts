@@ -11,9 +11,9 @@ export type WorldId = "mine" | "software" | "experience" | "research"
 /** Where each sub-site sits in the valley (y is the levelled pad height). */
 export const WORLD_ORIGIN: Record<WorldId, V3> = {
   mine: [0, 0, 0],
-  software: [SITES.software.x, 0.1, SITES.software.z],
-  experience: [SITES.experience.x, 0.1, SITES.experience.z],
-  research: [SITES.research.x, 0.1, SITES.research.z],
+  software: [SITES.software.x, 0.2, SITES.software.z],
+  experience: [SITES.experience.x, 0.2, SITES.experience.z],
+  research: [SITES.research.x, 0.2, SITES.research.z],
 }
 
 /** The experience model is a miniature: it is scaled down inside its site. */
