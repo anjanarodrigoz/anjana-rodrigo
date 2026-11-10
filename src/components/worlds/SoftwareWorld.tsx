@@ -18,6 +18,7 @@ const HERE = zoneIndex("software")
  */
 
 const SAGE = "#8DAA91"
+const KIND = { web: "Web platform", mobile: "Mobile app", desktop: "Desktop app" } as const
 const yellow = <meshStandardMaterial color="#f0b000" roughness={0.5} />
 const dark = <meshStandardMaterial color="#2c3632" roughness={0.6} />
 
@@ -163,75 +164,6 @@ function CycleExhibit({ n }: { n: number }) {
         </mesh>
       </group>
     </group>
-  )
-}
-
-/** Crack Survey: a wall, a crack and a phone measuring it. Select to compare before and after. */
-function CrackExhibit({ n }: { n: number }) {
-  const after = n % 2 === 1
-  const tex = useMemo(
-    () =>
-      [1.6, 4.2].map((w) =>
-        canvasTexture(256, 256, (g) => {
-          g.clearRect(0, 0, 256, 256)
-          let s = 7
-          const rnd = () => ((s = (s * 9301 + 49297) % 233280), s / 233280)
-          let x = 128
-          g.beginPath()
-          g.moveTo(x, 10)
-          for (let y = 24; y < 250; y += 14) {
-            x += (rnd() - 0.5) * 30
-            g.lineTo(x, y)
-          }
-          g.strokeStyle = "rgba(38,34,30,0.92)"
-          g.lineWidth = w
-          g.lineCap = "round"
-          g.lineJoin = "round"
-          g.stroke()
-        }),
-      ),
-    [],
-  )
-  const gauge = useRef<THREE.Group>(null!)
-  const phone = useRef<THREE.Group>(null!)
-  useFrame((state) => {
-    const t = state.clock.elapsedTime
-    gauge.current.position.y = 0.75 + Math.sin(t * 1.2) * 0.35
-    gauge.current.scale.x += ((after ? 2.2 : 1) - gauge.current.scale.x) * 0.12
-    phone.current.position.y = gauge.current.position.y
-  })
-  return (
-    <>
-      <mesh position={[0, 0.75, -0.25]} castShadow receiveShadow>
-        <boxGeometry args={[1.6, 1.5, 0.14]} />
-        <meshStandardMaterial color="#ece6da" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, 0.75, -0.175]}>
-        <planeGeometry args={[1.1, 1.4]} />
-        <meshBasicMaterial map={after ? tex[1] : tex[0]} transparent depthWrite={false} />
-      </mesh>
-      {/* Width gauge that widens when the crack has grown */}
-      <group ref={gauge} position={[0, 0.75, -0.16]}>
-        <mesh>
-          <boxGeometry args={[0.16, 0.015, 0.01]} />
-          <meshBasicMaterial color={after ? "#b5483f" : "#183F35"} />
-        </mesh>
-      </group>
-      <group ref={phone} position={[0.25, 0.75, 0.35]} rotation={[0, -0.25, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.34, 0.62, 0.035]} />
-          {dark}
-        </mesh>
-        <mesh position={[0, 0, -0.019]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[0.29, 0.56]} />
-          <meshStandardMaterial color="#dfeee2" emissive={after ? "#b5483f" : SAGE} emissiveIntensity={0.6} />
-        </mesh>
-      </group>
-      <mesh position={[0.25, 0.2, 0.35]}>
-        <cylinderGeometry args={[0.015, 0.015, 0.5, 6]} />
-        {dark}
-      </mesh>
-    </>
   )
 }
 
@@ -427,13 +359,280 @@ function RestaurantExhibit({ n }: { n: number }) {
   )
 }
 
+const steel = <meshStandardMaterial color="#9aa3ab" roughness={0.3} metalness={0.7} />
+const paper = <meshStandardMaterial color="#f6f7f3" roughness={0.6} />
+
+/** A simple monitor on a stand, with a canvas-drawn screen. */
+function Monitor({ tex, position = [0, 0, 0] as [number, number, number], w = 1.1 }: { tex: THREE.Texture; position?: [number, number, number]; w?: number }) {
+  const h = w * 0.62
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.3 + h / 2, 0]} castShadow>
+        <boxGeometry args={[w + 0.06, h + 0.06, 0.04]} />
+        {dark}
+      </mesh>
+      <mesh position={[0, 0.3 + h / 2, 0.022]}>
+        <planeGeometry args={[w, h]} />
+        <meshBasicMaterial map={tex} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0.16, -0.02]}>
+        <boxGeometry args={[0.07, 0.3, 0.04]} />
+        {steel}
+      </mesh>
+      <mesh position={[0, 0.015, 0]}>
+        <boxGeometry args={[0.42, 0.03, 0.26]} />
+        {steel}
+      </mesh>
+    </group>
+  )
+}
+
+/** University MIS: a monitor showing the system's modules. Select to switch module. */
+function MisExhibit({ n }: { n: number }) {
+  const screens = useMemo(
+    () =>
+      ["Students", "Courses", "Staff", "Reports"].map((name, k) =>
+        canvasTexture(512, 320, (g) => {
+          g.fillStyle = "#F6F7F3"
+          g.fillRect(0, 0, 512, 320)
+          g.fillStyle = "#183F35"
+          g.fillRect(0, 0, 120, 320)
+          ;[0, 1, 2, 3].forEach((i) => {
+            g.fillStyle = i === k ? "#8DAA91" : "rgba(246,247,243,.3)"
+            g.fillRect(14, 30 + i * 44, 92, 22)
+          })
+          g.fillStyle = "#102C25"
+          g.font = "600 30px 'Space Grotesk', system-ui, sans-serif"
+          g.fillText(name, 144, 48)
+          for (let r = 0; r < 6; r++) {
+            g.fillStyle = r % 2 ? "rgba(16,44,37,.06)" : "rgba(16,44,37,.12)"
+            g.fillRect(144, 76 + r * 38, 344, 30)
+            g.fillStyle = "rgba(16,44,37,.45)"
+            g.fillRect(156, 86 + r * 38, 90 + ((r * 37 + k * 23) % 120), 10)
+          }
+        }),
+      ),
+    [],
+  )
+  return (
+    <>
+      <Monitor tex={screens[n % 4]} w={1.3} position={[0, 0, -0.1]} />
+      {/* A small campus building beside it */}
+      <group position={[-0.72, 0, 0.45]} scale={0.34}>
+        <mesh position={[0, 0.5, 0]} castShadow>
+          <boxGeometry args={[1.6, 1, 1]} />
+          <meshStandardMaterial color="#e6dfcf" roughness={0.8} />
+        </mesh>
+        {[-0.55, 0, 0.55].map((x) => (
+          <mesh key={x} position={[x, 0.5, 0.55]}>
+            <cylinderGeometry args={[0.07, 0.07, 1, 10]} />
+            {paper}
+          </mesh>
+        ))}
+        <mesh position={[0, 1.2, 0.1]} rotation={[0, Math.PI / 4, 0]} scale={[1, 0.4, 0.7]}>
+          <coneGeometry args={[1.3, 1, 4]} />
+          <meshStandardMaterial color="#7c4a3a" roughness={0.8} />
+        </mesh>
+      </group>
+    </>
+  )
+}
+
+/** Acorn Travel: a plane circling a globe, with a phone. Select for a new trip. */
+function TravelExhibit({ n }: { n: number }) {
+  const plane = useRef<THREE.Group>(null!)
+  const orbit = useRef<THREE.Group>(null!)
+  useFrame((state, dt) => {
+    // Each new trip tilts the flight path to a different route.
+    orbit.current.rotation.z += ((n % 4) * 0.45 - 0.6 - orbit.current.rotation.z) * Math.min(1, dt * 2)
+    plane.current.rotation.y = state.clock.elapsedTime * 1.3
+  })
+  return (
+    <>
+      <mesh position={[0, 0.62, 0]} castShadow>
+        <sphereGeometry args={[0.42, 32, 24]} />
+        <meshStandardMaterial color="#7fb0bb" roughness={0.5} />
+      </mesh>
+      {[[0.2, 0.75, 0.3, 0.2], [-0.25, 0.6, 0.28, 0.24], [0.05, 0.42, -0.36, 0.2], [-0.2, 0.85, -0.2, 0.17]].map(([x, y, z, r], i) => (
+        <mesh key={i} position={[x, y, z]}>
+          <sphereGeometry args={[r, 12, 10]} />
+          <meshStandardMaterial color="#6f9a6a" roughness={0.9} />
+        </mesh>
+      ))}
+      <group ref={orbit} position={[0, 0.62, 0]}>
+        <group ref={plane}>
+          <group position={[0.62, 0, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <capsuleGeometry args={[0.035, 0.16, 4, 10]} />
+              {paper}
+            </mesh>
+            <mesh>
+              <boxGeometry args={[0.26, 0.012, 0.07]} />
+              {paper}
+            </mesh>
+            <mesh position={[0, 0.03, 0.1]}>
+              <boxGeometry args={[0.012, 0.07, 0.05]} />
+              <meshStandardMaterial color="#183F35" />
+            </mesh>
+          </group>
+        </group>
+      </group>
+      <mesh position={[0, 0.04, 0]}>
+        <cylinderGeometry args={[0.2, 0.26, 0.08, 24]} />
+        {steel}
+      </mesh>
+    </>
+  )
+}
+
+/** Desktop POS: a till screen with a receipt printer. Select to ring up a sale. */
+function PosExhibit({ n }: { n: number }) {
+  const receipt = useRef<THREE.Mesh>(null!)
+  const len = useRef(0.05)
+  const last = useRef(0)
+  const screen = useMemo(
+    () =>
+      canvasTexture(512, 320, (g) => {
+        g.fillStyle = "#F6F7F3"
+        g.fillRect(0, 0, 512, 320)
+        for (let r = 0; r < 3; r++)
+          for (let c = 0; c < 4; c++) {
+            g.fillStyle = (r + c) % 3 ? "#8DAA91" : "#183F35"
+            g.beginPath()
+            g.roundRect(18 + c * 82, 20 + r * 96, 70, 82, 10)
+            g.fill()
+          }
+        g.fillStyle = "#102C25"
+        g.fillRect(360, 20, 134, 280)
+        g.fillStyle = "#F6F7F3"
+        for (let i = 0; i < 5; i++) g.fillRect(374, 44 + i * 34, 80 + ((i * 29) % 26), 8)
+        g.fillStyle = "#8DAA91"
+        g.fillRect(374, 250, 106, 34)
+      }),
+    [],
+  )
+  useFrame((_, dt) => {
+    if (n !== last.current) {
+      last.current = n
+      len.current = 0.05
+    }
+    // The receipt feeds out of the printer after each sale.
+    len.current = Math.min(0.55, len.current + dt * 0.5)
+    receipt.current.scale.y = len.current
+    receipt.current.position.y = 0.26 + len.current * 0.5
+  })
+  return (
+    <>
+      <Monitor tex={screen} w={1.15} position={[-0.2, 0, -0.1]} />
+      <mesh position={[0.72, 0.13, 0.2]} castShadow>
+        <boxGeometry args={[0.36, 0.26, 0.4]} />
+        {dark}
+      </mesh>
+      <mesh ref={receipt} position={[0.72, 0.3, 0.2]}>
+        <planeGeometry args={[0.24, 1]} />
+        <meshStandardMaterial color="#fffdf5" roughness={0.9} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[-0.2, 0.05, 0.45]} castShadow>
+        <boxGeometry args={[0.7, 0.1, 0.4]} />
+        {steel}
+      </mesh>
+    </>
+  )
+}
+
+/** ChinaBridge: a bridge between two shores. Select to send a delivery across. */
+function BridgeExhibit({ n }: { n: number }) {
+  const crate = useRef<THREE.Mesh>(null!)
+  const pos = useRef(0)
+  useFrame((_, dt) => {
+    pos.current += ((n % 2) - pos.current) * Math.min(1, dt * 1.4)
+    const x = -0.72 + pos.current * 1.44
+    crate.current.position.set(x, 0.52 + Math.sin(pos.current * Math.PI) * 0.16, 0)
+  })
+  return (
+    <>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <circleGeometry args={[1, 40]} />
+        <meshStandardMaterial color="#7fb0bb" roughness={0.4} />
+      </mesh>
+      {[-0.78, 0.78].map((x, i) => (
+        <mesh key={x} position={[x, 0.18, 0]} castShadow>
+          <boxGeometry args={[0.44, 0.36, 0.9]} />
+          <meshStandardMaterial color={i ? "#b9c7a8" : "#d9cdb8"} roughness={0.9} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.36, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[1, 0.3, 1]}>
+        <torusGeometry args={[0.6, 0.05, 10, 32, Math.PI]} />
+        <meshStandardMaterial color="#b5483f" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.38, 0]}>
+        <boxGeometry args={[1.3, 0.04, 0.28]} />
+        <meshStandardMaterial color="#b5483f" roughness={0.6} />
+      </mesh>
+      {[-0.3, 0, 0.3].map((x) => (
+        <mesh key={x} position={[x, 0.2, 0]}>
+          <boxGeometry args={[0.05, 0.36, 0.2]} />
+          <meshStandardMaterial color="#8c3a33" roughness={0.7} />
+        </mesh>
+      ))}
+      <mesh ref={crate} castShadow>
+        <boxGeometry args={[0.16, 0.14, 0.14]} />
+        {yellow}
+      </mesh>
+    </>
+  )
+}
+
+/** Local business apps: four phones, one per experiment. Select to switch. */
+function LocalAppsExhibit({ n }: { n: number }) {
+  const group = useRef<THREE.Group>(null!)
+  const colors = ["#7fb0bb", "#d98aa0", "#e0c070", "#6fae7a"] // laundry, salon, school, clinic
+  useFrame((_, dt) => {
+    group.current.children.forEach((c, i) => {
+      const on = i === n % 4
+      c.position.y += ((on ? 0.62 : 0.42) - c.position.y) * Math.min(1, dt * 6)
+      c.scale.setScalar(c.scale.x + ((on ? 1.25 : 1) - c.scale.x) * Math.min(1, dt * 6))
+    })
+  })
+  return (
+    <group ref={group}>
+      {colors.map((c, i) => (
+        <group key={c} position={[-0.66 + i * 0.44, 0.42, 0]} rotation={[-0.2, 0, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.32, 0.6, 0.035]} />
+            {dark}
+          </mesh>
+          <mesh position={[0, 0, 0.019]}>
+            <planeGeometry args={[0.28, 0.55]} />
+            <meshStandardMaterial color="#f6f7f3" roughness={0.4} />
+          </mesh>
+          <mesh position={[0, 0.12, 0.021]}>
+            <circleGeometry args={[0.09, 24]} />
+            <meshStandardMaterial color={c} roughness={0.5} />
+          </mesh>
+          {[0, 1, 2].map((k) => (
+            <mesh key={k} position={[0, -0.05 - k * 0.07, 0.021]}>
+              <planeGeometry args={[0.2 - k * 0.03, 0.03]} />
+              <meshStandardMaterial color={c} roughness={0.5} transparent opacity={0.6} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  )
+}
+
 const EXHIBITS: Record<string, (p: { n: number }) => ReactNode> = {
+  mis: MisExhibit,
+  "acorn-travel": TravelExhibit,
+  pos: PosExhibit,
+  chinabridge: BridgeExhibit,
+  "local-apps": LocalAppsExhibit,
   "melbourne-mover": MoverExhibit,
   restaurant: RestaurantExhibit,
   minebook: MineBookExhibit,
   "fleet-dispatch": FleetExhibit,
   "cycle-time": CycleExhibit,
-  "crack-survey": CrackExhibit,
   "blast-pattern": BlastExhibit,
 }
 
@@ -464,10 +663,10 @@ export default function SoftwareWorld() {
           g.textBaseline = "middle"
           g.fillStyle = "#F6F7F3"
           g.font = "600 84px 'Space Grotesk', system-ui, sans-serif"
-          g.fillText(p.title.replace(" Management App", ""), 512, 100)
+          g.fillText(p.title.replace(" Management App", "").replace(" Business Apps", " apps"), 512, 100)
           g.fillStyle = "#8DAA91"
           g.font = "500 44px Inter, system-ui, sans-serif"
-          g.fillText(`${p.device === "web" ? "Web platform" : "Mobile app"}  |  Select to try`, 512, 190)
+          g.fillText(`${KIND[p.device]}  |  Select to try`, 512, 190)
         }),
       ),
     [],

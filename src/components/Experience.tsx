@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Check, Code2, Cpu, Github, Globe, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Check, Code2, Cpu, Github, Globe, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Monitor, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
@@ -25,7 +25,7 @@ function Block({ index, children, wide }: { index: number; children: ReactNode; 
         className={[
           // Phones: a white panel docked at the bottom. Desktop: a text column on the left.
           webgl
-            ? "fixed inset-x-0 bottom-0 z-20 max-h-[54vh] overflow-hidden rounded-t-3xl bg-paper/95 px-5 pb-7 pt-3 shadow-[0_-14px_40px_-14px_rgba(16,44,37,0.4)] backdrop-blur transition-all duration-500 sm:inset-x-auto sm:bottom-auto sm:left-10 sm:top-1/2 sm:max-h-none sm:-translate-y-1/2 sm:overflow-visible sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"
+            ? "fixed inset-x-0 bottom-0 z-20 max-h-[50vh] overflow-y-auto overscroll-contain rounded-t-3xl bg-paper/95 px-5 pb-7 pt-3 shadow-[0_-14px_40px_-14px_rgba(16,44,37,0.4)] backdrop-blur transition-all duration-500 sm:inset-x-auto sm:bottom-auto sm:left-10 sm:top-1/2 sm:max-h-none sm:-translate-y-1/2 sm:overflow-visible sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"
             : "mx-auto",
           wide ? "sm:max-w-[540px]" : "sm:max-w-[420px]",
           webgl && !here ? "pointer-events-none translate-y-8 opacity-0" : "opacity-100",
@@ -76,13 +76,13 @@ const Badge = ({ icon: Icon, active = true, small }: { icon: LucideIcon; active?
 function Stepper({ count, index }: { count: number; index: number }) {
   const set = useWorld((s) => s.set)
   return (
-    <div className="mt-5 flex items-center gap-3">
+    <div className="mt-3 flex items-center gap-2 sm:mt-5 sm:gap-3">
       <button type="button" onClick={() => set({ sub: Math.max(0, index - 1) })} disabled={index === 0} className={ghost + " h-9 px-4 text-xs disabled:opacity-40"}>
         Previous
       </button>
       <div className="flex gap-1.5">
         {Array.from({ length: count }, (_, i) => (
-          <button key={i} type="button" aria-label={`Show item ${i + 1}`} onClick={() => set({ sub: i })} className={`h-1.5 rounded-full transition-all ${i === index ? "w-8 bg-forest" : "w-3 bg-forest/25"}`} />
+          <button key={i} type="button" aria-label={`Show item ${i + 1}`} onClick={() => set({ sub: i })} className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-forest" : count > 7 ? "w-1.5 bg-forest/25" : "w-3 bg-forest/25"}`} />
         ))}
       </div>
       <button type="button" onClick={() => set({ sub: Math.min(count - 1, index + 1) })} disabled={index === count - 1} className={solid + " h-9 px-4 text-xs disabled:opacity-40"}>
@@ -278,11 +278,12 @@ export default function Experience() {
         <Block index={1}>
           <Kicker>Projects | {String(software.indexOf(project) + 1).padStart(2, "0")} of {String(software.length).padStart(2, "0")}</Kicker>
           {webgl ? (
-            <div aria-live="polite" className="min-h-[230px]">
+            <div aria-live="polite" className="sm:min-h-[250px]">
               {/* What kind of product it is, at a glance */}
               <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-forest px-2.5 py-1 text-[11px] font-semibold text-paper">
-                {project.device === "web" ? <Globe className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
-                {project.device === "web" ? "Web platform" : "Mobile app"}
+                {project.device === "mobile" ? <Smartphone className="h-3.5 w-3.5" /> : project.device === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                {project.device === "web" ? "Web platform" : project.device === "desktop" ? "Desktop app" : "Mobile app"}
+                <span className="opacity-70">| {project.meta}</span>
               </p>
               <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-4xl">{project.title}</h2>
               <Lead>{project.line}</Lead>
@@ -334,7 +335,7 @@ export default function Experience() {
         <Block index={2}>
           <Kicker>Career | {String(experience.indexOf(role) + 1).padStart(2, "0")} of {String(experience.length).padStart(2, "0")}</Kicker>
           {webgl ? (
-            <div className="min-h-[190px]" aria-live="polite">
+            <div className="sm:min-h-[190px]" aria-live="polite">
               {/* The career at a glance: one icon per role, the current one lit */}
               <ol className="mb-5 flex items-center gap-1.5">
                 {experience.map((r, i) => (
@@ -396,7 +397,7 @@ export default function Experience() {
         <Block index={3} wide>
           <Kicker>Published research | Step {research.steps.indexOf(stepInfo) + 1} of {research.steps.length}</Kicker>
           {webgl ? (
-            <div className="min-h-[150px]" aria-live="polite">
+            <div className="sm:min-h-[150px]" aria-live="polite">
               <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">{stepInfo.title}</h2>
               <Lead>{stepInfo.line}</Lead>
             </div>

@@ -135,8 +135,17 @@ export function Rig() {
       pitch = store0.sub === 0 ? 0.42 : 0.14
     }
     if (portrait) dist *= 1.25
-    look.set(p.x, p.y + 2.2, p.z)
-    camPos.set(p.x + Math.sin(p.camYaw) * Math.cos(pitch) * dist, p.y + 2.2 + Math.sin(pitch) * dist, p.z + Math.cos(p.camYaw) * Math.cos(pitch) * dist)
+    // Phones: at a showcase, frame the exhibit and the guide together
+    // instead of centring on the guide alone.
+    let fx = p.x
+    let fz = p.z
+    if (portrait && zone > 0 && sections[zone].items) {
+      fx = (p.x + sections[zone].at[0] - 0.6) / 2
+      fz = (p.z + sections[zone].at[1] - 0.8) / 2
+      dist *= 1.3
+    }
+    look.set(fx, p.y + 2.2, fz)
+    camPos.set(fx + Math.sin(p.camYaw) * Math.cos(pitch) * dist, p.y + 2.2 + Math.sin(pitch) * dist, fz + Math.cos(p.camYaw) * Math.cos(pitch) * dist)
     camPos.y = Math.max(camPos.y, topHeight(camPos.x, camPos.z) + 0.8)
     // The opening push-in is deliberately slow; other moves are quicker.
     const k = first.current ? 1 : 1 - Math.pow(zone === 0 ? 0.12 : 0.0015, dt)
