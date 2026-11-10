@@ -247,13 +247,13 @@ export function buildMine() {
   const EXC = ground(PIT.x + 0.9, PIT.z - 0.4)
   const exc = kit.excavator()
   exc.root.position.copy(EXC)
-  exc.root.scale.setScalar(0.95)
+  exc.root.scale.setScalar(1.35)
   exc.root.rotation.y = 0.4
   group.add(exc.root)
   const loader = kit.haulTruck()
-  loader.root.position.copy(ground(PIT.x - 0.5, PIT.z + 0.55))
+  loader.root.position.copy(ground(PIT.x - 1.1, PIT.z + 0.9))
   loader.root.rotation.y = -0.35
-  loader.root.scale.setScalar(0.9)
+  loader.root.scale.setScalar(1.2)
   loader.load.visible = false
   group.add(loader.root)
   const trayAt = loader.root.position.clone().add(v(0.15, 0.6, 0))
@@ -263,7 +263,7 @@ export function buildMine() {
   // -- Haul fleet ---------------------------------------------------------------
   const trucks = Array.from({ length: 7 }, (_, i) => {
     const t = kit.haulTruck()
-    t.root.scale.setScalar(0.85)
+    t.root.scale.setScalar(1.15)
     group.add(t.root)
     const route = i < 5 ? oreRoute : wasteRoute
     return {
@@ -288,7 +288,7 @@ export function buildMine() {
   const rig = kit.drillRig()
   rig.root.position.copy(benchPoint(DRILL_THETA + 0.3, 1.45 * BW))
   rig.root.rotation.y = -DRILL_THETA + Math.PI / 2
-  rig.root.scale.setScalar(0.9)
+  rig.root.scale.setScalar(1.3)
   group.add(rig.root)
   const planning = benchPoint(DRILL_THETA - 0.05, 1.3 * BW)
   {
@@ -390,6 +390,7 @@ export function buildMine() {
     const office = new THREE.Group()
     office.position.copy(OF)
     office.rotation.y = 0.35
+    office.scale.setScalar(1.3)
     add(office, geo.box, mat.white, 0, 0.5, 0, 2.4, 1.0, 1.2)
     add(office, geo.box, mat.darkSteel, 0, 1.05, 0, 2.5, 0.1, 1.3)
     for (let k = 0; k < 4; k++) add(office, geo.box, mat.glass, -0.85 + k * 0.57, 0.55, 0.605, 0.38, 0.35, 0.01)
@@ -414,8 +415,9 @@ export function buildMine() {
     group.add(office)
     for (let k = 0; k < 3; k++) {
       const ute = new THREE.Group()
-      ute.position.copy(ground(OFFICE.x - 1.6 + k * 0.75, OFFICE.z + 1.7))
+      ute.position.copy(ground(OFFICE.x - 2.2 + k * 1.0, OFFICE.z + 2.3))
       ute.rotation.y = 0.35 + Math.PI / 2
+      ute.scale.setScalar(1.35)
       add(ute, geo.box, mat.white, 0, 0.17, 0, 0.6, 0.16, 0.3)
       add(ute, geo.box, mat.white, -0.08, 0.31, 0, 0.3, 0.14, 0.28)
       add(ute, geo.box, mat.glass, -0.08, 0.32, 0, 0.31, 0.09, 0.285)
@@ -443,10 +445,10 @@ export function buildMine() {
     group.add(g)
     for (let k = 0; k < 3; k++) {
       const parked = kit.haulTruck()
-      const at = WS.clone().add(v(-1.6 + k * 1.25, 0, 1.75).applyAxisAngle(v(0, 1, 0), -0.2))
+      const at = WS.clone().add(v(-1.9 + k * 1.55, 0, 2.0).applyAxisAngle(v(0, 1, 0), -0.2))
       parked.root.position.set(at.x, topHeight(at.x, at.z), at.z)
       parked.root.rotation.y = -0.2 + Math.PI / 2
-      parked.root.scale.setScalar(0.85)
+      parked.root.scale.setScalar(1.1)
       parked.load.visible = false
       group.add(parked.root)
     }
@@ -459,6 +461,7 @@ export function buildMine() {
     add(dozer, geo.box, mat.yellow, 0.05, 0.4, 0, 0.75, 0.3, 0.55)
     add(dozer, geo.box, mat.yellow, -0.15, 0.68, 0, 0.32, 0.3, 0.45)
     add(dozer, geo.box, mat.yellowDark, 0.6, 0.25, 0, 0.08, 0.38, 0.9)
+    dozer.scale.setScalar(1.4)
     group.add(dozer)
   }
 
@@ -479,6 +482,29 @@ export function buildMine() {
     d.grow = size
   }
 
+  // -- Build-in: on first view the site assembles itself, piece by piece -----
+  const buildables = group.children
+    .filter((c) => c.type === "Group")
+    .map((c) => ({ o: c, base: c.scale.x, d: Math.hypot(c.position.x - PIT.x, c.position.z - PIT.z) }))
+    .sort((p, q) => p.d - q.d)
+  const forests = group.children.filter((c) => (c as THREE.InstancedMesh).isInstancedMesh && (c as THREE.InstancedMesh).count > 500)
+  buildables.forEach((b) => b.o.scale.setScalar(0.0001))
+  forests.forEach((f) => (f.scale.y = 0.0001))
+  let buildStart = -1
+  const building = (t: number) => {
+    if (buildStart < 0) buildStart = t + 0.8
+    const e = t - buildStart
+    if (e > 9) return
+    buildables.forEach((b, i) => {
+      const k = THREE.MathUtils.clamp((e - i * 0.16) / 0.7, 0, 1)
+      // Overshoot slightly, then settle: each piece "drops" into place.
+      const s = k === 0 ? 0.0001 : 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2)
+      b.o.scale.setScalar(b.base * Math.max(0.0001, s))
+    })
+    const g = THREE.MathUtils.smoothstep(e, 0.2, 3.5)
+    forests.forEach((f) => (f.scale.y = Math.max(0.0001, g)))
+  }
+
   // -- Per-frame update -----------------------------------------------------------
   const tangent = new THREE.Vector3()
   const m4 = new THREE.Matrix4()
@@ -489,6 +515,7 @@ export function buildMine() {
   const ss = THREE.MathUtils.smoothstep
 
   const update = (t: number, dt: number) => {
+    building(t)
     for (const tr of trucks) {
       if (tr.wait > 0) {
         tr.wait -= dt
@@ -516,14 +543,14 @@ export function buildMine() {
       const p = tr.route.getPointAt(u)
       tr.route.getTangentAt(u, tangent)
       const fwd = tangent.clone().multiplyScalar(tr.dir)
-      const side = v(fwd.z, 0, -fwd.x).normalize().multiplyScalar(0.22)
+      const side = v(fwd.z, 0, -fwd.x).normalize().multiplyScalar(0.3)
       tr.root.position.copy(p).add(side)
       tr.root.position.y = topHeight(tr.root.position.x, tr.root.position.z) + 0.02
       tr.root.rotation.y = Math.atan2(-fwd.z, fwd.x) + Math.PI
       tr.root.rotation.z = -Math.asin(THREE.MathUtils.clamp(fwd.y, -1, 1))
       tr.tray.rotation.z = -tr.tip * 0.75
       tr.body.rotation.x = Math.sin(t * 6 + tr.u * 40) * 0.01 * Math.min(1, tr.speed)
-      for (const w of tr.wheels) w.rotation.z += (tr.speed * dt) / 0.22
+      for (const w of tr.wheels) w.rotation.z += (tr.speed * dt) / 0.3
       tr.dust -= dt
       if (tr.speed > 0.6 && tr.dust <= 0) {
         tr.dust = 0.22

@@ -35,13 +35,11 @@ body {
   background: linear-gradient(90deg, rgba(16, 44, 37, 0.8) 0%, rgba(16, 44, 37, 0.4) 26%, rgba(16, 44, 37, 0) 46%);
 }
 
+/* Phones use a solid bottom panel for text, so no gradient is needed. */
 @media (max-width: 639px) {
-  .scrim-light {
-    background: linear-gradient(0deg, rgba(246, 247, 243, 0.94) 0%, rgba(246, 247, 243, 0.75) 38%, rgba(246, 247, 243, 0) 62%);
-  }
-
+  .scrim-light,
   .scrim-dark {
-    background: linear-gradient(0deg, rgba(16, 44, 37, 0.94) 0%, rgba(16, 44, 37, 0.7) 38%, rgba(16, 44, 37, 0) 62%);
+    background: none;
   }
 }
 

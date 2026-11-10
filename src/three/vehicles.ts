@@ -92,6 +92,18 @@ export function createKit() {
       r.rotation.set(k, k * 2, 0)
     }
     add(load, geo.sphere, mat.ore, -0.55, 0.36, 0, 0.5, 0.18, 0.34)
+    // Access ladder and platform handrails beside the cab.
+    for (let k = 0; k < 4; k++) add(body, geo.box, mat.darkSteel, -0.78, 0.3 + k * 0.08, -0.34, 0.03, 0.012, 0.14)
+    for (const z of [-0.41, -0.27]) add(body, geo.box, mat.darkSteel, -0.78, 0.44, z, 0.02, 0.36, 0.012)
+    for (const x of [-0.74, -0.5]) add(body, geo.box, mat.black, x, 0.69, 0.41, 0.012, 0.16, 0.012)
+    // Mirrors, bumper, fuel tank, rear lights and mudflaps.
+    for (const z of [-0.44, 0.44]) add(body, geo.box, mat.black, -0.74, 0.86, z, 0.02, 0.1, 0.05)
+    add(body, geo.box, mat.darkSteel, -0.83, 0.3, 0, 0.06, 0.1, 0.86)
+    add(body, geo.cyl, mat.steel, -0.05, 0.3, 0.3, 0.09, 0.3, 0.09).rotation.z = Math.PI / 2
+    for (const z of [-0.3, 0.3]) add(body, geo.box, mat.red, 0.74, 0.4, z, 0.02, 0.05, 0.08)
+    for (const z of [-0.44, 0.44]) add(body, geo.box, mat.black, 0.72, 0.22, z, 0.02, 0.2, 0.2)
+    // Rock ejector bars between the dual rear wheels, and a cab roof beacon.
+    add(body, geo.box, mat.light, -0.6, 0.92, -0.24, 0.05, 0.035, 0.05)
     // Wheels: single front, dual rear.
     const wheels = [
       wheel(body, -0.55, 0.26, 0.42, 0.26, 0.11),
@@ -126,6 +138,13 @@ export function createKit() {
     add(house, geo.box, mat.glass, 0.495, 0.62, 0.3, 0.01, 0.34, 0.3)
     add(house, geo.box, mat.glass, 0.28, 0.62, 0.485, 0.36, 0.34, 0.01)
     add(house, geo.box, mat.light, 0.5, 0.86, 0.3, 0.03, 0.04, 0.2)
+    // Handrails, exhaust, air cleaner and cab roof lights.
+    for (const z of [-0.46, 0.1]) add(house, geo.box, mat.black, -0.35, 0.56, z, 0.7, 0.012, 0.012)
+    for (const x of [-0.7, -0.35, 0]) add(house, geo.box, mat.black, x, 0.51, -0.46, 0.012, 0.1, 0.012)
+    add(house, geo.cyl8, mat.darkSteel, -0.55, 0.62, -0.2, 0.03, 0.3, 0.03)
+    add(house, geo.cyl, mat.steel, -0.3, 0.52, -0.25, 0.06, 0.12, 0.06)
+    for (const z of [0.2, 0.4]) add(house, geo.box, mat.light, 0.47, 0.88, z, 0.03, 0.04, 0.06)
+    add(house, geo.box, mat.black, 0.28, 0.4, 0.49, 0.36, 0.02, 0.02) // cab step
     // Boom → stick → bucket.
     const boom = new THREE.Group()
     boom.position.set(0.35, 0.45, -0.12)

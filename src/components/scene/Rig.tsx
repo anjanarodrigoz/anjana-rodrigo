@@ -124,15 +124,22 @@ export function Rig() {
 
     const portrait = size.width / size.height < 0.8
     const zone = zoneAt(p.x, p.z)
-    const started = useWorld.getState().started
-    // Pull back for a wider view at the start and inside the pit.
+    const store0 = useWorld.getState()
     const inPit = pitCoords(p.x, p.z).d < 1
-    const dist = (started ? (inPit ? 10 : 7) : 11) * (portrait ? 1.25 : 1)
-    const pitch = started ? p.camPitch : 0.36
-    look.set(p.x, p.y + 1.5, p.z)
-    camPos.set(p.x + Math.sin(p.camYaw) * Math.cos(pitch) * dist, p.y + 1.5 + Math.sin(pitch) * dist, p.z + Math.cos(p.camYaw) * Math.cos(pitch) * dist)
+    // The opening has two looks: first the whole site from far back, then a
+    // slow push in to the character. Everywhere else is a medium shot.
+    let dist = inPit ? 12 : 8.5
+    let pitch = p.camPitch
+    if (zone === 0) {
+      dist = store0.sub === 0 ? 40 : 5.2
+      pitch = store0.sub === 0 ? 0.42 : 0.14
+    }
+    if (portrait) dist *= 1.25
+    look.set(p.x, p.y + 2.2, p.z)
+    camPos.set(p.x + Math.sin(p.camYaw) * Math.cos(pitch) * dist, p.y + 2.2 + Math.sin(pitch) * dist, p.z + Math.cos(p.camYaw) * Math.cos(pitch) * dist)
     camPos.y = Math.max(camPos.y, topHeight(camPos.x, camPos.z) + 0.8)
-    const k = first.current ? 1 : 1 - Math.pow(0.0015, dt)
+    // The opening push-in is deliberately slow; other moves are quicker.
+    const k = first.current ? 1 : 1 - Math.pow(zone === 0 ? 0.12 : 0.0015, dt)
     first.current = false
     camera.position.lerp(camPos, k)
     camera.lookAt(look)
@@ -144,6 +151,8 @@ export function Rig() {
     }
     // Wide screens: slide the scene right so the exhibit clears the text column.
     if (size.width / size.height > 1.25) cam.setViewOffset(size.width, size.height, -size.width * 0.15, 0, size.width, size.height)
+    // Phones: lift the scene into the space above the bottom text panel.
+    else if (portrait) cam.setViewOffset(size.width, size.height, 0, size.height * 0.2, size.width, size.height)
     else if (cam.view) cam.clearViewOffset()
 
     // Sun and its shadow follow the character.
@@ -163,7 +172,6 @@ export function Rig() {
       store.set({ active: zone, panel: null })
       if (zone > 0 && store.started) sound.arrive()
     }
-    if (!store.started && zone !== 0) store.set({ started: true })
   })
 
   return (

@@ -19,6 +19,8 @@ interface State {
   /** True once the visitor has moved: the welcome text steps aside. */
   started: boolean
   panel: Panel | null
+  /** Place whose title card is showing on arrival, or -1. */
+  titling: number
   /** Which item is on show in a place that presents one thing at a time. */
   sub: number
   set: (patch: Partial<State>) => void
@@ -30,6 +32,7 @@ export const useWorld = create<State>((set) => ({
   webgl: true,
   started: false,
   panel: null,
+  titling: -1,
   sub: 0,
   set: (patch) => set(patch),
 }))

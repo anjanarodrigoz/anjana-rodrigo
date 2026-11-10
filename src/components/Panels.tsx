@@ -110,7 +110,7 @@ export function Panels() {
     <aside
       data-ui
       aria-live="polite"
-      className="fixed bottom-36 left-4 right-4 z-40 max-h-[50vh] overflow-auto rounded-2xl border border-white/60 bg-paper/90 p-5 text-sm text-charcoal/80 shadow-2xl backdrop-blur-md sm:bottom-auto sm:left-auto sm:right-36 sm:top-24 sm:w-[340px]"
+      className="fixed bottom-4 left-4 right-4 z-40 max-h-[60vh] overflow-auto rounded-2xl border border-white/60 bg-paper/90 p-5 text-sm text-charcoal/80 shadow-2xl backdrop-blur-md sm:bottom-auto sm:left-auto sm:right-8 sm:top-24 sm:w-[340px]"
     >
       <button type="button" onClick={() => set({ panel: null })} className="absolute right-3 top-3 rounded-full p-1.5 text-charcoal/60 hover:bg-forest/10" aria-label="Close">
         <X className="h-4 w-4" />

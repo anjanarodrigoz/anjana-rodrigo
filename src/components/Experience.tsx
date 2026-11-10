@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MessageCircle, Phone, Volume2, VolumeX } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Code2, Cpu, Github, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
@@ -16,33 +16,40 @@ const Scene = dynamic(() => import("./scene/Scene"), { ssr: false })
 
 /** Text for one place. In the 3D world it shows while the character stands there. */
 function Block({ index, children, wide }: { index: number; children: ReactNode; wide?: boolean }) {
-  const here = useWorld((s) => s.active === index && (index !== 0 || !s.started))
+  const here = useWorld((s) => s.active === index && s.titling !== index)
   const webgl = useWorld((s) => s.webgl)
   return (
     <section id={sections[index].id} aria-label={sections[index].nav} className={webgl ? "" : "border-b border-forest/10 px-6 py-16"}>
       <div
         data-ui
         className={[
+          // Phones: a white panel docked at the bottom. Desktop: a text column on the left.
           webgl
-            ? "fixed left-4 right-4 top-16 z-20 max-h-[46vh] overflow-auto transition-all duration-500 sm:left-10 sm:right-auto sm:top-1/2 sm:max-h-none sm:-translate-y-1/2 sm:overflow-visible"
+            ? "fixed inset-x-0 bottom-0 z-20 max-h-[54vh] overflow-hidden rounded-t-3xl bg-paper/95 px-5 pb-7 pt-3 shadow-[0_-14px_40px_-14px_rgba(16,44,37,0.4)] backdrop-blur transition-all duration-500 sm:inset-x-auto sm:bottom-auto sm:left-10 sm:top-1/2 sm:max-h-none sm:-translate-y-1/2 sm:overflow-visible sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"
             : "mx-auto",
           wide ? "sm:max-w-[540px]" : "sm:max-w-[420px]",
-          webgl && !here ? "pointer-events-none translate-y-3 opacity-0" : "opacity-100",
+          webgl && !here ? "pointer-events-none translate-y-8 opacity-0" : "opacity-100",
           "text-charcoal",
         ].join(" ")}
         aria-hidden={webgl && !here}
       >
+        {webgl ? (
+          <p className="mb-3 text-center text-[10px] font-medium uppercase tracking-widest text-forest/50 sm:hidden">
+            <span className="mx-auto mb-1.5 block h-1 w-10 rounded-full bg-forest/20" />
+            Swipe up to continue
+          </p>
+        ) : null}
         {children}
       </div>
     </section>
   )
 }
 
-const Kicker = ({ children }: { children: ReactNode }) => <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-forest/70">{children}</p>
-const Lead = ({ children }: { children: ReactNode }) => <p className="mt-4 text-[15px] leading-relaxed opacity-80">{children}</p>
-const Meta = ({ items }: { items: string[] }) => <p className="mt-4 text-xs leading-relaxed opacity-70">{items.join(" | ")}</p>
+const Kicker = ({ children }: { children: ReactNode }) => <p className="mb-1.5 text-[11px] sm:mb-3 font-semibold uppercase tracking-[0.18em] text-forest/70">{children}</p>
+const Lead = ({ children }: { children: ReactNode }) => <p className="mt-2 text-sm leading-relaxed opacity-80 sm:mt-4 sm:text-[15px]">{children}</p>
+const Meta = ({ items }: { items: string[] }) => <p className="mt-4 hidden text-xs leading-relaxed opacity-70 sm:block">{items.join(" | ")}</p>
 const Hint = ({ children }: { children: ReactNode }) => (
-  <p className="mt-5 inline-flex items-center gap-2 text-xs font-medium opacity-80">
+  <p className="mt-3 inline-flex items-center gap-2 text-xs font-medium opacity-80 sm:mt-5">
     <span className="relative flex h-2.5 w-2.5">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sage opacity-70" />
       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-sage" />
@@ -54,6 +61,16 @@ const pill = "inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font
 const solid = `${pill} bg-forest text-paper hover:bg-deep`
 const ghost = `${pill} border border-forest/25 bg-white/50 backdrop-blur hover:bg-white/80`
 const Key = ({ children }: { children: ReactNode }) => <kbd className="rounded-md border border-forest/20 bg-white/70 px-1.5 py-0.5 font-sans text-[11px] font-semibold">{children}</kbd>
+
+/** An icon for each kind of workplace, used beside roles. */
+const ROLE_ICON: Record<string, LucideIcon> = { studio: Smartphone, university: GraduationCap, office: Briefcase, mine: Hammer, tower: Cpu }
+
+/** A round icon badge. */
+const Badge = ({ icon: Icon, active = true, small }: { icon: LucideIcon; active?: boolean; small?: boolean }) => (
+  <span className={`grid shrink-0 place-items-center rounded-full transition ${small ? "h-9 w-9" : "h-14 w-14"} ${active ? "bg-forest text-paper shadow-lg" : "bg-white/70 text-forest/60"}`}>
+    <Icon className={small ? "h-4 w-4" : "h-6 w-6"} />
+  </span>
+)
 
 /** Previous / Next and progress dots for a place that shows one thing at a time. */
 function Stepper({ count, index }: { count: number; index: number }) {
@@ -92,7 +109,7 @@ function step(dir: 1 | -1) {
 
 export default function Experience() {
   const root = useRef<HTMLDivElement>(null)
-  const { active, ready, webgl, started, sub, panel, set } = useWorld()
+  const { active, ready, webgl, sub, panel, set } = useWorld()
   const [mute, setMute] = useState(false)
 
   // Sound: unlock on the first gesture, click on every button, chime on panels.
@@ -111,6 +128,15 @@ export default function Experience() {
   useEffect(() => {
     if (panel) sound.open()
   }, [panel])
+
+  // Arriving at a place: show its name first, then reveal the content.
+  const titling = useWorld((s) => s.titling)
+  useEffect(() => {
+    if (active <= 0) return
+    set({ titling: active })
+    const id = window.setTimeout(() => set({ titling: -1 }), 1900)
+    return () => window.clearTimeout(id)
+  }, [active, set])
 
   useEffect(() => {
     // No WebGL (or ?lite): fall back to a plain, fully readable page.
@@ -151,7 +177,8 @@ export default function Experience() {
     let touch: { x: number; y: number } | null = null
     const touchStart = (e: TouchEvent) => {
       const t = e.touches[0]
-      touch = (e.target as HTMLElement).closest?.("[data-ui]") ? null : { x: t.clientX, y: t.clientY }
+      // Swipes work anywhere, including on the text panel, but not on controls.
+      touch = (e.target as HTMLElement).closest?.("aside, button, a") ? null : { x: t.clientX, y: t.clientY }
     }
     const touchEnd = (e: TouchEvent) => {
       if (!touch) return
@@ -178,7 +205,7 @@ export default function Experience() {
   const role = experience[at(experience.length)]
   const project = software[at(software.length)]
   const stepInfo = research.steps[at(research.steps.length)]
-  const reading = active > 0 || (active === 0 && !started)
+  const reading = active >= 0 && titling !== active
 
   return (
     <div ref={root} id="world-root" className={webgl ? "fixed inset-0 select-none overflow-hidden" : "bg-paper"}>
@@ -193,6 +220,15 @@ export default function Experience() {
             </div>
           </div>
         </>
+      ) : null}
+
+      {webgl ? (
+        <div aria-hidden="true" className={`pointer-events-none fixed inset-0 z-20 grid place-items-center px-6 transition-all duration-500 ${titling > 0 && titling === active ? "opacity-100" : "scale-95 opacity-0"}`}>
+          <div className="rounded-3xl bg-deep/85 px-8 py-6 text-center text-paper shadow-2xl backdrop-blur sm:px-14 sm:py-9">
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-sage sm:text-sm">Now let&apos;s look at</p>
+            <p className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-7xl">{sections[Math.max(0, titling)]?.nav}</p>
+          </div>
+        </div>
       ) : null}
 
       <header data-ui className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 sm:px-10">
@@ -220,31 +256,14 @@ export default function Experience() {
         </div>
       </header>
 
-      {webgl ? (
-        <nav data-ui aria-label="Fast travel" className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-end gap-1.5 sm:right-5">
-          {sections.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => travelTo(i)}
-              aria-current={active === i ? "location" : undefined}
-              className={`group flex items-center gap-2 rounded-full py-1 pl-3 pr-1 text-[11px] font-semibold transition ${active === i ? "bg-forest text-paper" : "bg-white/55 text-charcoal backdrop-blur hover:bg-white/90"}`}
-            >
-              <span className="hidden sm:inline">{s.nav}</span>
-              <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] ${active === i ? "bg-paper text-forest" : "bg-forest/10"}`}>{i + 1}</span>
-            </button>
-          ))}
-        </nav>
-      ) : null}
-
       <main>
         <Block index={0} wide>
-          <h1 className="font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-6xl">Hi, I&apos;m {profile.name}.</h1>
-          <p className="mt-4 font-display text-xl font-medium text-forest sm:text-2xl">{profile.tagline}</p>
+          <h1 className="font-display text-3xl font-semibold leading-[1.02] tracking-tight sm:text-6xl">Hi, I&apos;m {profile.name}.</h1>
+          <p className="mt-2 font-display text-lg font-medium text-forest sm:mt-4 sm:text-2xl">{profile.tagline}</p>
           <p className="mt-3 text-sm font-medium opacity-75">{profile.roles}</p>
-          <Lead>{profile.intro}</Lead>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button type="button" className={solid} onClick={() => travelTo(1)}>
+          <p className="mt-2 line-clamp-3 text-sm leading-relaxed opacity-80 sm:mt-4 sm:line-clamp-none sm:text-[15px]">{profile.intro}</p>
+          <div className="mt-4 flex flex-wrap gap-3 sm:mt-7">
+            <button type="button" className={solid} onClick={() => step(1)}>
               Explore My World <ArrowDown className="h-4 w-4" />
             </button>
             <button type="button" className={ghost} onClick={() => travelTo(2)}>
@@ -255,7 +274,7 @@ export default function Experience() {
 
         <Block index={1}>
           <Kicker>Founder</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">MineBook</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">MineBook</h2>
           <Lead>{minebook.line}</Lead>
           <Meta items={minebook.manages} />
           {webgl ? <Hint>Select the haul truck, the site office or the staked bench in the pit.</Hint> : null}
@@ -270,7 +289,7 @@ export default function Experience() {
           <Kicker>Projects | {String(software.indexOf(project) + 1).padStart(2, "0")} of {String(software.length).padStart(2, "0")}</Kicker>
           {webgl ? (
             <div aria-live="polite" className="min-h-[150px]">
-              <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{project.title}</h2>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">{project.title}</h2>
               <p className="mt-2 text-sm font-medium text-forest">{project.meta}</p>
               <Lead>{project.line}</Lead>
               {project.url ? (
@@ -305,11 +324,26 @@ export default function Experience() {
         <Block index={3}>
           <Kicker>Career | {String(experience.indexOf(role) + 1).padStart(2, "0")} of {String(experience.length).padStart(2, "0")}</Kicker>
           {webgl ? (
-            <div className="min-h-[150px]" aria-live="polite">
-              <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{role.role}</h2>
-              <p className="mt-2 text-sm font-medium text-forest">
-                {role.org} | {role.period}
-              </p>
+            <div className="min-h-[190px]" aria-live="polite">
+              {/* The career at a glance: one icon per role, the current one lit */}
+              <ol className="mb-5 flex items-center gap-1.5">
+                {experience.map((r, i) => (
+                  <li key={r.id} className="flex items-center gap-1.5">
+                    <button type="button" aria-label={`${r.role}, ${r.org}`} onClick={() => set({ sub: i })}>
+                      <Badge icon={ROLE_ICON[r.place]} active={r.id === role.id} small />
+                    </button>
+                    {i < experience.length - 1 ? <span className="h-px w-4 bg-forest/30" /> : null}
+                  </li>
+                ))}
+              </ol>
+              <div className="flex items-start gap-4">
+                <Badge icon={ROLE_ICON[role.place]} />
+                <div>
+                  <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{role.role}</h2>
+                  <p className="mt-1 text-sm font-semibold text-forest">{role.org}</p>
+                  <p className="mt-1 inline-block rounded-full bg-forest/10 px-2.5 py-0.5 text-xs font-medium text-forest">{role.period}</p>
+                </div>
+              </div>
               <Lead>{role.line}</Lead>
             </div>
           ) : (
@@ -340,7 +374,7 @@ export default function Experience() {
           <Kicker>Published research | Step {research.steps.indexOf(stepInfo) + 1} of {research.steps.length}</Kicker>
           {webgl ? (
             <div className="min-h-[150px]" aria-live="polite">
-              <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{stepInfo.title}</h2>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">{stepInfo.title}</h2>
               <Lead>{stepInfo.line}</Lead>
             </div>
           ) : (
@@ -372,18 +406,49 @@ export default function Experience() {
 
         <Block index={5}>
           <Kicker>About</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">An engineer who builds.</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">An engineer who builds.</h2>
           <Lead>{about.line}</Lead>
-          <ul className="mt-5 space-y-1.5 text-xs opacity-75">
-            {about.credentials.map((c) => (
-              <li key={c}>{c}</li>
-            ))}
+          {/* What I am, as three icons */}
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {[
+              [Hammer, "Mining engineer"],
+              [Code2, "Software engineer"],
+              [Cpu, "AI experiments"],
+            ].map(([Icon, label]) => {
+              const I = Icon as LucideIcon
+              return (
+                <li key={label as string} className="inline-flex items-center gap-2 rounded-full bg-white/70 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-charcoal backdrop-blur">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-forest text-paper">
+                    <I className="h-3.5 w-3.5" />
+                  </span>
+                  {label as string}
+                </li>
+              )
+            })}
+          </ul>
+          {/* Credentials, each with its own icon */}
+          <ul className="mt-5 space-y-2.5">
+            {about.credentials.map((c, i) => {
+              const [title, ...rest] = c.split(" | ")
+              const Icon = [GraduationCap, BadgeCheck, Award][i] ?? Award
+              return (
+                <li key={c} className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-forest/10 text-forest">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold leading-tight">{title}</span>
+                    <span className="block text-xs opacity-70">{rest.join(" | ")}</span>
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         </Block>
 
         <Block index={6}>
           <Kicker>Contact</Kicker>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Let&apos;s build something useful.</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-5xl">Let&apos;s build something useful.</h2>
           <div className="mt-6 flex flex-wrap gap-3">
             <a className={solid} href={profile.whatsapp} target="_blank" rel="noreferrer">
               <MessageCircle className="h-4 w-4" /> WhatsApp
@@ -418,11 +483,10 @@ export default function Experience() {
         <>
           <p
             data-ui
-            className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:fine)]:flex ${started && active > 0 ? "opacity-0" : "opacity-100"}`}
+            className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:fine)]:sm:flex ${active > 0 ? "opacity-0" : "opacity-100"}`}
           >
-            Scroll or press <Key>↓</Key> for the next place | drag to look around | <Key>1</Key>-<Key>7</Key> jump to a place
+            Scroll or press <Key>↓</Key> to continue | drag to look around
           </p>
-          <p className={`pointer-events-none fixed bottom-6 left-1/2 z-20 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-white/60 px-4 py-2 text-[11px] font-medium text-charcoal backdrop-blur transition-opacity [@media(pointer:coarse)]:block ${started && active > 0 ? "opacity-0" : "opacity-100"}`}>Swipe up for the next place | drag sideways to look</p>
         </>
       ) : null}
       <Panels />

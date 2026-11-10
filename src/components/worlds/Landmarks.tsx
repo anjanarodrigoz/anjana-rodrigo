@@ -11,7 +11,7 @@ import { SITES, topHeight } from "@/three/terrain"
 
 /**
  * Wayfinding for the open world: a soft light beam and a name sign over
- * every place, a bench at the About lookout and the office at Contact.
+ * every place, the About site and the Contact office.
  */
 
 function Beacon({ index }: { index: number }) {
@@ -257,16 +257,155 @@ function Office() {
   )
 }
 
-export default function Landmarks() {
+/**
+ * About: objects that stand for who he is. A graduation cap on a plinth (the
+ * degree), a desk with a laptop and a hard hat (engineer and developer), two
+ * membership plaques, a bench and a flag.
+ */
+function AboutSite() {
   const a = SITES.about
+  const y = useMemo(() => topHeight(a.x, a.z), [a])
+  const cap = useRef<THREE.Group>(null!)
+  const plaque = (title: string, sub: string) =>
+    canvasTexture(512, 320, (g) => {
+      g.fillStyle = "#183F35"
+      g.fillRect(0, 0, 512, 320)
+      g.strokeStyle = "#8DAA91"
+      g.lineWidth = 6
+      g.strokeRect(18, 18, 476, 284)
+      g.fillStyle = "#F6F7F3"
+      g.textAlign = "center"
+      g.textBaseline = "middle"
+      g.font = "700 76px 'Space Grotesk', system-ui, sans-serif"
+      g.fillText(title, 256, 130)
+      g.font = "500 30px Inter, system-ui, sans-serif"
+      g.fillStyle = "#cfe0d2"
+      g.fillText(sub, 256, 215)
+    })
+  const iesl = useMemo(() => plaque("IESL", "Associate Member"), [])
+  const ea = useMemo(() => plaque("EA", "Engineers Australia"), [])
+  const code = useMemo(
+    () =>
+      canvasTexture(256, 160, (g) => {
+        g.fillStyle = "#102C25"
+        g.fillRect(0, 0, 256, 160)
+        ;["#8DAA91", "#F6F7F3", "#e0c070", "#8DAA91", "#F6F7F3"].forEach((c, i) => {
+          g.fillStyle = c
+          g.fillRect(16 + (i % 3) * 14, 22 + i * 24, 90 + ((i * 53) % 110), 9)
+        })
+      }),
+    [],
+  )
+  useFrame((state) => {
+    cap.current.rotation.y = state.clock.elapsedTime * 0.5
+    cap.current.position.y = 1.55 + Math.sin(state.clock.elapsedTime * 1.2) * 0.05
+  })
   const wood = <meshStandardMaterial color="#8a6a4a" roughness={0.8} />
   const steel = <meshStandardMaterial color="#3b4048" roughness={0.5} metalness={0.5} />
+  const stone = <meshStandardMaterial color="#f1efe8" roughness={0.7} />
+  const black = <meshStandardMaterial color="#1b1f1d" roughness={0.5} />
   return (
-    <group>
-      {sections.map((s, i) => (i === 0 ? null : <Beacon key={s.id} index={i} />))}
+    <group position={[a.x, y, a.z]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} receiveShadow>
+        <circleGeometry args={[4.6, 48]} />
+        <meshStandardMaterial color="#e9eadf" roughness={0.9} />
+      </mesh>
 
-      {/* About: a bench and a flag at the pit lookout */}
-      <group position={[a.x, topHeight(a.x, a.z), a.z]} rotation={[0, 0.6, 0]}>
+      {/* Degree: a graduation cap turning on a plinth */}
+      <group position={[-1.2, 0, -0.6]}>
+        <mesh position={[0, 0.5, 0]} castShadow>
+          <cylinderGeometry args={[0.55, 0.62, 1, 28]} />
+          {stone}
+        </mesh>
+        <group ref={cap} position={[0, 1.55, 0]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.3, 0.33, 0.24, 24]} />
+            {black}
+          </mesh>
+          <mesh position={[0, 0.15, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+            <boxGeometry args={[0.95, 0.04, 0.95]} />
+            {black}
+          </mesh>
+          <mesh position={[0, 0.18, 0]}>
+            <sphereGeometry args={[0.04, 10, 8]} />
+            <meshStandardMaterial color="#e0c070" roughness={0.4} metalness={0.5} />
+          </mesh>
+          <mesh position={[0.4, 0.0, 0.4]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.36, 6]} />
+            <meshStandardMaterial color="#e0c070" roughness={0.4} />
+          </mesh>
+          <mesh position={[0.4, -0.2, 0.4]}>
+            <coneGeometry args={[0.04, 0.12, 8]} />
+            <meshStandardMaterial color="#e0c070" roughness={0.4} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* Engineer and developer: a desk with a laptop, a hard hat and a rock sample */}
+      <group position={[0.9, 0, -1.5]} rotation={[0, -0.25, 0]}>
+        <mesh position={[0, 0.78, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.8, 0.07, 0.85]} />
+          {wood}
+        </mesh>
+        {[[-0.8, -0.35], [0.8, -0.35], [-0.8, 0.35], [0.8, 0.35]].map(([x, z], i) => (
+          <mesh key={i} position={[x, 0.39, z]}>
+            <boxGeometry args={[0.06, 0.78, 0.06]} />
+            {steel}
+          </mesh>
+        ))}
+        <mesh position={[-0.35, 0.83, 0.05]} castShadow>
+          <boxGeometry args={[0.6, 0.025, 0.4]} />
+          {steel}
+        </mesh>
+        <group position={[-0.35, 0.84, -0.15]} rotation={[-0.3, 0, 0]}>
+          <mesh position={[0, 0.2, 0]} castShadow>
+            <boxGeometry args={[0.6, 0.4, 0.02]} />
+            {steel}
+          </mesh>
+          <mesh position={[0, 0.2, 0.011]}>
+            <planeGeometry args={[0.55, 0.35]} />
+            <meshBasicMaterial map={code} toneMapped={false} />
+          </mesh>
+        </group>
+        <group position={[0.45, 0.815, 0.05]}>
+          <mesh scale={[1, 0.72, 1.04]} castShadow>
+            <sphereGeometry args={[0.2, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            <meshStandardMaterial color="#f2c200" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 0.005, 0.04]} scale={[1.08, 0.05, 1.22]}>
+            <cylinderGeometry args={[0.2, 0.2, 1, 20]} />
+            <meshStandardMaterial color="#f2c200" roughness={0.3} />
+          </mesh>
+        </group>
+        <mesh position={[0.05, 0.87, 0.25]} rotation={[0.4, 0.8, 0]} castShadow>
+          <dodecahedronGeometry args={[0.09, 0]} />
+          <meshStandardMaterial color="#8c8378" roughness={1} flatShading />
+        </mesh>
+      </group>
+
+      {/* Memberships: two plaques on posts */}
+      {[
+        [-3.1, 0.6, iesl, 0.5],
+        [3.2, -0.2, ea, -0.5],
+      ].map(([x, z, tex, r], i) => (
+        <group key={i} position={[x as number, 0, z as number]} rotation={[0, r as number, 0]}>
+          <mesh position={[0, 0.7, 0]}>
+            <cylinderGeometry args={[0.04, 0.05, 1.4, 10]} />
+            {steel}
+          </mesh>
+          <mesh position={[0, 1.6, 0]} castShadow>
+            <boxGeometry args={[1.2, 0.78, 0.06]} />
+            {steel}
+          </mesh>
+          <mesh position={[0, 1.6, 0.032]}>
+            <planeGeometry args={[1.12, 0.7]} />
+            <meshBasicMaterial map={tex as THREE.Texture} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* A bench and a flag */}
+      <group position={[-2.6, 0, 2.2]} rotation={[0, 0.9, 0]}>
         <mesh position={[0, 0.45, 0]} castShadow>
           <boxGeometry args={[1.8, 0.08, 0.5]} />
           {wood}
@@ -276,21 +415,30 @@ export default function Landmarks() {
           {wood}
         </mesh>
         {[-0.75, 0.75].map((x) => (
-          <mesh key={x} position={[x, 0.22, 0]} castShadow>
+          <mesh key={x} position={[x, 0.22, 0]}>
             <boxGeometry args={[0.08, 0.45, 0.45]} />
             {steel}
           </mesh>
         ))}
-        <mesh position={[-1.6, 1.6, -0.4]} castShadow>
-          <cylinderGeometry args={[0.03, 0.03, 3.2, 8]} />
-          {steel}
-        </mesh>
-        <mesh position={[-1.22, 2.9, -0.4]}>
-          <boxGeometry args={[0.75, 0.45, 0.02]} />
-          <meshStandardMaterial color="#183F35" roughness={0.7} />
-        </mesh>
       </group>
+      <mesh position={[3.4, 1.9, -2.6]} castShadow>
+        <cylinderGeometry args={[0.035, 0.035, 3.8, 8]} />
+        {steel}
+      </mesh>
+      <mesh position={[3.85, 3.45, -2.6]}>
+        <boxGeometry args={[0.9, 0.55, 0.02]} />
+        <meshStandardMaterial color="#183F35" roughness={0.7} />
+      </mesh>
+    </group>
+  )
+}
 
+export default function Landmarks() {
+  return (
+    <group>
+      {sections.map((s, i) => (i === 0 ? null : <Beacon key={s.id} index={i} />))}
+
+      <AboutSite />
       <Office />
     </group>
   )
