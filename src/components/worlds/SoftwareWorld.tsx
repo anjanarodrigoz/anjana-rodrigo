@@ -217,19 +217,107 @@ function BlastExhibit({ n }: { n: number }) {
   )
 }
 
-/** Melbourne Mover: a removal van between two homes. Select to dispatch a job. */
+const MOVER_STEPS = ["1 | Booking taken", "2 | Driver assigned, SMS sent", "3 | Driver opens the job", "4 | Job started in the app", "5 | Company tracks it live", "6 | Invoice emailed"]
+const MOVER_PHONE = [
+  ["New booking", "Pickup: Home A", "Drop: Home B"],
+  ["SMS", "New job assigned", "Open the driver app"],
+  ["Job details", "Pickup: Home A", "Drop: Home B"],
+  ["Job started", "Start time saved", "Add job data"],
+  ["On the way", "Location shared", "Timer running"],
+  ["Job done", "Invoice emailed", "Hours to salary"],
+]
+
+/**
+ * Melbourne Mover: the whole job, played as a loop. A booking reaches the
+ * office, a driver is assigned by SMS, opens the job on the driver app,
+ * starts it, is tracked live, and the customer is emailed the invoice.
+ * Select to jump to the next step.
+ */
 function MoverExhibit({ n }: { n: number }) {
   const van = useRef<THREE.Group>(null!)
   const pin = useRef<THREE.Mesh>(null!)
-  const pos = useRef(0)
+  const msg = useRef<THREE.Mesh>(null!)
+  const clock = useRef(0)
+  const lastN = useRef(n)
+  const [stage, setStage] = useState(0)
+  const stageRef = useRef(0)
+  const screens = useMemo(
+    () =>
+      MOVER_PHONE.map(([head, a, b], k) =>
+        canvasTexture(256, 420, (g) => {
+          g.fillStyle = "#F6F7F3"
+          g.fillRect(0, 0, 256, 420)
+          g.fillStyle = "#183F35"
+          g.fillRect(0, 0, 256, 84)
+          g.fillStyle = "#F6F7F3"
+          g.font = "600 30px 'Space Grotesk', system-ui, sans-serif"
+          g.fillText(head, 18, 54)
+          g.fillStyle = "#202824"
+          g.font = "500 23px Inter, system-ui, sans-serif"
+          g.fillText(a, 18, 140)
+          g.fillText(b, 18, 184)
+          // progress dots
+          for (let d = 0; d < 6; d++) {
+            g.fillStyle = d <= k ? "#183F35" : "rgba(24,63,53,.2)"
+            g.beginPath()
+            g.arc(38 + d * 36, 260, 9, 0, Math.PI * 2)
+            g.fill()
+          }
+          g.fillStyle = "#8DAA91"
+          g.fillRect(18, 320, 220, 60)
+          g.fillStyle = "#102C25"
+          g.font = "600 24px Inter, system-ui, sans-serif"
+          g.fillText(k === 2 ? "Start job" : k === 4 ? "Finish job" : "OK", 96 - (k === 2 || k === 4 ? 28 : 0), 359)
+        }),
+      ),
+    [],
+  )
+  const captions = useMemo(
+    () =>
+      MOVER_STEPS.map((text) =>
+        canvasTexture(640, 96, (g) => {
+          g.fillStyle = "#102C25"
+          g.beginPath()
+          g.roundRect(0, 0, 640, 96, 28)
+          g.fill()
+          g.fillStyle = "#F6F7F3"
+          g.font = "600 40px 'Space Grotesk', system-ui, sans-serif"
+          g.textAlign = "center"
+          g.fillText(text, 320, 62)
+        }),
+      ),
+    [],
+  )
+  const vanX = useRef(0)
   useFrame((state, dt) => {
-    // Each job sends the van to the other house; a pin tracks it live.
-    const target = n % 2
-    pos.current += (target - pos.current) * Math.min(1, dt * 1.6)
-    const x = -0.62 + pos.current * 1.24
-    van.current.position.x = x
-    van.current.rotation.y = target ? 0 : Math.PI
-    pin.current.position.set(x, 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.04, 0.15)
+    // A click skips to the next step; otherwise the story plays on its own.
+    if (n !== lastN.current) {
+      lastN.current = n
+      clock.current = (Math.floor(clock.current / 3.2) + 1) * 3.2
+    }
+    clock.current += dt
+    const st = Math.floor(clock.current / 3.2) % 6
+    const u = (clock.current % 3.2) / 3.2
+    if (st !== stageRef.current) {
+      stageRef.current = st
+      setStage(st)
+    }
+    // The van waits at the office, drives to the pickup, then to the drop.
+    const goal = st < 3 ? 0 : st === 3 ? -0.62 : 0.62
+    vanX.current += (goal - vanX.current) * Math.min(1, dt * 1.4)
+    van.current.position.x = vanX.current
+    van.current.rotation.y = goal < vanX.current - 0.01 ? Math.PI : 0
+    pin.current.visible = st === 4
+    pin.current.position.set(vanX.current, 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.04, 0.15)
+    // Messages fly out of the office: the SMS to the phone, the invoice to the customer.
+    const flying = (st === 1 || st === 5) && u < 0.6
+    msg.current.visible = flying
+    if (flying) {
+      const k = u / 0.6
+      const to = st === 1 ? [-0.7, 0.5, 0.6] : [0.62, 0.5, -0.45]
+      msg.current.position.set(THREE.MathUtils.lerp(0, to[0], k), 0.6 + Math.sin(k * Math.PI) * 0.35 + (to[1] - 0.6) * k, THREE.MathUtils.lerp(-0.6, to[2], k))
+      msg.current.rotation.y = state.clock.elapsedTime * 3
+    }
   })
   const house = (x: number, roof: string) => (
     <group position={[x, 0, -0.45]}>
@@ -255,6 +343,21 @@ function MoverExhibit({ n }: { n: number }) {
       </mesh>
       {house(-0.62, "#7c4a3a")}
       {house(0.62, "#3d5a4c")}
+      {/* The company office, where bookings are taken and jobs assigned */}
+      <group position={[0, 0, -0.62]}>
+        <mesh position={[0, 0.26, 0]} castShadow>
+          <boxGeometry args={[0.46, 0.52, 0.34]} />
+          <meshStandardMaterial color="#183F35" roughness={0.7} />
+        </mesh>
+        {[0.14, 0.34].map((y) =>
+          [-0.12, 0.12].map((x) => (
+            <mesh key={`${x}${y}`} position={[x, y, 0.172]}>
+              <planeGeometry args={[0.14, 0.1]} />
+              <meshStandardMaterial color={stage === 0 || stage === 1 || stage === 5 ? "#ffe9a8" : "#cfe0d6"} emissive={stage === 0 || stage === 1 || stage === 5 ? "#ffd36b" : "#000000"} emissiveIntensity={0.6} />
+            </mesh>
+          )),
+        )}
+      </group>
       <group ref={van} position={[0, 0, 0.15]}>
         <mesh position={[-0.03, 0.14, 0]} castShadow>
           <boxGeometry args={[0.26, 0.2, 0.16]} />
@@ -274,6 +377,27 @@ function MoverExhibit({ n }: { n: number }) {
       <mesh ref={pin} rotation={[Math.PI, 0, 0]}>
         <coneGeometry args={[0.06, 0.16, 12]} />
         <meshStandardMaterial color="#b5483f" roughness={0.5} />
+      </mesh>
+      {/* The SMS or the invoice email on its way */}
+      <mesh ref={msg} visible={false}>
+        <boxGeometry args={[0.16, 0.11, 0.02]} />
+        <meshStandardMaterial color="#F6F7F3" emissive="#F6F7F3" emissiveIntensity={0.4} />
+      </mesh>
+      {/* The driver's phone */}
+      <group position={[-0.7, 0.3, 0.6]} rotation={[-0.3, 0.35, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.3, 0.5, 0.03]} />
+          {dark}
+        </mesh>
+        <mesh position={[0, 0, 0.016]}>
+          <planeGeometry args={[0.27, 0.45]} />
+          <meshBasicMaterial map={screens[stage]} toneMapped={false} />
+        </mesh>
+      </group>
+      {/* What is happening right now */}
+      <mesh position={[0, 0.98, -0.2]}>
+        <planeGeometry args={[1.5, 0.225]} />
+        <meshBasicMaterial map={captions[stage]} transparent toneMapped={false} />
       </mesh>
     </>
   )

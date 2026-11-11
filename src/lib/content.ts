@@ -42,10 +42,10 @@ export type SoftwareProject = {
 export const software: SoftwareProject[] = [
   {
     id: "melbourne-mover",
-    action: "Select it to dispatch a job",
+    action: "Select it to skip to the next step of a job",
     title: "Melbourne Mover",
-    meta: "Android | 2020 - 2024",
-    line: "The first Android app I built: a moving company takes bookings, assigns drivers and tracks every job.",
+    meta: "Native Android | Firebase | MVVM | GetX",
+    line: "The first Android apps I built: two native apps where a moving company takes bookings, assigns drivers and tracks every job. 2020 - 2024.",
     device: "mobile",
     who: "The Melbourne Mover office and its drivers",
     does: [
