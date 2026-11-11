@@ -172,7 +172,7 @@ export type Role = {
   line: string
   /** Specific things done in the role, shown as short points. */
   points?: string[]
-  place: "studio" | "university" | "office" | "mine" | "tower"
+  place: "studio" | "tunnel" | "university" | "office" | "mine" | "tower"
 }
 
 /** Oldest first, so the path through the experience world runs forward in time. */
@@ -184,6 +184,20 @@ export const experience: Role[] = [
     period: "2020 - 2024",
     line: "Built the booking system and driver app: job assignment by SMS, live driver tracking, salaries, and emailed invoices.",
     place: "studio",
+  },
+  {
+    id: "cscec",
+    role: "Trainee Mining Engineer",
+    org: "China State Construction (CSCEC) | MWSIP",
+    period: "Feb - Aug 2022",
+    line: "Six-month internship on the canal projects of the Mahaweli Water Security Investment Program.",
+    points: [
+      "Worked on the North Western Province Canal Project (NWPCP) and the North Central Province (NCP) canal project",
+      "Tunnel construction with a tunnel boring machine (TBM)",
+      "Setting-out surveys",
+      "Canal construction",
+    ],
+    place: "tunnel",
   },
   {
     id: "uom",

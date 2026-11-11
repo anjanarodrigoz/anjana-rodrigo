@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Check, Code2, Cpu, Github, Globe, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Monitor, Phone, Hammer, Smartphone, Volume2, VolumeX } from "lucide-react"
+import { ArrowDown, ArrowUpRight, Award, BadgeCheck, Briefcase, Check, Code2, Cpu, Github, Globe, GraduationCap, Linkedin, type LucideIcon, Mail, MessageCircle, Monitor, Phone, Hammer, HardHat, Smartphone, Volume2, VolumeX } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
@@ -63,7 +63,7 @@ const ghost = `${pill} border border-forest/25 bg-white/50 backdrop-blur hover:b
 const Key = ({ children }: { children: ReactNode }) => <kbd className="rounded-md border border-forest/20 bg-white/70 px-1.5 py-0.5 font-sans text-[11px] font-semibold">{children}</kbd>
 
 /** An icon for each kind of workplace, used beside roles. */
-const ROLE_ICON: Record<string, LucideIcon> = { studio: Smartphone, university: GraduationCap, office: Briefcase, mine: Hammer, tower: Cpu }
+const ROLE_ICON: Record<string, LucideIcon> = { studio: Smartphone, tunnel: HardHat, university: GraduationCap, office: Briefcase, mine: Hammer, tower: Cpu }
 
 /** A round icon badge. */
 const Badge = ({ icon: Icon, active = true, small }: { icon: LucideIcon; active?: boolean; small?: boolean }) => (

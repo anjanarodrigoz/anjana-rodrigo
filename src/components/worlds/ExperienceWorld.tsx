@@ -78,6 +78,64 @@ function Place({ kind }: { kind: Role["place"] }) {
         ))}
       </>
     )
+  if (kind === "tunnel")
+    return (
+      <>
+        {/* The hill the tunnel is driven through */}
+        <mesh position={[-0.5, 0, -0.2]} scale={[1.5, 1.1, 1.2]} castShadow>
+          <sphereGeometry args={[1, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#7d8f6c" roughness={1} />
+        </mesh>
+        {/* Concrete portal and the dark bore */}
+        <mesh position={[0.55, 0.42, 0.62]} rotation={[0, 0.5, 0]} castShadow>
+          <torusGeometry args={[0.42, 0.09, 10, 28]} />
+          {white}
+        </mesh>
+        <mesh position={[0.53, 0.42, 0.6]} rotation={[0, 0.5, 0]}>
+          <circleGeometry args={[0.42, 28]} />
+          <meshStandardMaterial color="#1c211f" roughness={1} />
+        </mesh>
+        {/* The TBM: cutterhead and shield, ready to enter */}
+        <group position={[1.05, 0.42, 1.5]} rotation={[0, 0.5, 0]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.36, 0.36, 0.9, 24]} />
+            <meshStandardMaterial color="#dfe4e0" roughness={0.5} metalness={0.3} />
+          </mesh>
+          <mesh position={[0, 0, -0.47]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.38, 0.38, 0.06, 24]} />
+            <meshStandardMaterial color="#f0b000" roughness={0.5} />
+          </mesh>
+          {[0, 1, 2].map((k) => (
+            <mesh key={k} position={[0, 0, -0.505]} rotation={[0, 0, (k * Math.PI) / 3]}>
+              <boxGeometry args={[0.7, 0.07, 0.02]} />
+              {dark}
+            </mesh>
+          ))}
+        </group>
+        {/* The canal carrying water away */}
+        <mesh position={[-0.2, 0.03, 1.55]} rotation={[0, -0.25, 0]}>
+          <boxGeometry args={[1.7, 0.06, 0.5]} />
+          {white}
+        </mesh>
+        <mesh position={[-0.2, 0.065, 1.55]} rotation={[-Math.PI / 2, 0, -0.25]}>
+          <planeGeometry args={[1.66, 0.34]} />
+          <meshStandardMaterial color="#6fa9b8" roughness={0.3} />
+        </mesh>
+        {/* A survey tripod for setting out */}
+        <group position={[-1.2, 0, 1.0]}>
+          {[0, 1, 2].map((k) => (
+            <mesh key={k} position={[Math.cos(k * 2.1) * 0.09, 0.2, Math.sin(k * 2.1) * 0.09]} rotation={[Math.sin(k * 2.1) * 0.4, 0, -Math.cos(k * 2.1) * 0.4]}>
+              <cylinderGeometry args={[0.012, 0.012, 0.44, 6]} />
+              {dark}
+            </mesh>
+          ))}
+          <mesh position={[0, 0.45, 0]}>
+            <boxGeometry args={[0.12, 0.09, 0.09]} />
+            <meshStandardMaterial color="#f0b000" roughness={0.5} />
+          </mesh>
+        </group>
+      </>
+    )
   if (kind === "mine")
     return (
       <>
