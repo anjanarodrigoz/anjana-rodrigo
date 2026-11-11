@@ -22,47 +22,238 @@ const SAGE = "#8DAA91"
 const yellow = <meshStandardMaterial color="#f0b000" roughness={0.5} />
 const dark = <meshStandardMaterial color="#2c3632" roughness={0.6} />
 
-/** MineBook: a little pit with trucks circling under a data hub. Select to change shift. */
+/**
+ * MineBook: a whole mine as one connected system. Excavator, drill rig and
+ * haul trucks work a benched pit; the site office, crew, workshop and a
+ * live dashboard sit on the surface; and every one of them reports to the
+ * data mast. Select to change shift.
+ */
 function MineBookExhibit({ n }: { n: number }) {
-  const trucks = useRef<THREE.Group>(null!)
-  const hub = useRef<THREE.Mesh>(null!)
   const night = n % 2 === 1
-  useFrame((state, dt) => {
-    trucks.current.children.forEach((c, i) => {
-      const r = 0.75 - i * 0.2
-      const a = state.clock.elapsedTime * (night ? 0.5 : 1.1) * (i % 2 ? 1 : -1) + i * 2
-      c.position.set(Math.cos(a) * r, 0.06 - i * 0.1, Math.sin(a) * r)
-      c.rotation.y = -a
+  const S = 0.3 // surface level above the plinth
+  const rig = useMemo(() => {
+    const kit = createKit()
+    const shadow = (o: THREE.Object3D) => o.traverse((c) => (c.castShadow = true))
+    const trucks = [0, 1, 2].map(() => {
+      const t = kit.haulTruck()
+      t.root.scale.setScalar(0.1)
+      shadow(t.root)
+      return t
     })
+    const exc = kit.excavator()
+    exc.root.scale.setScalar(0.1)
+    exc.root.position.set(0.02, 0.02, 0.02)
+    shadow(exc.root)
+    const drill = kit.drillRig()
+    drill.root.scale.setScalar(0.085)
+    drill.root.position.set(-0.1, 0.1, -0.26)
+    drill.root.rotation.y = 0.6
+    shadow(drill.root)
+    const parked = kit.haulTruck()
+    parked.root.scale.setScalar(0.1)
+    parked.root.position.set(0.8, S, 0.1)
+    parked.root.rotation.y = 1.2
+    parked.load.visible = false
+    shadow(parked.root)
+    // Benched pit, cut into the surface: floor, two benches, then the ground.
+    const pit = new THREE.LatheGeometry(
+      [
+        [0, 0.02], [0.2, 0.02], [0.22, 0.1], [0.36, 0.1], [0.38, 0.2], [0.52, 0.2], [0.54, S], [1, S], [1, 0],
+      ].map(([r, y]) => new THREE.Vector2(r, y)),
+      48,
+    )
+    const links = new THREE.BufferGeometry()
+    links.setAttribute("position", new THREE.BufferAttribute(new Float32Array(8 * 2 * 3), 3))
+    return { kit, trucks, exc, drill, parked, pit, links }
+  }, [])
+  useEffect(
+    () => () => {
+      rig.kit.dispose()
+      rig.pit.dispose()
+      rig.links.dispose()
+    },
+    [rig],
+  )
+  const hub = useRef<THREE.Mesh>(null!)
+  const pulses = useRef<THREE.Group>(null!)
+  const bars = useRef<THREE.Group>(null!)
+  const alarm = useRef<THREE.Mesh>(null!)
+  const windows = useRef<THREE.Group>(null!)
+  const HUB = useMemo(() => new THREE.Vector3(-0.6, S + 0.62, -0.55), [S])
+  const ends = useMemo(() => [0, 1, 2, 3, 4, 5, 6, 7].map(() => new THREE.Vector3()), [])
+  useFrame((state, dt) => {
+    const t = state.clock.elapsedTime
+    const pace = night ? 0.45 : 1
+    // Haul trucks: two on the upper bench, one on the lower.
+    rig.trucks.forEach((tr, i) => {
+      const r = i === 2 ? 0.29 : 0.45
+      const y = i === 2 ? 0.1 : 0.2
+      const dir = i === 2 ? -1 : 1
+      const a = t * 0.5 * pace * dir + i * Math.PI
+      tr.root.position.set(Math.cos(a) * r, y, Math.sin(a) * r)
+      tr.root.rotation.y = Math.atan2(-Math.cos(a) * dir, -Math.sin(a) * dir) + Math.PI
+      tr.load.visible = i !== 1
+      for (const w of tr.wheels) w.rotation.z += dt * 5 * pace
+      ends[i].copy(tr.root.position).setY(y + 0.1)
+    })
+    // The excavator works the floor; the drill turns its rod on the bench.
+    rig.exc.house.rotation.y = Math.sin(t * 0.7 * pace) * 1.2
+    rig.exc.boom.rotation.z = 0.45 + Math.sin(t * 1.4 * pace) * 0.1
+    rig.exc.stick.rotation.z = -0.5
+    rig.drill.rod.rotation.y += dt * 8 * pace
+    rig.drill.head.position.y = 1.6 + Math.sin(t * 0.8) * 0.6
+    ends[3].set(0.02, 0.14, 0.02)
+    ends[4].set(-0.1, 0.36, -0.26)
+    ends[5].set(0.55, S + 0.3, -0.6) // site office
+    ends[6].set(0.8, S + 0.18, 0.1) // workshop
+    ends[7].set(-0.82, S + 0.3, 0.12) // dashboard
+    // Data links from every asset to the mast, with a pulse travelling up each.
+    const arr = rig.links.attributes.position.array as Float32Array
+    ends.forEach((e, i) => {
+      arr.set([e.x, e.y, e.z, HUB.x, HUB.y, HUB.z], i * 6)
+      const k = (t * 0.6 + i * 0.37) % 1
+      pulses.current.children[i].position.lerpVectors(e, HUB, k)
+    })
+    rig.links.attributes.position.needsUpdate = true
     hub.current.rotation.y += dt * 0.8
     const m = hub.current.material as THREE.MeshStandardMaterial
-    m.emissiveIntensity += ((night ? 1.6 : 0.7) - m.emissiveIntensity) * 0.1
+    m.emissiveIntensity += ((night ? 1.8 : 0.8) - m.emissiveIntensity) * 0.1
+    // Dashboard bars move with production; the workshop lamp flags downtime.
+    bars.current.children.forEach((b, i) => {
+      b.scale.y = 0.35 + 0.65 * Math.abs(Math.sin(t * 0.5 * pace + i * 1.3))
+      b.position.y = -0.11 + b.scale.y * 0.1
+    })
+    ;(alarm.current.material as THREE.MeshStandardMaterial).emissiveIntensity = Math.sin(t * 6) > 0 ? 2.5 : 0.1
+    windows.current.children.forEach((w) => {
+      const wm = (w as THREE.Mesh).material as THREE.MeshStandardMaterial
+      wm.emissiveIntensity += ((night ? 1.2 : 0.15) - wm.emissiveIntensity) * 0.1
+    })
   })
+  const person = (x: number, z: number, hat: string) => (
+    <group key={`${x}${z}`} position={[x, S, z]}>
+      <mesh position={[0, 0.055, 0]} castShadow>
+        <capsuleGeometry args={[0.02, 0.05, 4, 8]} />
+        <meshStandardMaterial color="#e2732a" roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 0.125, 0]}>
+        <sphereGeometry args={[0.02, 10, 8]} />
+        <meshStandardMaterial color="#c99a78" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 0.138, 0]} scale={[1, 0.6, 1]}>
+        <sphereGeometry args={[0.024, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color={hat} roughness={0.5} />
+      </mesh>
+    </group>
+  )
   return (
     <>
-      {[0, 1, 2].map((k) => (
-        <mesh key={k} position={[0, -k * 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <ringGeometry args={[0.2 + (2 - k) * 0.25, 0.2 + (3 - k) * 0.25, 32]} />
-          <meshStandardMaterial color={["#a8977f", "#93836d", "#7f715e"][k]} roughness={1} />
+      <mesh geometry={rig.pit} receiveShadow castShadow>
+        <meshStandardMaterial color="#a8977f" roughness={1} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Bench floors, a shade darker with depth */}
+      {[
+        [0, 0.2, 0.021, "#7f715e"],
+        [0.22, 0.36, 0.101, "#8d7d68"],
+        [0.38, 0.52, 0.201, "#9a8a73"],
+      ].map(([a, b, y, c]) => (
+        <mesh key={y as number} position={[0, y as number, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <ringGeometry args={[a as number, b as number, 48]} />
+          <meshStandardMaterial color={c as string} roughness={1} />
         </mesh>
       ))}
-      <mesh position={[0, -0.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.2, 20]} />
-        <meshStandardMaterial color="#6f6252" roughness={1} />
+      <mesh position={[0, S + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <ringGeometry args={[0.54, 1, 48]} />
+        <meshStandardMaterial color="#b9c7a8" roughness={1} />
       </mesh>
-      <group ref={trucks}>
-        {[0, 1, 2].map((i) => (
-          <mesh key={i} castShadow>
-            <boxGeometry args={[0.07, 0.07, 0.16]} />
-            {yellow}
+      {rig.trucks.map((t, i) => (
+        <primitive key={i} object={t.root} />
+      ))}
+      <primitive object={rig.exc.root} />
+      <primitive object={rig.drill.root} />
+      {/* Site office with the shift crew outside */}
+      <group position={[0.55, S, -0.6]} rotation={[0, -0.5, 0]}>
+        <mesh position={[0, 0.1, 0]} castShadow>
+          <boxGeometry args={[0.36, 0.2, 0.22]} />
+          {paper}
+        </mesh>
+        <mesh position={[0, 0.215, 0]}>
+          <boxGeometry args={[0.4, 0.03, 0.26]} />
+          <meshStandardMaterial color="#183F35" roughness={0.7} />
+        </mesh>
+        <group ref={windows}>
+          {[-0.1, 0.02, 0.12].map((x) => (
+            <mesh key={x} position={[x, 0.11, 0.111]}>
+              <planeGeometry args={[0.07, 0.07]} />
+              <meshStandardMaterial color="#cfe0d6" emissive="#ffd36b" emissiveIntensity={0.15} />
+            </mesh>
+          ))}
+        </group>
+      </group>
+      {person(0.36, -0.52, "#f0b000")}
+      {person(0.44, -0.44, "#f6f7f3")}
+      {person(0.3, -0.62, "#f0b000")}
+      {/* Workshop: a truck down for maintenance under a warning lamp */}
+      <group position={[0.8, S, 0.1]} rotation={[0, 1.2, 0]}>
+        {[-0.13, 0.13].map((z) => (
+          <mesh key={z} position={[0, 0.11, z]} castShadow>
+            <boxGeometry args={[0.3, 0.22, 0.012]} />
+            {steel}
+          </mesh>
+        ))}
+        <mesh position={[0, 0.225, 0]} castShadow>
+          <boxGeometry args={[0.32, 0.014, 0.29]} />
+          <meshStandardMaterial color="#3b4048" roughness={0.6} />
+        </mesh>
+      </group>
+      <primitive object={rig.parked.root} />
+      <mesh ref={alarm} position={[0.8, S + 0.26, 0.1]}>
+        <sphereGeometry args={[0.025, 10, 8]} />
+        <meshStandardMaterial color="#b5483f" emissive="#ff3b2f" emissiveIntensity={2} />
+      </mesh>
+      {/* Live dashboard: production bars */}
+      <group position={[-0.82, S + 0.2, 0.12]} rotation={[0, 0.9, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.34, 0.26, 0.02]} />
+          {dark}
+        </mesh>
+        <mesh position={[0, 0, 0.011]}>
+          <planeGeometry args={[0.31, 0.23]} />
+          <meshBasicMaterial color="#F6F7F3" toneMapped={false} />
+        </mesh>
+        <group ref={bars} position={[0, 0, 0.013]}>
+          {[-0.1, -0.05, 0, 0.05, 0.1].map((x, i) => (
+            <mesh key={x} position={[x, 0, 0]}>
+              <planeGeometry args={[0.032, 0.2]} />
+              <meshBasicMaterial color={i === 3 ? "#b5483f" : i % 2 ? "#8DAA91" : "#183F35"} toneMapped={false} />
+            </mesh>
+          ))}
+        </group>
+        <mesh position={[0, -0.17, -0.01]}>
+          <cylinderGeometry args={[0.012, 0.012, 0.1, 8]} />
+          {steel}
+        </mesh>
+      </group>
+      {/* Data mast: everything on site reports here */}
+      <mesh position={[HUB.x, S + 0.28, HUB.z]} castShadow>
+        <cylinderGeometry args={[0.012, 0.02, 0.56, 8]} />
+        {steel}
+      </mesh>
+      <mesh ref={hub} position={HUB}>
+        <icosahedronGeometry args={[0.1, 1]} />
+        <meshStandardMaterial color="#183F35" emissive={SAGE} emissiveIntensity={0.8} wireframe />
+      </mesh>
+      <lineSegments geometry={rig.links}>
+        <lineBasicMaterial color={SAGE} transparent opacity={0.55} />
+      </lineSegments>
+      <group ref={pulses}>
+        {ends.map((_, i) => (
+          <mesh key={i}>
+            <sphereGeometry args={[0.018, 8, 6]} />
+            <meshBasicMaterial color="#dff5e4" toneMapped={false} />
           </mesh>
         ))}
       </group>
-      <mesh ref={hub} position={[0, 0.9, 0]}>
-        <icosahedronGeometry args={[0.2, 1]} />
-        <meshStandardMaterial color="#183F35" emissive={SAGE} emissiveIntensity={0.7} wireframe />
-      </mesh>
-      <pointLight position={[0, 0.9, 0]} intensity={night ? 3 : 0.6} distance={3} color="#dff5e4" />
+      <pointLight position={[HUB.x, HUB.y, HUB.z]} intensity={night ? 3 : 0.6} distance={3} color="#dff5e4" />
     </>
   )
 }

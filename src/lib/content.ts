@@ -95,11 +95,11 @@ export const software: SoftwareProject[] = [
     id: "minebook",
     action: "Select it to change shift",
     title: "MineBook",
-    meta: "Founder | Mining Data Platform | 2024 - Present",
+    meta: "Founder | 2024 - Present",
     line: "A connected operations platform for production, equipment, alerts and reporting.",
     device: "web",
     who: "Mine managers and site supervisors",
-    does: ["Keeps workforce, shifts and equipment in one place", "Records downtime and why it happened", "Turns the shift log into daily reports and plans"],
+    does: ["Connects the whole mine: pit, fleet, crew and workshop", "Keeps workforce, shifts and equipment in one place", "Records downtime and why it happened", "Turns the shift log into daily reports and plans"],
     url: "https://minebook.lk/",
   },
   {
