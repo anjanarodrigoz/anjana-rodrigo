@@ -18,7 +18,6 @@ const HERE = zoneIndex("software")
  */
 
 const SAGE = "#8DAA91"
-const KIND = { web: "Web platform", mobile: "Mobile app", desktop: "Desktop app" } as const
 const yellow = <meshStandardMaterial color="#f0b000" roughness={0.5} />
 const dark = <meshStandardMaterial color="#2c3632" roughness={0.6} />
 
@@ -217,21 +216,11 @@ function BlastExhibit({ n }: { n: number }) {
   )
 }
 
-const MOVER_STEPS = ["1 | Booking taken", "2 | Driver assigned, SMS sent", "3 | Driver opens the job", "4 | Job started in the app", "5 | Company tracks it live", "6 | Invoice emailed"]
-const MOVER_PHONE = [
-  ["New booking", "Pickup: Home A", "Drop: Home B"],
-  ["SMS", "New job assigned", "Open the driver app"],
-  ["Job details", "Pickup: Home A", "Drop: Home B"],
-  ["Job started", "Start time saved", "Add job data"],
-  ["On the way", "Location shared", "Timer running"],
-  ["Job done", "Invoice emailed", "Hours to salary"],
-]
-
 /**
  * Melbourne Mover: the whole job, played as a loop. A booking reaches the
  * office, a driver is assigned by SMS, opens the job on the driver app,
  * starts it, is tracked live, and the customer is emailed the invoice.
- * Select to jump to the next step.
+ * Select to jump to the next step. No words on the model: it is told with objects.
  */
 function MoverExhibit({ n }: { n: number }) {
   const van = useRef<THREE.Group>(null!)
@@ -243,19 +232,17 @@ function MoverExhibit({ n }: { n: number }) {
   const stageRef = useRef(0)
   const screens = useMemo(
     () =>
-      MOVER_PHONE.map(([head, a, b], k) =>
+      [0, 1, 2, 3, 4, 5].map((k) =>
         canvasTexture(256, 420, (g) => {
           g.fillStyle = "#F6F7F3"
           g.fillRect(0, 0, 256, 420)
           g.fillStyle = "#183F35"
           g.fillRect(0, 0, 256, 84)
-          g.fillStyle = "#F6F7F3"
-          g.font = "600 30px 'Space Grotesk', system-ui, sans-serif"
-          g.fillText(head, 18, 54)
-          g.fillStyle = "#202824"
-          g.font = "500 23px Inter, system-ui, sans-serif"
-          g.fillText(a, 18, 140)
-          g.fillText(b, 18, 184)
+          g.fillStyle = "rgba(246,247,243,.85)"
+          g.fillRect(18, 34, 120, 18)
+          g.fillStyle = "rgba(32,40,36,.45)"
+          g.fillRect(18, 126, 190, 14)
+          g.fillRect(18, 170, 140, 14)
           // progress dots
           for (let d = 0; d < 6; d++) {
             g.fillStyle = d <= k ? "#183F35" : "rgba(24,63,53,.2)"
@@ -265,25 +252,6 @@ function MoverExhibit({ n }: { n: number }) {
           }
           g.fillStyle = "#8DAA91"
           g.fillRect(18, 320, 220, 60)
-          g.fillStyle = "#102C25"
-          g.font = "600 24px Inter, system-ui, sans-serif"
-          g.fillText(k === 2 ? "Start job" : k === 4 ? "Finish job" : "OK", 96 - (k === 2 || k === 4 ? 28 : 0), 359)
-        }),
-      ),
-    [],
-  )
-  const captions = useMemo(
-    () =>
-      MOVER_STEPS.map((text) =>
-        canvasTexture(640, 96, (g) => {
-          g.fillStyle = "#102C25"
-          g.beginPath()
-          g.roundRect(0, 0, 640, 96, 28)
-          g.fill()
-          g.fillStyle = "#F6F7F3"
-          g.font = "600 40px 'Space Grotesk', system-ui, sans-serif"
-          g.textAlign = "center"
-          g.fillText(text, 320, 62)
         }),
       ),
     [],
@@ -394,11 +362,6 @@ function MoverExhibit({ n }: { n: number }) {
           <meshBasicMaterial map={screens[stage]} toneMapped={false} />
         </mesh>
       </group>
-      {/* What is happening right now */}
-      <mesh position={[0, 0.98, -0.2]}>
-        <planeGeometry args={[1.5, 0.225]} />
-        <meshBasicMaterial map={captions[stage]} transparent toneMapped={false} />
-      </mesh>
     </>
   )
 }
@@ -515,7 +478,7 @@ function Monitor({ tex, position = [0, 0, 0] as [number, number, number], w = 1.
 function MisExhibit({ n }: { n: number }) {
   const screens = useMemo(
     () =>
-      ["Students", "Courses", "Staff", "Reports"].map((name, k) =>
+      [0, 1, 2, 3].map((k) =>
         canvasTexture(512, 320, (g) => {
           g.fillStyle = "#F6F7F3"
           g.fillRect(0, 0, 512, 320)
@@ -526,8 +489,7 @@ function MisExhibit({ n }: { n: number }) {
             g.fillRect(14, 30 + i * 44, 92, 22)
           })
           g.fillStyle = "#102C25"
-          g.font = "600 30px 'Space Grotesk', system-ui, sans-serif"
-          g.fillText(name, 144, 48)
+          g.fillRect(144, 28, 150, 22)
           for (let r = 0; r < 6; r++) {
             g.fillStyle = r % 2 ? "rgba(16,44,37,.06)" : "rgba(16,44,37,.12)"
             g.fillRect(144, 76 + r * 38, 344, 30)
@@ -787,10 +749,7 @@ export default function SoftwareWorld() {
           g.textBaseline = "middle"
           g.fillStyle = "#F6F7F3"
           g.font = "600 84px 'Space Grotesk', system-ui, sans-serif"
-          g.fillText(p.title.replace(" Management App", "").replace(" Business Apps", " apps"), 512, 100)
-          g.fillStyle = "#8DAA91"
-          g.font = "500 44px Inter, system-ui, sans-serif"
-          g.fillText(`${KIND[p.device]}  |  Select to try`, 512, 190)
+          g.fillText(p.title.replace(" Management App", "").replace(" Business Apps", " apps"), 512, 132)
         }),
       ),
     [],
