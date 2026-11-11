@@ -69,7 +69,7 @@ export const software: SoftwareProject[] = [
   },
   {
     id: "cycle-time",
-    action: "Select it to step through the cycle",
+    action: "Select it to skip to the next stage of the haul cycle",
     title: "Cycle Time Tracking",
     meta: "Mobile App | INSEE",
     line: "A mobile app for tracking equipment cycle time, built for INSEE.",

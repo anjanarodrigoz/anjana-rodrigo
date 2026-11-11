@@ -1,7 +1,7 @@
 "use client"
 
 import { useFrame } from "@react-three/fiber"
-import { useMemo, useRef, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import * as THREE from "three"
 
 import { Assemble, OneAtATime, canvasTexture, overUi } from "@/components/scene/helpers"
@@ -9,6 +9,7 @@ import { software } from "@/lib/content"
 import { sound } from "@/lib/sound"
 import { zoneIndex } from "@/lib/sections"
 import { useWorld } from "@/lib/store"
+import { createKit } from "@/three/vehicles"
 
 const HERE = zoneIndex("software")
 
@@ -121,48 +122,246 @@ function FleetExhibit({ n }: { n: number }) {
   )
 }
 
-/** Mining Cycle-Time: the haul cycle as a ring of segments. Select to step through them. */
+/** A flat road ribbon of the given width along a list of points. */
+function ribbon(pts: THREE.Vector3[], width: number, closed: boolean) {
+  const pos: number[] = []
+  const idx: number[] = []
+  const n = pts.length
+  for (let i = 0; i < n; i++) {
+    const a = pts[closed ? (i - 1 + n) % n : Math.max(0, i - 1)]
+    const b = pts[closed ? (i + 1) % n : Math.min(n - 1, i + 1)]
+    const tx = b.x - a.x
+    const tz = b.z - a.z
+    const l = Math.hypot(tx, tz) || 1
+    const sx = (tz / l) * width * 0.5
+    const sz = (-tx / l) * width * 0.5
+    pos.push(pts[i].x + sx, 0, pts[i].z + sz, pts[i].x - sx, 0, pts[i].z - sz)
+  }
+  const last = closed ? n : n - 1
+  for (let i = 0; i < last; i++) {
+    const a = i * 2
+    const b = ((i + 1) % n) * 2
+    idx.push(a, b, a + 1, a + 1, b, b + 1)
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3))
+  g.setIndex(idx)
+  g.computeVertexNormals()
+  return g
+}
+
+const CY = { cx: 0, cz: 0.22, a: 0.58, b: 0.36, dump: 4.539 }
+const ovalAt = (th: number, out: THREE.Vector3) => out.set(CY.cx - CY.a * Math.cos(th), 0, CY.cz + CY.b * Math.sin(th))
+
+/**
+ * Cycle Time Tracking: a working haul cycle. The dump truck reverses under
+ * the excavator, is loaded, hauls round the haul road, reverses to the
+ * crusher and tips, then returns empty. A stopwatch times each stage.
+ * Select to skip to the next stage.
+ */
 function CycleExhibit({ n }: { n: number }) {
-  const parts = useMemo(() => {
-    const share = [0.15, 0.06, 0.08, 0.39, 0.04, 0.28] // queue, spot, load, haul, dump, return
-    const cols = ["#b5483f", "#c9d6cb", SAGE, "#183F35", "#5d8a6c", "#a9c2ac"]
-    let a = 0
-    return share.map((s, i) => {
-      const seg = { start: a, len: s * Math.PI * 2 - 0.06, color: cols[i] }
-      a += s * Math.PI * 2
-      return seg
-    })
+  const rig = useMemo(() => {
+    const kit = createKit()
+    const truck = kit.haulTruck()
+    truck.root.scale.setScalar(0.2)
+    truck.root.traverse((o) => (o.castShadow = true))
+    const exc = kit.excavator()
+    exc.root.scale.setScalar(0.16)
+    exc.root.position.set(-0.28, 0, -0.5)
+    exc.root.traverse((o) => (o.castShadow = true))
+    const oval: THREE.Vector3[] = []
+    for (let i = 0; i < 72; i++) oval.push(ovalAt((i / 72) * Math.PI * 2, new THREE.Vector3()))
+    const berm = new THREE.CatmullRomCurve3(
+      oval.map((p) => new THREE.Vector3(CY.cx + (p.x - CY.cx) * 1.2, 0.012, CY.cz + (p.z - CY.cz) * 1.3)),
+      true,
+    )
+    const pL = ovalAt(0, new THREE.Vector3())
+    const pD = ovalAt(CY.dump, new THREE.Vector3())
+    // Reversing spurs: off the haul road and back to the loader / the crusher.
+    const spurL = new THREE.CatmullRomCurve3([pL, new THREE.Vector3(-0.59, 0, 0.02), new THREE.Vector3(-0.6, 0, -0.3)])
+    const spurD = new THREE.CatmullRomCurve3([pD, new THREE.Vector3(0.3, 0, -0.17), new THREE.Vector3(0.56, 0, -0.36)])
+    return {
+      kit,
+      truck,
+      exc,
+      road: ribbon(oval, 0.17, true),
+      roadL: ribbon(spurL.getPoints(16), 0.17, false),
+      roadD: ribbon(spurD.getPoints(16), 0.17, false),
+      bermGeo: new THREE.TubeGeometry(berm, 90, 0.016, 5, true),
+      spurL,
+      spurD,
+    }
   }, [])
-  const truck = useRef<THREE.Mesh>(null!)
+  useEffect(
+    () => () => {
+      rig.kit.dispose()
+      rig.road.dispose()
+      rig.roadL.dispose()
+      rig.roadD.dispose()
+      rig.bermGeo.dispose()
+    },
+    [rig],
+  )
+  const st = useRef({ phase: 0, k: 0, yaw: Math.PI / 2, cycle: 0, lastN: n })
+  const hand = useRef<THREE.Mesh>(null!)
   const segs = useRef<THREE.Group>(null!)
-  useFrame((state) => {
-    const a = state.clock.elapsedTime * 0.6
-    truck.current.position.set(Math.cos(a) * 0.75, 0.62, -Math.sin(a) * 0.75)
-    truck.current.rotation.y = a
+  const tmp = useMemo(() => ({ p: new THREE.Vector3(), f: new THREE.Vector3() }), [])
+  useFrame((state, rawDt) => {
+    const dt = Math.min(rawDt, 0.05)
+    const s = st.current
+    const { truck, exc, spurL, spurD } = rig
+    // Phases: 0 reverse to loader, 1 load, 2 pull out, 3 haul, 4 reverse to crusher, 5 tip, 6 pull out, 7 return.
+    const rate = [0.8, 0.42, 0.9, 0.2, 0.8, 0.45, 0.9, 0.5][s.phase]
+    s.k += dt * rate
+    if (n !== s.lastN) {
+      s.lastN = n
+      s.k = 1
+    }
+    if (s.k >= 1) {
+      s.k = 0
+      s.phase = (s.phase + 1) % 8
+      if (s.phase === 0) s.cycle = 0
+    }
+    s.cycle += dt
+    const k = s.k
+    const ease = k * k * (3 - 2 * k)
+    let reversing = false
+    if (s.phase <= 2 || (s.phase >= 4 && s.phase <= 6)) {
+      const spur = s.phase <= 2 ? spurL : spurD
+      const moving = s.phase !== 1 && s.phase !== 5
+      const back = s.phase === 0 || s.phase === 4
+      const v = !moving ? 1 : back ? ease : 1 - ease
+      spur.getPointAt(v, tmp.p)
+      spur.getTangentAt(v, tmp.f).negate() // the cab points away from the loader or the crusher
+      reversing = back
+    } else {
+      const th = s.phase === 3 ? ease * CY.dump : CY.dump + ease * (Math.PI * 2 - CY.dump)
+      ovalAt(th, tmp.p)
+      tmp.f.set(CY.a * Math.sin(th), 0, CY.b * Math.cos(th)).normalize()
+    }
+    truck.root.position.set(tmp.p.x, 0.012, tmp.p.z)
+    const want = Math.atan2(-tmp.f.z, tmp.f.x) + Math.PI
+    const diff = ((want - s.yaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI
+    s.yaw += THREE.MathUtils.clamp(diff, -3 * dt, 3 * dt)
+    truck.root.rotation.y = s.yaw
+    truck.beacon.visible = reversing && Math.sin(state.clock.elapsedTime * 14) > 0
+    const spin = (s.phase === 1 || s.phase === 5 ? 0 : reversing ? -1 : 1) * dt * 6
+    for (const w of truck.wheels) w.rotation.z += spin
+    // Loaded from the end of loading until the tray has tipped.
+    truck.load.visible = (s.phase === 1 && k > 0.55) || s.phase === 2 || s.phase === 3 || s.phase === 4 || (s.phase === 5 && k < 0.45)
+    truck.tray.rotation.z = s.phase === 5 ? -Math.sin(k * Math.PI) * 0.75 : 0
+    // The excavator digs at the face and swings over the truck while loading.
+    const swing = s.phase === 1 ? 0.5 - 0.5 * Math.cos(k * Math.PI * 4) : 0
+    exc.house.rotation.y = THREE.MathUtils.lerp(exc.house.rotation.y, 1.9 + swing * 1.7, Math.min(1, dt * 5))
+    exc.boom.rotation.z = 0.45 - swing * 0.15
+    exc.stick.rotation.z = -0.5 + swing * 0.25
+    exc.scoop.visible = s.phase === 1
+    // Stopwatch: the hand sweeps once per cycle and the current stage lights up.
+    hand.current.rotation.z = -(s.cycle / 15.5) * Math.PI * 2
+    const stage = s.phase <= 2 ? 0 : s.phase === 3 ? 1 : s.phase <= 6 ? 2 : 3
     segs.current.children.forEach((c, i) => {
-      const on = i === n % parts.length && n > 0
-      c.position.z += ((on ? 0.14 : 0) - c.position.z) * 0.15
+      const m = (c as THREE.Mesh).material as THREE.MeshStandardMaterial
+      m.emissiveIntensity += ((i === stage ? 0.9 : 0) - m.emissiveIntensity) * 0.2
     })
   })
+  const gravel = <meshStandardMaterial color="#6b6257" roughness={1} side={THREE.DoubleSide} />
+  const rock = <meshStandardMaterial color="#8d8474" roughness={1} flatShading />
+  const dial = [
+    { len: 0.3, color: SAGE },
+    { len: 0.34, color: "#183F35" },
+    { len: 0.24, color: "#5d8a6c" },
+    { len: 0.12, color: "#a9c2ac" },
+  ]
+  let turn = Math.PI / 2
   return (
-    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.5, 0]}>
-      <group ref={segs}>
-        {parts.map((s, i) => (
-          <group key={i} rotation={[0, 0, s.start]}>
-            <mesh castShadow>
-              <torusGeometry args={[0.75, 0.09, 10, 40, s.len]} />
-              <meshStandardMaterial color={s.color} roughness={0.5} />
-            </mesh>
-          </group>
-        ))}
-      </group>
-      <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.5]}>
-        <mesh ref={truck} castShadow>
-          <boxGeometry args={[0.16, 0.1, 0.1]} />
-          {yellow}
+    <>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[1, 40]} />
+        <meshStandardMaterial color="#b8a888" roughness={1} />
+      </mesh>
+      {/* Haul road with its safety berm, and the two reversing bays */}
+      <mesh geometry={rig.road} position={[0, 0.008, 0]} receiveShadow>
+        {gravel}
+      </mesh>
+      <mesh geometry={rig.roadL} position={[0, 0.007, 0]} receiveShadow>
+        {gravel}
+      </mesh>
+      <mesh geometry={rig.roadD} position={[0, 0.007, 0]} receiveShadow>
+        {gravel}
+      </mesh>
+      <mesh geometry={rig.bermGeo}>
+        <meshStandardMaterial color="#9a8c74" roughness={1} />
+      </mesh>
+      {/* The face being dug */}
+      <mesh position={[-0.42, 0.1, -0.82]} rotation={[0, 0.25, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.2, 0.2]} />
+        {rock}
+      </mesh>
+      <mesh position={[-0.36, 0.26, -0.9]} rotation={[0, 0.25, 0]} castShadow>
+        <boxGeometry args={[0.5, 0.14, 0.12]} />
+        {rock}
+      </mesh>
+      {[-0.62, -0.45, -0.2].map((x, i) => (
+        <mesh key={x} position={[x, 0.03, -0.66 + i * 0.02]} scale={[0.07, 0.05, 0.06]} rotation={[i, i * 2, 0]}>
+          <dodecahedronGeometry args={[1, 0]} />
+          {rock}
+        </mesh>
+      ))}
+      <primitive object={rig.exc.root} />
+      <primitive object={rig.truck.root} />
+      {/* Crusher: tipping hopper, conveyor and stockpile */}
+      <group position={[0.74, 0, -0.44]} rotation={[0, 0.6, 0]}>
+        <mesh position={[0, 0.07, 0]} castShadow>
+          <boxGeometry args={[0.2, 0.14, 0.24]} />
+          {dark}
+        </mesh>
+        <mesh position={[0, 0.16, 0]} castShadow>
+          <cylinderGeometry args={[0.16, 0.09, 0.06, 4, 1, true]} />
+          <meshStandardMaterial color="#3b4048" roughness={0.6} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh position={[-0.05, 0.16, -0.26]} rotation={[0.5, 0, 0]} castShadow>
+          <boxGeometry args={[0.07, 0.02, 0.5]} />
+          {steel}
+        </mesh>
+        <mesh position={[-0.05, 0.1, -0.52]} castShadow>
+          <coneGeometry args={[0.16, 0.2, 14]} />
+          {rock}
         </mesh>
       </group>
-    </group>
+      {/* Stopwatch for the cycle */}
+      <group position={[0.1, 0.62, -0.72]}>
+        <mesh position={[0, -0.34, 0]}>
+          <cylinderGeometry args={[0.014, 0.014, 0.56, 8]} />
+          {steel}
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.03, 32]} />
+          {paper}
+        </mesh>
+        <group ref={segs} position={[0, 0, 0.02]}>
+          {dial.map((d, i) => {
+            const start = turn - d.len * Math.PI * 2
+            turn = start
+            return (
+              <mesh key={i} rotation={[0, 0, start + 0.04]}>
+                <torusGeometry args={[0.2, 0.022, 8, 24, d.len * Math.PI * 2 - 0.08]} />
+                <meshStandardMaterial color={d.color} emissive={d.color} emissiveIntensity={0} roughness={0.5} />
+              </mesh>
+            )
+          })}
+        </group>
+        <mesh ref={hand} position={[0, 0, 0.022]}>
+          <mesh position={[0, 0.07, 0]}>
+            <boxGeometry args={[0.014, 0.15, 0.006]} />
+            <meshStandardMaterial color="#b5483f" roughness={0.5} />
+          </mesh>
+        </mesh>
+        <mesh position={[0, 0.235, 0]}>
+          <cylinderGeometry args={[0.025, 0.025, 0.04, 10]} />
+          {steel}
+        </mesh>
+      </group>
+    </>
   )
 }
 
