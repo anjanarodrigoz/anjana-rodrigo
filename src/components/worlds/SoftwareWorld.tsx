@@ -673,35 +673,69 @@ function Monitor({ tex, position = [0, 0, 0] as [number, number, number], w = 1.
   )
 }
 
-/** University MIS: a monitor showing the system's modules. Select to switch module. */
+const MIS_SCREENS: [string, string[]][] = [
+  ["Student portal", ["Module selection", "Module purchase", "Payment gateway", "Hostel booking"]],
+  ["Admin portal", ["Intake creation", "Semester creation", "Module creation", "Offerings per semester", "Examiners", "Module coordinators"]],
+  ["Marks", ["CA marks submission", "Final marks submission", "Marks upload", "Result comparison", "Board of Examination reports"]],
+  ["Rules", ["Module eligibility logic", "Performance criteria", "Grade scales", "Per degree programme", "Engineering | Medicine"]],
+  ["Access", ["WSO2 Identity Server SSO", "Role-based permissions", "Resource-based permissions"]],
+]
+
+/** University MIS: a monitor that pages through the system's modules and their features. Select for the next module. */
 function MisExhibit({ n }: { n: number }) {
   const screens = useMemo(
     () =>
-      [0, 1, 2, 3].map((k) =>
-        canvasTexture(512, 320, (g) => {
+      MIS_SCREENS.map(([name, items], k) =>
+        canvasTexture(1024, 640, (g) => {
           g.fillStyle = "#F6F7F3"
-          g.fillRect(0, 0, 512, 320)
+          g.fillRect(0, 0, 1024, 640)
           g.fillStyle = "#183F35"
-          g.fillRect(0, 0, 120, 320)
-          ;[0, 1, 2, 3].forEach((i) => {
-            g.fillStyle = i === k ? "#8DAA91" : "rgba(246,247,243,.3)"
-            g.fillRect(14, 30 + i * 44, 92, 22)
+          g.fillRect(0, 0, 300, 640)
+          g.textBaseline = "middle"
+          MIS_SCREENS.forEach(([side], i) => {
+            g.fillStyle = i === k ? "#8DAA91" : "rgba(246,247,243,.12)"
+            g.beginPath()
+            g.roundRect(22, 40 + i * 78, 256, 58, 12)
+            g.fill()
+            g.fillStyle = i === k ? "#102C25" : "rgba(246,247,243,.85)"
+            g.font = "600 31px Inter, system-ui, sans-serif"
+            g.fillText(side, 40, 70 + i * 78)
           })
           g.fillStyle = "#102C25"
-          g.fillRect(144, 28, 150, 22)
-          for (let r = 0; r < 6; r++) {
-            g.fillStyle = r % 2 ? "rgba(16,44,37,.06)" : "rgba(16,44,37,.12)"
-            g.fillRect(144, 76 + r * 38, 344, 30)
-            g.fillStyle = "rgba(16,44,37,.45)"
-            g.fillRect(156, 86 + r * 38, 90 + ((r * 37 + k * 23) % 120), 10)
-          }
+          g.font = "600 54px 'Space Grotesk', system-ui, sans-serif"
+          g.fillText(name, 344, 74)
+          items.forEach((item, r) => {
+            g.fillStyle = "rgba(16,44,37,.07)"
+            g.beginPath()
+            g.roundRect(344, 126 + r * 82, 640, 66, 12)
+            g.fill()
+            g.fillStyle = "#183F35"
+            g.beginPath()
+            g.arc(380, 159 + r * 82, 12, 0, Math.PI * 2)
+            g.fill()
+            g.fillStyle = "#202824"
+            g.font = "500 40px Inter, system-ui, sans-serif"
+            g.fillText(item, 412, 160 + r * 82)
+          })
         }),
       ),
     [],
   )
+  // The screen pages on its own; a click moves it on at once.
+  const [page, setPage] = useState(0)
+  const clock = useRef(0)
+  const lastN = useRef(n)
+  useFrame((_, dt) => {
+    clock.current += dt
+    if (n !== lastN.current || clock.current > 3.5) {
+      lastN.current = n
+      clock.current = 0
+      setPage((p) => (p + 1) % MIS_SCREENS.length)
+    }
+  })
   return (
     <>
-      <Monitor tex={screens[n % 4]} w={1.3} position={[0, 0, -0.1]} />
+      <Monitor tex={screens[page]} w={1.75} position={[0.1, 0, -0.15]} />
       {/* A small campus building beside it */}
       <group position={[-0.72, 0, 0.45]} scale={0.34}>
         <mesh position={[0, 0.5, 0]} castShadow>
@@ -723,7 +757,7 @@ function MisExhibit({ n }: { n: number }) {
   )
 }
 
-/** Acorn Travel: a plane circling a globe, with a phone. Select for a new trip. */
+/** Acorn Travel: a business trip - the flight round a globe, the hotel, local transport and the quotation. Select for a new trip. */
 function TravelExhibit({ n }: { n: number }) {
   const plane = useRef<THREE.Group>(null!)
   const orbit = useRef<THREE.Group>(null!)
@@ -766,6 +800,57 @@ function TravelExhibit({ n }: { n: number }) {
         <cylinderGeometry args={[0.2, 0.26, 0.08, 24]} />
         {steel}
       </mesh>
+      {/* The rest of the trip: a hotel stay, local transport and the quotation */}
+      <group position={[-0.68, 0, 0.25]} rotation={[0, 0.4, 0]}>
+        <mesh position={[0, 0.2, 0]} castShadow>
+          <boxGeometry args={[0.26, 0.4, 0.2]} />
+          <meshStandardMaterial color="#ece6da" roughness={0.9} />
+        </mesh>
+        {[0.1, 0.2, 0.3].map((y) =>
+          [-0.07, 0.07].map((x) => (
+            <mesh key={`${x}${y}`} position={[x, y, 0.101]}>
+              <planeGeometry args={[0.06, 0.05]} />
+              <meshStandardMaterial color="#ffe9a8" emissive="#ffd36b" emissiveIntensity={0.5} />
+            </mesh>
+          )),
+        )}
+        <mesh position={[0, 0.42, 0]}>
+          <boxGeometry args={[0.3, 0.03, 0.24]} />
+          <meshStandardMaterial color="#183F35" roughness={0.7} />
+        </mesh>
+      </group>
+      <group position={[0.2, 0, 0.66]} rotation={[0, 0.3, 0]}>
+        <mesh position={[0, 0.07, 0]} castShadow>
+          <boxGeometry args={[0.28, 0.07, 0.13]} />
+          <meshStandardMaterial color="#f0b000" roughness={0.5} />
+        </mesh>
+        <mesh position={[-0.01, 0.13, 0]} castShadow>
+          <boxGeometry args={[0.15, 0.06, 0.12]} />
+          <meshStandardMaterial color="#2c3632" roughness={0.3} />
+        </mesh>
+        {[-0.09, 0.09].map((x) => (
+          <mesh key={x} position={[x, 0.035, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.035, 0.035, 0.15, 12]} />
+            {dark}
+          </mesh>
+        ))}
+      </group>
+      <group position={[0.7, 0.2, 0.15]} rotation={[-0.25, -0.5, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.24, 0.32, 0.012]} />
+          {paper}
+        </mesh>
+        {[0.09, 0.03, -0.03].map((y, i) => (
+          <mesh key={y} position={[-0.02 + i * 0.01, y, 0.008]}>
+            <planeGeometry args={[0.15 - i * 0.02, 0.022]} />
+            <meshStandardMaterial color="#8DAA91" />
+          </mesh>
+        ))}
+        <mesh position={[0.05, -0.1, 0.008]}>
+          <planeGeometry args={[0.09, 0.04]} />
+          <meshStandardMaterial color="#183F35" />
+        </mesh>
+      </group>
     </>
   )
 }

@@ -25,7 +25,7 @@ function Block({ index, children, wide }: { index: number; children: ReactNode; 
         className={[
           // Phones: a white panel docked at the bottom. Desktop: a text column on the left.
           webgl
-            ? "fixed inset-x-0 bottom-0 z-20 max-h-[50vh] overflow-y-auto overscroll-contain rounded-t-3xl bg-paper/95 px-5 pb-7 pt-3 shadow-[0_-14px_40px_-14px_rgba(16,44,37,0.4)] backdrop-blur transition-all duration-500 sm:inset-x-auto sm:bottom-auto sm:left-10 sm:top-1/2 sm:max-h-none sm:-translate-y-1/2 sm:overflow-visible sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"
+            ? "fixed inset-x-0 bottom-0 z-20 max-h-[50vh] overflow-y-auto overscroll-contain rounded-t-3xl bg-paper/95 px-5 pb-7 pt-3 shadow-[0_-14px_40px_-14px_rgba(16,44,37,0.4)] backdrop-blur transition-all duration-500 sm:inset-x-auto sm:bottom-auto sm:left-10 sm:top-1/2 sm:max-h-[calc(100vh-7.5rem)] sm:-translate-y-1/2 sm:overflow-y-auto sm:pr-2 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"
             : "mx-auto",
           wide ? "sm:max-w-[540px]" : "sm:max-w-[420px]",
           webgl && !here ? "pointer-events-none translate-y-8 opacity-0" : "opacity-100",
@@ -329,7 +329,8 @@ export default function Experience() {
               <Hint>Try the 3D model: {project.action.charAt(0).toLowerCase() + project.action.slice(1)}.</Hint>
             </>
           ) : null}
-          <Meta items={softwareStack} />
+          {/* Long project cards drop the stack line so they fit the screen */}
+          {project.does.length <= 4 ? <Meta items={softwareStack} /> : null}
         </Block>
 
         <Block index={2}>
